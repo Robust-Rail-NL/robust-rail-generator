@@ -116,8 +116,8 @@ def create_scenario_from_config(config_file, scenario_file):
 
     if not scenario_file or not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "..", "data", "scenarios", f"{scenario_file}.json")):
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
-        custom = f"custom_{config_file.split('/')[-1].split('_')[-1].split('.')[0]}" if config["trains_given"] else f"random_{config['seed']}s"
-        scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}"
+        custom = f"custom" if config["trains_given"] else f"random_{config['seed']}s"
+        scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_file.split('/')[-1].split('_')[-1].split('.')[0]}"
     output_filepath = os.path.join(os.path.dirname(__file__), "..", "..", "data", "scenarios", f"{scenario_file}.json")
     output_hip_filepath = os.path.join(os.path.dirname(__file__), "..", "..", "data", "scenarios", f"{scenario_file}_hip.json")
     # Write TORS scenario file
@@ -312,5 +312,4 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    args.config = "examples/random_config_distribution1.json"
     create_scenario_from_config(args.config, args.scenario_file)

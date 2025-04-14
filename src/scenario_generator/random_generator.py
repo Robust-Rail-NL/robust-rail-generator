@@ -11,6 +11,7 @@ class RandomGenerator:
         self.seed = seed
         self.train_unit_types = []
         self.train_units = {}
+        self.number_of_train_units = 0
         self.trains = []
         self.gateways = self.get_gateway_tracks(location)
 
@@ -34,6 +35,7 @@ class RandomGenerator:
 
     def generate_train_compositions(self, config, scenario_generator):
         distribution_config = None
+        # TODO allow subtypes in same train composition
         if "train_unit_distribution" in config:
             # If a specific sublist of train unit types was provided, update the possible train unit types
             if "train_unit_types" in config["train_unit_distribution"]:
@@ -46,7 +48,7 @@ class RandomGenerator:
                 distribution_config["number_units_per_train"] = [distribution_config["units_per_composition"][i % len(distribution_config["units_per_composition"])] for i in range(config["number_of_trains"])]
                 random.shuffle(distribution_config["number_units_per_train"])
                 # this sets the number of the train type
-                different_types = math.floor(config["number_of_trains"] * distribution_config["type_ratio"]) + 1
+                different_types = min(len(distribution_config["train_unit_types"]), math.floor(config["number_of_trains"] * distribution_config["type_ratio"]) + 1)
                 distribution_config["train_types"] = [range(different_types)[i % different_types] for i in range(config["number_of_trains"])]
                 random.shuffle(distribution_config["train_types"])
                 distribution_config["units_per_type"] = {t: sum([units for i, units in enumerate(distribution_config["number_units_per_train"]) if distribution_config["train_types"][i] == t]) for t in range(different_types)}
@@ -79,7 +81,7 @@ class RandomGenerator:
         for i in range(num):
             # TODO servicing tasks
             if distribution_config and "unit_types" in distribution_config:
-                unit_type = self.train_unit_types[distribution_config["unit_types"][i]].displayName
+                unit_type = self.train_unit_types[distribution_config["unit_types"][i % len(distribution_config["unit_types"])]].displayName
             else:
                 unit_type = random.choice(self.train_unit_types).displayName
             if not servicing:
@@ -91,6 +93,7 @@ class RandomGenerator:
                 if unit_type not in self.train_units:
                     self.train_units[unit_type] = []
                 self.train_units[unit_type].append(unit)
+                self.number_of_train_units += 1
 
     def generate_trains(self, num: int, distribution_config: None):
         if not distribution_config:
@@ -134,7 +137,7 @@ class RandomGenerator:
 
 
     def distribute_train_units(self, number_trains):
-        if len(self.train_units) < number_trains or len(self.train_units) > 3 * number_trains:
+        if self.number_of_train_units < number_trains or self.number_of_train_units > 3 * number_trains:
             raise ValueError(f"Cannot make sure that all {number_trains} trains get between 1 and 3 train units from {len(self.train_units)} units.")
 
         units = self.train_units.copy()

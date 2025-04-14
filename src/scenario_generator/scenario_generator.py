@@ -111,7 +111,7 @@ class ScenarioGenerator:
                  
                 for trainUnitType in self.scenario_TrainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
-                        train_unit.type.displayName = trainUnitType.displayName          
+                        train_unit.type.displayName = trainUnitType.typePrefix          
                         train_unit.type.carriages = trainUnitType.carriages
                         train_unit.type.length = trainUnitType.length
                         train_unit.type.combineDuration = trainUnitType.combineDuration

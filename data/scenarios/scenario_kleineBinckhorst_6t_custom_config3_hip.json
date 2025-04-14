@@ -114,7 +114,7 @@
                 "trainUnits": [
                     {
                         "type": {
-                            "displayName": "SLT-4",
+                            "displayName": "SLT",
                             "carriages": 4,
                             "length": 69.36,
                             "combineDuration": "180",
@@ -134,7 +134,7 @@
                 "trainUnits": [
                     {
                         "type": {
-                            "displayName": "SLT-4",
+                            "displayName": "SLT",
                             "carriages": 4,
                             "length": 69.36,
                             "combineDuration": "180",
@@ -154,7 +154,7 @@
                 "trainUnits": [
                     {
                         "type": {
-                            "displayName": "SLT-4",
+                            "displayName": "SLT",
                             "carriages": 4,
                             "length": 69.36,
                             "combineDuration": "180",
@@ -165,7 +165,7 @@
                     },
                     {
                         "type": {
-                            "displayName": "SLT-4",
+                            "displayName": "SLT",
                             "carriages": 4,
                             "length": 69.36,
                             "combineDuration": "180",
