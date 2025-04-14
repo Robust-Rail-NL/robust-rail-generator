@@ -1,0 +1,81 @@
+{
+    "location": "enkhuizen",
+    "start_time": 0,
+    "end_time": 3600,
+    "use_default_material": true,
+    "trains_given": true,
+    "perform_servicing": true,
+    "partial_matching_given": false,
+    "partial_plan_given": false,
+    "through_traffic_given": false,
+    "custom_servicing_tasks": [
+        {
+            "name": "clean_train",
+            "type": "inwendige_reiniging",
+            "priority": 1,
+            "duration": 900,
+            "required_skills": "inwendige_reiniging"
+        }
+    ],
+    "custom_train_units": [
+        {
+            "id": "2401",
+            "type": "SLT4",
+            "services": ["clean_train"]
+        },
+        {
+            "id": "2601",
+            "type": "SLT6",
+            "services": ["clean_train"]
+        },
+        {
+            "id": "2801",
+            "type": "SNG3",
+            "services": []
+        },
+        {
+            "id": "2802",
+            "type": "SNG4",
+            "services": []
+        }
+    ],
+    "custom_trains": [
+        {
+            "id": "2000",
+            "members": ["2401"],
+            "arrival_time": 600,
+            "arriving_track": 21,
+            "end_at_track": 4,
+            "station_platform": 1,
+            "station_time": 600
+        },
+        {
+            "id": "3000",
+            "members": ["2601"],
+            "arriving_track": 21,
+            "arrival_time": 900,
+            "end_at_track": 7,
+            "station_track": 2,
+            "station_time": 600
+        },
+        {
+            "id": "4001",
+            "members": ["2801"],
+            "start_at_track": 5,
+            "end_at_track": 2
+        },
+        {
+            "id": "4002",
+            "members": ["2802"],
+            "start_at_track": 6,
+            "end_at_track": 2
+        },
+        {
+            "id": "4000",
+            "member_types": ["SNG3", "SNG4"],
+            "start_at_track": 2,
+            "departure_track": 21,
+            "departure_time": 1500
+        }
+    ]
+}

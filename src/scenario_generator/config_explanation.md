@@ -1,0 +1,80 @@
+The configuration file is a JSON file with the following parameters defined in this file.
+
+### Required parameters
+- `location` (string): name of location for which a JSON file exists: `/data/locations/location_{name}.json`
+- `start_time` (int): start time of the scenario
+- `end_time` (int): end time of the scenario (all actions should be executable within this time frame)
+- `trains_given` (bool): whether trains are given in this file (true) or should be generated randomly (false). Cannot be true if `use_default_material` is false
+- `use_default_material` (bool): whether the train unit types to be used are the default (real-life) ones which can be loaded automatically (true) or should be generated randomly (false)
+- `track_ids_used` (bool): whether tracks are given with their ids (int, true) or names (strings, false) 
+- `perform_servicing` (bool): whether servicing actions are part of the scenario (true) or no trains require servicing (false)
+- `partial_matching_given` (bool): whether a predefined (partial) matching of train units is already given (true) or the matching should be computed from scratch (false). (default=false)
+- `partial_plan_given` (bool): whether a partial plan is already given (true) or the plan should be found from scratch (false) (default=false)
+- `through_traffic_given` (bool): whether the scenario includes through traffic in the station area (true) or only trains that concern shunting actions (false) (default=false)
+
+### Optional parameters
+- `seed` (int): seed used for any random generation (defaults to 42)
+- `number_of_trains` (int): if `trains_given` is false, this is the number of trains to be generated
+- `number_of_train_units` (int): if `trains_given` is false, this is the number of train units to be generated
+- `number_of_train_unit_types` (int): if `use_default_material` is false, this is the number of train unit types to be generated
+- `train_unit_distribution` (dict): if `trains_given` is false, this parameter can be used to control the train generation, 
+  - `train_unit_types` (list): optional list of train unit type names that are included in this scenario (if `use_default_material` is true)
+  - `units_per_composition` (list): list with integers describing number of train units per composition, can be just one item in the list, then it's the same for all trains, or multiple to specify a distribution
+  - `type_ratio` (float): number between 0 and 1, where 1 means, each train has unique type and 0 means each train has the same type.
+  - `matching_complexity` (float): a number between 0 and 1, where 1 means all outgoing train units are reversed from incoming train units and 0 means the same train compositions can be used for outgoing trains as the incoming trains. A number in between means that randomly some trains need to be coupled/decoupled, where higher number means more operations required
+- `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
+  - `id` (int): unique train unit id
+  - `type` (string): type of the train unit, should be compatible with the default options if `use_default_material` is true (otherwise trains must also be generated randomly)
+  - `services` (list): list of service task names if `perform_servicing` is true, must be compatible with names defined in `custom_servicing_tasks`
+- `custom_trains` (list): if `trains_given` is true, this is a list of train objects with the following parameters: 
+  - `id` (int): unique train id
+  - `members` (list): list of train units: if this train is departing, then these can be train unit types, else they must be train unit ids
+  - A train can be either incoming or already in the shunting yard, and can depart from the scenario or end its service at the shunting yard. Therefore, some combinations are possible of the following options:
+    - Option 1: train arrives into scenario (called `in` train), you must specify;
+      - `arrival_time` (int): time at which train enters the scenario
+      - `arrival_track` (int/string): track (id or name) at which train enters the scenario
+    - Option 2: train starts in the shunting yard (called `in_standing` train), you must specify:
+      - `start_at_track` (int/string): track (id or name) at which train is parked at the start of the scenario
+      - `parking_index` (int) (optional): if multiple trains park at same track as in standing, define index for the other of the trains (lower index is Aside)
+      - `side_track_part` (int/string) (optional): track part (id or name) on which side the train is parked, can be a bumper or a different track/switch. If not specified, random one is chosen (shortest length neighbor)
+    - Option 3: train departs from scenario (called `out` train), you must specify:
+      - `departure_track` (int): track (id or name) from which train leaves the scenario
+      - `departure_time` (int/string): time at which train start moving toward departure track
+      - `depart_any_track` (bool) (optional): whether train can depart from any track or only the departure track
+    - Option 4: train remains in shunting yard (called `out_standing` train), you must specify:
+      - `end_at_track` (int/string): track (id or name) at which train is parked at the end of the scenario
+      - `parking_index` (int) (optional): if multiple trains park at same track as outstanding, define index for the other of the trains (lower index is Aside)
+      - `side_track_part` (int/string) (optional): track part (id or name) on which side the train is parked, can be a bumper or a different track/switch. If not specified, random one is chosen (shortest length neighbor)
+- `custom_servicing_tasks` (list): if `perform_servicing` is true and `trains_given` is true, this is a list of servicing task objects with the following parameters:
+  - `name` (string): name of servicing task specification (used in train unit's services)
+  - `type` (string): type of servicing task
+  - `priority` (int): priority of the servicing task (lower is more important)
+  - `duration` (int): time to execute servicing task
+  - `required_skills` (list): list of strings giving the required skills to perform a servicing task, must be compatible with `custom_worker_skills`
+
+The following is not yet implemented:
+- `custom_through_traffic` (list): if `through_traffic_given` is true, this is a list of through traffic objects with the following parameters:
+  - `id` (int): unique train id
+  - `arriving_track` (int/string): track (id or name) where train arrives
+  - `departing_track` (int/string): track (id or name) where train departs
+  - `station_platform` (int/string): (optional) if train should visit station, this is the station platform track (id or name) where train make the short stop
+  - `station_time` (int): (optional) if train should visit station this is how long the train should stay at the station platform before continuing
+- `partial_matching` (list): if `partial_matching_given` is true, this is a list of train unit matches that are predefined, where each object has the following parameters:
+  - `train_unit_A` (int): id of shunting unit on the A-side
+  - `train_unit_B` (int): id of shunting unit on the B-side
+- `partial_plan` (list): if `partial_plan_given` is true, this is a list of task objects with the following required parameters:
+  - `task` (string): type of task which can be "move", "park", "shortstop", "service", "finish_service", "combine", "split"
+  - `time` (int): start time of the task
+  - Parameters for "move" tasks:
+    - `train` (int): id of train to move
+    - `path` (list): list of track part ids that are visited in order by the move
+  - Parameters for "shortstop" and "park" tasks:
+    - `train` (int): id of train that is making a stop
+    - `track` (int/string): id or name of track where train is stopping
+  - Parameters for "service" and "finish_service" tasks:
+    - `train` (int): id of train that is being serviced
+    - `track` (int/string): id or name of track where train is being serviced
+    - `type` (string): type of servicing task that is being done
+  - Parameters for "combine" and "split" tasks:
+    - `train_units` (list): list of train units id, in order
+    - `track` (int/string): id or name of track where the combining or splitting of train units takes place
