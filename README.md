@@ -1,5 +1,5 @@
 # TUSS-Instance-Generator
-Generator for scenarios of the Train Unit Shunting and Servicing Problem
+Generator for scenarios of the Train Unit Shunting and Servicing Problem. The scenarios can be solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver). The plans produced by the **robust-rail-solver** can be evaluated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator), which also requires the scenarios issued by [**TUSS-Instance-Generator**](https://github.com/Robust-Rail-NL/robust-rail-generator) 
 
 ## Getting started - Conda Environemnt
 * Create a conda environemnt
@@ -31,7 +31,9 @@ Generator for scenarios of the Train Unit Shunting and Servicing Problem
 
     `conda env export --no-builds > env.yml`
 
-## Compile protobufs
+## Compile protobufs (optional)
+This step is only required when the .proto files are modified. The protobuf files are pre-compiled in [py_protobuf](./src/py_protobuf/).
+
 Compile `Scenario.proto`:
 
 ```bash
@@ -47,14 +49,41 @@ protoc -I=. --python_out=../../src/py_protobuf Scenario_HIP.proto
 protoc -I=. --python_out=../../src/py_protobuf Location_HIP.proto
 ```
 
-## Run tests
+# How to use ?
+
+* [scenario_generator.py](./src/scenario_generator/scenario_generator.py) contains the core functions to generate scenarios.
+
+* [create_scenario.py](./src/scenario_generator/create_scenario.py) allows the creation of scenarios by using configuration files (e.g., [example_config.json](./src/scenario_generator/examples/example_config1.json)). 
+
+* The scenario generation can be done by using configuration files, do not forget to specify the path to the configuration file `--config "path/to/config.json"`. Optionally, a custom name can be assigned to the generated scenario `--scenario-file "name_of_scenario"`.
+
+* The explanation of the configuration is described by [config_explanation.md](./src/scenario_generator/config_explanation.md).
+
+### Example of usage
+```bash
+cd src/scenario_generator
+python create_scenario.py --config "../../examples/example_config1.json" --scenario-file "custom-named-scenario.json"
+```
+
+### Some hints for configuration
+* `custom_trains` -> are the arriving/in-outstanding/departing trains. *Note:* in-outstanding trains are not yet supported by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver).
+* Define arriving train -> `arrival_time`/`arrival_track` must be defined 
+
+* Define departing train -> `departure_time` / `departure_track` must be defined
+
+
+* Define instanding train -> `start_at_track` must be defined - **Not fully supported yet**
+
+* Define outstanding train -> `end_at_track` must be defined - **Not fully supported yet**
+
+* `custom_trains` - `members` contains one or more train units defined in `custom_train_units`
+
+* Define services - `services` is a list which can be kept empty or using definitions from `custom_servicing_tasks` 
+
+
+## Run (unit-like) tests
 
 ```bash
 cd src/scenario_generator/examples
 python examples.py
 ```
-
-
-## TODOs 
-* Probably we have to add a configuration file that helps to define the scenarion generation
-    - Suggestion: let's use `.toml` format configuration files 
