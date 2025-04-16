@@ -28,7 +28,7 @@ The configuration file is a JSON file with the following parameters defined in t
   - `services` (list): list of service task names if `perform_servicing` is true, must be compatible with names defined in `custom_servicing_tasks`
 - `custom_trains` (list): if `trains_given` is true, this is a list of train objects with the following parameters: 
   - `id` (int): unique train id
-  - `members` (list): list of train units: if this train is departing, then these can be train unit types, else they must be train unit ids
+  - `members` (list): list of train units - those train units are defined in `custom_train_units`: if this train is departing, then these can be train unit types, else they must be train unit ids
   - A train can be either incoming or already in the shunting yard, and can depart from the scenario or end its service at the shunting yard. Therefore, some combinations are possible of the following options:
     - Option 1: train arrives into scenario (called `in` train), you must specify;
       - `arrival_time` (int): time at which train enters the scenario
