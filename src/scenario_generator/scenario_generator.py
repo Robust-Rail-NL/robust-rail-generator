@@ -155,7 +155,7 @@ class ScenarioGenerator:
                 #Get typeDisplayName associated to the typeDisplayName
                 for trainUnitType in self.scenario.trainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
-                        train_member.trainUnit.type.displayName = trainUnitType.displayName          
+                        train_member.trainUnit.type.displayName = trainUnitType.typePrefix          
                         train_member.trainUnit.type.carriages = trainUnitType.carriages
                         train_member.trainUnit.type.length = trainUnitType.length
                         train_member.trainUnit.type.combineDuration = trainUnitType.combineDuration
@@ -187,7 +187,7 @@ class ScenarioGenerator:
                  
                 for trainUnitType in self.scenario.trainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
-                        train_unit.type.displayName = trainUnitType.displayName          
+                        train_unit.type.displayName = trainUnitType.typePrefix          
                         train_unit.type.carriages = trainUnitType.carriages
                         train_unit.type.length = trainUnitType.length
                         train_unit.type.combineDuration = trainUnitType.combineDuration
