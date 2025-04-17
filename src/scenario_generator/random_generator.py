@@ -114,8 +114,8 @@ class RandomGenerator:
                 time=start_time,
                 members=train_units,
                 standingIndex=1, # assume
-                sideTrackPart=gateway.id,
-                trackPart=side.id,
+                sideTrackPart=side.id,
+                trackPart=gateway.id,
                 canDepartFromAnyTrack=False, # assume
             )
             self.trains.append(train_in)
@@ -128,8 +128,8 @@ class RandomGenerator:
                 time=end_time,
                 members=unmatched_train_units,
                 standingIndex=1, # assume
-                sideTrackPart=gateway.id,
-                trackPart=side.id,
+                sideTrackPart=side.id,
+                trackPart=gateway.id,
                 canDepartFromAnyTrack=False, # assume
             )
             self.trains.append(train_out)
