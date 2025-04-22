@@ -14,8 +14,7 @@ The configuration file is a JSON file with the following parameters defined in t
 
 ### Optional parameters
 - `seed` (int): seed used for any random generation (defaults to 42)
-- `number_of_trains` (int): if `trains_given` is false, this is the number of trains to be generated
-- `number_of_train_units` (int): if `trains_given` is false, this is the number of train units to be generated
+- `number_of_trains` (int): if `trains_given` is false, this is the number of trains to be generated: each gets a random number of units between 1 and 3
 - `number_of_train_unit_types` (int): if `use_default_material` is false, this is the number of train unit types to be generated
 - `train_unit_distribution` (dict): if `trains_given` is false, this parameter can be used to control the train generation, 
   - `train_unit_types` (list): optional list of train unit type names that are included in this scenario (if `use_default_material` is true)

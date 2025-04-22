@@ -163,8 +163,8 @@ def check_configuration_file(config):
     if config["trains_given"] and ("custom_train_units" not in config or "custom_trains" not in config):
         print("ERROR: no 'custom_train_units' or 'custom_trains defined' while 'trains_given' is true.")
         return False, config
-    if not config["trains_given"] and ("number_of_trains" not in config or "number_of_train_units" not in config):
-        print("ERROR: no 'number_of_trains' or 'number_of_train_units' defined while trains and train units should be generated ('trains_given' is false).")
+    if not config["trains_given"] and "number_of_trains" not in config:
+        print("ERROR: no 'number_of_trains' defined while trains and train units should be generated ('trains_given' is false).")
         return False, config
     if not config["trains_given"] and "train_unit_distribution" in config:
         if "units_per_composition" not in config["train_unit_distribution"]:
