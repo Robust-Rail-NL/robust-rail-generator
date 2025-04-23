@@ -227,7 +227,7 @@
         },
         {
             "id": "15",
-            "name": "906a",
+            "name": "906b",
             "aSide": [
                 42
             ],
@@ -617,14 +617,14 @@
         },
         {
             "id": "41",
-            "name": "906c",
+            "name": "906a",
             "aSide": [
                 59
             ],
             "bSide": [
                 47
             ],
-            "length": 0,
+            "length": 2000,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
             "isElectrified": true,
@@ -697,7 +697,7 @@
         },
         {
             "id": "47",
-            "name": "Stootblok906c",
+            "name": "Stootblok906a",
             "aSide": [
                 41
             ],

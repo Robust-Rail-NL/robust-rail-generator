@@ -3,8 +3,8 @@
         {
             "time": "300",
             "id": "2000",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "2401",
@@ -30,8 +30,8 @@
         {
             "time": "600",
             "id": "3000",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "2601",
@@ -57,8 +57,8 @@
         {
             "time": "900",
             "id": "4000",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "2801",
@@ -80,8 +80,8 @@
         {
             "time": "3600",
             "id": "2001",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "****",
@@ -96,8 +96,8 @@
         {
             "time": "3900",
             "id": "3001",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "****",
@@ -112,8 +112,8 @@
         {
             "time": "4200",
             "id": "4001",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "****",

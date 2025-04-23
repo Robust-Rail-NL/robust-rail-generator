@@ -197,7 +197,7 @@
                 "59"
             ],
             "length": 25500.0,
-            "name": "906a",
+            "name": "906b",
             "sawMovementAllowed": true
         },
         {
@@ -458,7 +458,8 @@
             "bSide": [
                 "47"
             ],
-            "name": "906c"
+            "length": 2000.0,
+            "name": "906a"
         },
         {
             "id": "42",
@@ -506,7 +507,7 @@
             "aSide": [
                 "41"
             ],
-            "name": "Stootblok906c"
+            "name": "Stootblok906a"
         },
         {
             "id": "48",
