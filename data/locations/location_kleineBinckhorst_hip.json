@@ -191,10 +191,10 @@
         {
             "id": "15",
             "aSide": [
-                "42"
+				"59"
             ],
             "bSide": [
-                "59"
+                "42"
             ],
             "length": 25500.0,
             "name": "906b",
@@ -260,7 +260,7 @@
                 "66"
             ],
             "name": "958_978"
-        },
+		},
         {
             "id": "22",
             "aSide": [
@@ -454,14 +454,13 @@
         {
             "id": "41",
             "aSide": [
-                "59"
+				"47"
             ],
             "bSide": [
-                "47"
+				"59"
             ],
-            "length": 2000.0,
+            "length": 20000.0,
             "name": "906a",
-            "sawMovementAllowed": false,
             "parkingAllowed": true
         },
         {
@@ -650,11 +649,11 @@
             "id": "59",
             "type": "Switch",
             "aSide": [
-                "24",
-                "41"
+				"24",
+				"15"
             ],
             "bSide": [
-                "15"
+                "41"
             ],
             "name": "Wissel963"
         },
@@ -819,7 +818,8 @@
                 {
                     "other": "Reinigingsperron"
                 }
-            ]
+            ],
+            "simultaneousUsageCount": 2
         },
         {
             "id": "73",
