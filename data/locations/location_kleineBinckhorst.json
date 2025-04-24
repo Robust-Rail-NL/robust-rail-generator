@@ -326,7 +326,7 @@
             ],
             "length": 0,
             "sawMovementAllowed": false,
-            "parkingAllowed": false,
+            "parkingAllowed": true,
             "isElectrified": true,
             "type": "RailRoad"
         },
@@ -626,7 +626,7 @@
             ],
             "length": 2000,
             "sawMovementAllowed": false,
-            "parkingAllowed": false,
+            "parkingAllowed": true,
             "isElectrified": true,
             "type": "RailRoad"
         },
