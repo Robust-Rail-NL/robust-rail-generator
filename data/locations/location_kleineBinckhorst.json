@@ -229,10 +229,10 @@
             "id": "15",
             "name": "906b",
             "aSide": [
-                42
+                59
             ],
             "bSide": [
-                59
+                42
             ],
             "length": 25500,
             "sawMovementAllowed": true,
@@ -326,7 +326,7 @@
             ],
             "length": 0,
             "sawMovementAllowed": false,
-            "parkingAllowed": true,
+            "parkingAllowed": false,
             "isElectrified": true,
             "type": "RailRoad"
         },
@@ -619,13 +619,13 @@
             "id": "41",
             "name": "906a",
             "aSide": [
-                59
-            ],
-            "bSide": [
                 47
             ],
-            "length": 2000,
-            "sawMovementAllowed": false,
+            "bSide": [
+                59
+            ],
+            "length": 20000,
+            "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
             "type": "RailRoad"
@@ -640,7 +640,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Bumper"
         },
         {
@@ -653,7 +653,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Bumper"
         },
         {
@@ -666,7 +666,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Bumper"
         },
         {
@@ -679,7 +679,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Bumper"
         },
         {
@@ -692,7 +692,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Bumper"
         },
         {
@@ -705,7 +705,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Bumper"
         },
         {
@@ -722,7 +722,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Intersection"
         },
         {
@@ -739,7 +739,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Intersection"
         },
         {
@@ -755,7 +755,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -771,7 +771,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -787,7 +787,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -803,7 +803,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -819,7 +819,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -835,7 +835,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -851,7 +851,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -867,7 +867,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -883,7 +883,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -891,15 +891,15 @@
             "name": "Wissel963",
             "aSide": [
                 24,
-                41
+                15
             ],
             "bSide": [
-                15
+                41
             ],
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -915,7 +915,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -931,7 +931,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -947,7 +947,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -963,7 +963,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -979,7 +979,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -995,7 +995,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -1011,7 +1011,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -1027,7 +1027,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "Switch"
         },
         {
@@ -1044,7 +1044,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "EnglishSwitch"
         },
         {
@@ -1061,7 +1061,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "EnglishSwitch"
         },
         {
@@ -1078,7 +1078,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "EnglishSwitch"
         },
         {
@@ -1095,7 +1095,7 @@
             "length": 0,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
-            "isElectrified": false,
+            "isElectrified": true,
             "type": "EnglishSwitch"
         }
     ],
@@ -1106,7 +1106,17 @@
             "relatedTrackParts": [
                 10,
                 11
-            ]
+            ],
+            "taskTypes": [
+				{
+					"other": "Reinigingsperron"
+				}
+			],
+			"simultaneousUsageCount": 2,
+			"timeWindow": {
+				"start": 0,
+				"end": 100000
+			}
         },
         {
             "id": "73",
@@ -1120,7 +1130,19 @@
             "type": "Inspectieput",
             "relatedTrackParts": [
                 13
-            ]
+            ],
+            "taskTypes": [
+				{
+					"other": "technische_controle_A"
+				},
+				{
+					"other": "technische_controle_B"
+				}
+			],
+            "timeWindow": {
+				"start": 0,
+				"end": 100000
+			}
         },
         {
             "id": "75",
@@ -1136,5 +1158,10 @@
                 8
             ]
         }
-    ]
+    ],
+    "taskTypes": [],
+	"movementConstant": 0,
+	"movementTrackCoefficient": 60,
+	"movementSwitchCoefficient": 30,
+	"distanceEntries": []
 }
