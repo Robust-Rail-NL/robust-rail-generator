@@ -198,7 +198,8 @@
             ],
             "length": 25500.0,
             "name": "906b",
-            "sawMovementAllowed": true
+            "sawMovementAllowed": false,
+            "parkingAllowed": true
         },
         {
             "id": "16",
@@ -459,7 +460,9 @@
                 "47"
             ],
             "length": 2000.0,
-            "name": "906a"
+            "name": "906a",
+            "sawMovementAllowed": false,
+            "parkingAllowed": true
         },
         {
             "id": "42",

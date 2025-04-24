@@ -236,7 +236,7 @@
             ],
             "length": 25500,
             "sawMovementAllowed": true,
-            "parkingAllowed": false,
+            "parkingAllowed": true,
             "isElectrified": true,
             "type": "RailRoad"
         },
