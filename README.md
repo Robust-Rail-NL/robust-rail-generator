@@ -102,3 +102,9 @@ Some of the scenarios were successfully solved by [robust-rail-solver](https://g
 * [**New version of Kleine Binckhorst location**](data/validated/location/KleineBinckhorst_v2/)
   * [**location for evaluator**](data/validated/location/KleineBinckhorst_v2/location_location_kleineBinckhorst.json)
   * [**location for solver**](data/validated/location/KleineBinckhorst_v2/location_kleineBinckhorst_HIP_dump.json)
+
+* [**Plans**](data/validated/plan/KleineBinckhorst_v2/)
+  * [**Plans for Scenario 6t custom config2**](data/validated/plan/KleineBinckhorst_v2/scenario_kleineBinckhorst_6t_custom_config2/plan_scenario_kleineBinckhorst_6t_custom_config2.json)
+  * [**Plans for Scenario 6t custom config3**](data/validated/plan/KleineBinckhorst_v2/scenario_kleineBinckhorst_6t_custom_config3/plan_scenario_kleineBinckhorst_6t_custom_config3.json)
+  * [**Plans for Scenario 10t random 42s distribution1**](data/validated/plan/KleineBinckhorst_v2/scenario_kleineBinckhorst_10t_random_42s_distribution1/plan_scenario_kleineBinckhorst_10t_random_42s_distribution1.json)
+  * [**Plans for Scenario 10t random 42s distribution2**](data/validated/plan/KleineBinckhorst_v2/scenario_kleineBinckhorst_10t_random_42s_distribution2/plan_scenario_kleineBinckhorst_10t_random_42s_distribution2.json)
