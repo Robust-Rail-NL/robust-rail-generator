@@ -620,7 +620,7 @@ class ScenarioGenerator:
     def load_location(self, file_name):
         print("LOG: | call load_location()|")
         if not os.path.isfile(file_name):
-            file_name = os.path.join(os.path.dirname(__file__), "..", "..", "data", "locations", f"{file_name}{'.json' if '.json' not in file_name else ''}")
+            file_name = os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "locations", f"{file_name}{'.json' if '.json' not in file_name else ''}")
         with open(file_name, "r") as f:
             json_location = json.load(f)
         
