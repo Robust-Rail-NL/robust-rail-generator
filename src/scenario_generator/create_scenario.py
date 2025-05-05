@@ -118,14 +118,14 @@ def create_scenario_from_config(config_file, scenario_file):
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
         custom = f"custom" if config["trains_given"] else f"random_{config['seed']}s"
         scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_file.split('/')[-1].split('_')[-1].split('.')[0]}"
-    output_filepath = os.path.join(os.path.dirname(__file__), "..", "..", "data", "scenarios", f"{scenario_file}.json")
-    output_hip_filepath = os.path.join(os.path.dirname(__file__), "..", "..", "data", "scenarios", f"{scenario_file}_hip.json")
+    output_filepath = os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "scenarios", f"{scenario_file}.json")
+    output_hip_filepath = os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "scenarios", f"{scenario_file}_hip.json")
     # Write TORS scenario file
     scenario_generator.save_scenario_json(output_filepath)
     # Write HIP scenario file
     scenario_generator_hip.save_scenario_json(output_hip_filepath)
     # Update HIP location file
-    scenario_generator.convert_location_to_hip_location(os.path.join(os.path.dirname(__file__), "..", "..", "data", "locations", config["location_file"].replace(".json", "_hip.json")))    
+    scenario_generator.convert_location_to_hip_location(os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "locations", config["location_file"].replace(".json", "_hip.json")))    
 
 
     
@@ -134,7 +134,7 @@ def check_configuration_file(config):
     if "location" not in config:
         print("ERROR: 'location' not defined.")
         return False, config
-    if not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "..", "data", "locations", f'location_{config["location"]}.json')):
+    if not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "locations", f'location_{config["location"]}.json')):
         print("ERROR: could not find location file.", f'location_{config["location"]}.json')
         return False, config
     else:
@@ -163,8 +163,8 @@ def check_configuration_file(config):
     if config["trains_given"] and ("custom_train_units" not in config or "custom_trains" not in config):
         print("ERROR: no 'custom_train_units' or 'custom_trains defined' while 'trains_given' is true.")
         return False, config
-    if not config["trains_given"] and "number_of_trains" not in config:
-        print("ERROR: no 'number_of_trains' defined while trains and train units should be generated ('trains_given' is false).")
+    if not config["trains_given"] and ("number_of_trains" not in config or "number_of_train_units" not in config):
+        print("ERROR: no 'number_of_trains' or 'number_of_train_units' defined while trains and train units should be generated ('trains_given' is false).")
         return False, config
     if not config["trains_given"] and "train_unit_distribution" in config:
         if "units_per_composition" not in config["train_unit_distribution"]:
