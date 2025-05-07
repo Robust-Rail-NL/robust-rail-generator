@@ -115,7 +115,7 @@ def create_scenario_from_config(config_file, scenario_file):
     scenario_generator_hip = ScenarioGeneratorHIP(scenario_generator)
     scenario_generator.create_HIP_scenario()
 
-    if not scenario_file or not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "scenarios", f"{scenario_file}.json")):
+    if not scenario_file:
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
         custom = f"custom" if config["trains_given"] else f"random_{config['seed']}s"
         scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_file.split('/')[-1].split('_')[-1].split('.')[0]}"
@@ -126,7 +126,7 @@ def create_scenario_from_config(config_file, scenario_file):
     # Write HIP scenario file
     scenario_generator_hip.save_scenario_json(output_hip_filepath)
     # Update HIP location file
-    scenario_generator.convert_location_to_hip_location(os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "locations", config["location_file"].replace(".json", "_hip.json")))    
+    # scenario_generator.convert_location_to_hip_location(os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "locations", config["location_file"].replace(".json", "_hip.json")))    
 
 
     
@@ -135,11 +135,11 @@ def check_configuration_file(config):
     if "location" not in config:
         print("ERROR: 'location' not defined.")
         return False, config
-    if not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "locations", f'location_{config["location"]}.json')):
-        print("ERROR: could not find location file.", f'location_{config["location"]}.json')
+    if not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "..", "..", "algorithm-files", "locations", f'location{config["location"]}.json')):
+        print("ERROR: could not find location file.", f'location{config["location"]}.json')
         return False, config
     else:
-        config["location_file"] = f"location_{config['location']}.json"
+        config["location_file"] = f"location{config['location']}.json"
     if "start_time" not in config:
         print("ERROR: 'start_time' not defined.")
         return False, config
