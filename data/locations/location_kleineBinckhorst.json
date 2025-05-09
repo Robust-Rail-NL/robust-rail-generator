@@ -24,7 +24,7 @@
             "bSide": [
                 71
             ],
-            "length": 48000,
+            "length": 480,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -39,7 +39,7 @@
             "bSide": [
                 54
             ],
-            "length": 43100,
+            "length": 431,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -54,7 +54,7 @@
             "bSide": [
                 54
             ],
-            "length": 38700,
+            "length": 387,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -69,7 +69,7 @@
             "bSide": [
                 53
             ],
-            "length": 35700,
+            "length": 357,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -84,7 +84,7 @@
             "bSide": [
                 70
             ],
-            "length": 22200,
+            "length": 222,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -99,7 +99,7 @@
             "bSide": [
                 70
             ],
-            "length": 20200,
+            "length": 202,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -114,7 +114,7 @@
             "bSide": [
                 69
             ],
-            "length": 20300,
+            "length": 203,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -129,7 +129,7 @@
             "bSide": [
                 67
             ],
-            "length": 27100,
+            "length": 271,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -144,7 +144,7 @@
             "bSide": [
                 60
             ],
-            "length": 24800,
+            "length": 248,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -159,7 +159,7 @@
             "bSide": [
                 61
             ],
-            "length": 24700,
+            "length": 247,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -174,7 +174,7 @@
             "bSide": [
                 61
             ],
-            "length": 24700,
+            "length": 247,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -189,7 +189,7 @@
             "bSide": [
                 44
             ],
-            "length": 27200,
+            "length": 272,
             "sawMovementAllowed": true,
             "parkingAllowed": false,
             "isElectrified": true,
@@ -204,7 +204,7 @@
             "bSide": [
                 45
             ],
-            "length": 21000,
+            "length": 210,
             "sawMovementAllowed": false,
             "parkingAllowed": false,
             "isElectrified": true,
@@ -219,7 +219,7 @@
             "bSide": [
                 46
             ],
-            "length": 47500,
+            "length": 475,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -234,7 +234,7 @@
             "bSide": [
                 42
             ],
-            "length": 25500,
+            "length": 480,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
@@ -624,7 +624,7 @@
             "bSide": [
                 59
             ],
-            "length": 20000,
+            "length": 480,
             "sawMovementAllowed": true,
             "parkingAllowed": true,
             "isElectrified": true,
