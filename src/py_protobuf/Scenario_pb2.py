@@ -10,7 +10,6 @@ from google.protobuf import symbol_database as _symbol_database
 
 _sym_db = _symbol_database.Default()
 
-
 import Location_pb2 as Location__pb2
 import TrainUnitTypes_pb2 as TrainUnitTypes__pb2
 import Utilities_pb2 as Utilities__pb2

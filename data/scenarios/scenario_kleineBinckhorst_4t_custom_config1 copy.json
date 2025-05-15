@@ -82,7 +82,7 @@
     "inStanding": [
         {
             "id": "4002",
-            "sideTrackPart": "54",
+            "sideTrackPart": "56",
             "parkingTrackPart": "3",
             "members": [
                 {
@@ -127,7 +127,7 @@
         },
         {
             "id": "3000",
-            "sideTrackPart": "68",
+            "sideTrackPart": "61",
             "parkingTrackPart": "10",
             "members": [
                 {

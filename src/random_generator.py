@@ -1,13 +1,13 @@
 import math
 import random
-from itertools import product
+import logging
 
-from Location_pb2 import TrackPartType
+from py_protobuf.Location_pb2 import TrackPartType
 
 class RandomGenerator:
     def __init__(self, gen, seed, location):
         """Initialize the random generator for a specific scenario generator."""
-        print("LOG: | Random Generator has been initialized. |")
+        logging.info("Random Generator has been initialized. |")
         self.scenario_generator = gen
         self.seed = seed
         random.seed(self.seed)
@@ -31,7 +31,7 @@ class RandomGenerator:
                 if len(bumper_a) == 0 and len(bumper_b) == 1:
                     gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
                     if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
-                        print(f"Found gateway track {gateway.name}")
+                        logging.info(f"Found gateway track {gateway.name}")
                         gateways.append((gateway, location.trackParts[bumper_b[0]]))
         return gateways
 
@@ -89,7 +89,7 @@ class RandomGenerator:
         for i in range(number_train_units):
             # TODO servicing tasks
             if not distribution_config:
-                print("WARNING: no distribution config provided, number of train units cannot be simply distributed over number of trains")
+                logging.warning("no distribution config provided, number of train units cannot be simply distributed over number of trains")
             else:
                 if "unit_types" in distribution_config:
                     unit_type = distribution_config["train_unit_types"][distribution_config["unit_types"][i]]
@@ -112,7 +112,7 @@ class RandomGenerator:
                 self.train_units[unit_type].append(unit)
                 self.number_of_train_units += 1
         if self.number_of_train_units != number_train_units:
-            print(f"ERROR: expected {number_train_units} train units and {self.number_of_train_units} were created")
+            logging.error(f"expected {number_train_units} train units and {self.number_of_train_units} were created")
 
     def generate_trains(self, num: int, distribution_config = None):
         distribution = self.distribute_train_units(num, distribution_config)

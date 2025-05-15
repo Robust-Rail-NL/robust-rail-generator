@@ -1,8 +1,10 @@
 # TUSS-Instance-Generator
-Generator for scenarios of the Train Unit Shunting and Servicing Problem. The scenarios can be solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver). The plans produced by the **robust-rail-solver** can be evaluated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator), which also requires the scenarios issued by [**TUSS-Instance-Generator**](https://github.com/Robust-Rail-NL/robust-rail-generator) 
+Generator for scenarios of the Train Unit Shunting and Servicing Problem. The scenarios can be solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver). The plans produced by the **robust-rail-solver** can be evaluated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator), which also requires the scenarios issued by [**TUSS-Instance-Generator**](https://github.com/Robust-Rail-NL/robust-rail-generator).
 
-## Getting started - Conda Environemnt
-* Create a conda environemnt
+There are two scenario formats, the one annotated with HIP is used by the solver and the one annotated without anything is used by the evaluator.
+
+## Getting started - Conda Environment
+* Create a conda environment
   * If not first time setup, create it with the existing dependencies
 
     `conda env create -f env.yml`
@@ -11,7 +13,7 @@ Generator for scenarios of the Train Unit Shunting and Servicing Problem. The sc
     
     `conda activate TUSS_Instance_generator`
 
-  * To deactivate the project environement
+  * To deactivate the project environment
 
     `conda deactivate`
 
@@ -51,18 +53,18 @@ protoc -I=. --python_out=../../src/py_protobuf Location_HIP.proto
 
 # How to use ?
 
-* [scenario_generator.py](./src/scenario_generator/scenario_generator.py) contains the core functions to generate scenarios.
+* [main.py](./src/main.py) is the main method to call with a configuration to generate a scenario for that configuration, e.g., [example_config.json](./data/scenario_configurations/example_config1.json)
+  * The scenario generation can be done by using configuration files, do not forget to specify the path to the configuration file `--config "path/to/config.json"`. For more information run `python src/main.py --help`.
 
-* [create_scenario.py](./src/scenario_generator/create_scenario.py) allows the creation of scenarios by using configuration files (e.g., [example_config.json](./src/scenario_generator/examples/example_config1.json)). 
+* The explanation of the configuration is described by [config_explanation.md](./data/scenario_configurations/config_explanation.md).
+  
+* [scenario_generator.py](./src/scenario.py) contains the functionality to write in the correct protobuf format.
 
-* The scenario generation can be done by using configuration files, do not forget to specify the path to the configuration file `--config "path/to/config.json"`. Optionally, a custom name can be assigned to the generated scenario `--scenario-file "name_of_scenario"`.
-
-* The explanation of the configuration is described by [config_explanation.md](./src/scenario_generator/config_explanation.md).
+* [easy_converter.py](./src/easy_converter.py) allows you to easily convert between the regular scenario format used by the evaluator and the `_hip` extension format used by the solver
 
 ### Example of usage
 ```bash
-cd src/scenario_generator
-python create_scenario.py --config "../../examples/example_config1.json" --scenario-file "custom-named-scenario.json"
+python src/main.py --config "example_config1.json" --scenario-file "custom-named-scenario.json"
 ```
 
 ### Some hints for configuration
@@ -79,14 +81,6 @@ python create_scenario.py --config "../../examples/example_config1.json" --scena
 * `custom_trains` - `members` contains one or more train units defined in `custom_train_units`
 
 * Define services - `services` is a list which can be kept empty or using definitions from `custom_servicing_tasks` 
-
-
-## Run (unit-like) tests
-
-```bash
-cd src/scenario_generator/examples
-python examples.py
-```
 
 
 ## Validated scenarios
