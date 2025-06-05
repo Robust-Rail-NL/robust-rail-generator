@@ -127,6 +127,10 @@ class ScenarioGenerator:
         print("LOG: | call create_HIP_scenario()|")
         incomingTrains = getattr(self.scenario_hip, "in")
         
+        self.scenario_hip.startTime = self.scenario.startTime
+        self.scenario_hip.endTime = self.scenario.endTime
+        
+        
         _in = getattr(self.scenario, "in")
         
         for train_standard in _in:
@@ -162,8 +166,47 @@ class ScenarioGenerator:
                         train_member.trainUnit.type.splitDuration = trainUnitType.splitDuration
                         train_member.trainUnit.type.backNormTime = trainUnitType.backNormTime
                         train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
-                  
-                                 
+                       
+        
+        
+        inStandningTrains = getattr(self.scenario_hip, "inStanding")
+        
+        _inStandingTrains = getattr(self.scenario, "inStanding")
+        
+        for train_standard in _inStandingTrains:
+            train = inStandningTrains.trains.add()
+            train.entryTrackPart = train_standard.sideTrackPart
+            train.firstParkingTrackPart = train_standard.parkingTrackPart
+            train.arrival = train_standard.time
+            train.departure = train_standard.time
+            train.id = train_standard.id
+            
+            members_standard = train_standard.members
+            for member in members_standard:
+                train_member = train.members.add()
+                train_member.trainUnit.id = member.id
+                
+                for task_standard in member.tasks:
+                    task = train_member.tasks.add()
+                    if task_standard.type.predefined:
+                        task.type.predefined = task_standard.type.predefined
+                    elif task_standard.type.other:
+                        task.type.other = task_standard.type.other
+                   
+                    task.priority = task_standard.priority
+                    task.duration = task_standard.duration
+                
+                #Get typeDisplayName associated to the typeDisplayName
+                for trainUnitType in self.scenario.trainUnitTypes:
+                    if trainUnitType.displayName == member.typeDisplayName:
+                        train_member.trainUnit.type.displayName = trainUnitType.typePrefix          
+                        train_member.trainUnit.type.carriages = trainUnitType.carriages
+                        train_member.trainUnit.type.length = trainUnitType.length
+                        train_member.trainUnit.type.combineDuration = trainUnitType.combineDuration
+                        train_member.trainUnit.type.splitDuration = trainUnitType.splitDuration
+                        train_member.trainUnit.type.backNormTime = trainUnitType.backNormTime
+                        train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
+                        
             
         trainRequest = getattr(self.scenario_hip, "out")
         _out = getattr(self.scenario, "out")
@@ -181,7 +224,37 @@ class ScenarioGenerator:
             
             
             members_standard = train_standard.members
-            for member in members_standard:
+            for member in members_standard:                
+                train_unit = train.trainUnits.add()
+                # train_unit.id = member.id -> it is "***" in cTORS in HIP it is simply undefined
+                 
+                for trainUnitType in self.scenario.trainUnitTypes:
+                    if trainUnitType.displayName == member.typeDisplayName:
+                        train_unit.type.displayName = trainUnitType.typePrefix          
+                        train_unit.type.carriages = trainUnitType.carriages
+                        train_unit.type.length = trainUnitType.length
+                        train_unit.type.combineDuration = trainUnitType.combineDuration
+                        train_unit.type.splitDuration = trainUnitType.splitDuration
+                        train_unit.type.backNormTime = trainUnitType.backNormTime
+                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
+        
+       
+        trainRequest = getattr(self.scenario_hip, "outStanding")
+                
+        for train_standard in self.scenario.outStanding:
+            train = trainRequest.trainRequests.add()
+            train.leaveTrackPart = train_standard.sideTrackPart
+            train.lastParkingTrackPart = train_standard.parkingTrackPart
+            
+            train.arrival = train_standard.time
+            train.departure = train_standard.time
+            train.displayName = train_standard.id
+            
+            ## Add train units 
+            
+            
+            members_standard = train_standard.members
+            for member in members_standard:                
                 train_unit = train.trainUnits.add()
                 # train_unit.id = member.id -> it is "***" in cTORS in HIP it is simply undefined
                  
@@ -195,35 +268,6 @@ class ScenarioGenerator:
                         train_unit.type.backNormTime = trainUnitType.backNormTime
                         train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
                 
-                    
-            # for train_standard in self.scenario.outStanding:
-            #     train = trainRequest.trainRequests.add()
-            #     train.leaveTrackPart = train_standard.sideTrackPart
-            #     train.lastParkingTrackPart = train_standard.parkingTrackPart
-                
-            #     train.arrival = train_standard.time
-            #     train.departure = train_standard.time
-            #     train.displayName = train_standard.id
-                
-            #     ## Add train units 
-                
-                
-            #     members_standard = train_standard.members
-            #     for member in members_standard:
-            #         train_unit = train.trainUnits.add()
-            #         # train_unit.id = member.id -> it is "***" in cTORS in HIP it is simply undefined
-                     
-            #         for trainUnitType in self.scenario_TrainUnitTypes:
-            #             if trainUnitType.displayName == member.typeDisplayName:
-            #                 train_unit.type.displayName = trainUnitType.displayName          
-            #                 train_unit.type.carriages = trainUnitType.carriages
-            #                 train_unit.type.length = trainUnitType.length
-            #                 train_unit.type.combineDuration = trainUnitType.combineDuration
-            #                 train_unit.type.splitDuration = trainUnitType.splitDuration
-            #                 train_unit.type.backNormTime = trainUnitType.backNormTime
-            #                 train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
-                
-
         print(MessageToJson(self.scenario_hip, including_default_value_fields=True))
         
     # Add outgoing train to the scenario
@@ -717,7 +761,7 @@ class ScenarioGeneratorHIP(ScenarioGenerator):
     def __init__(self, standardScenarioGenerator: ScenarioGenerator):
         super().__init__()
         self.scenario_hip = standardScenarioGenerator.scenario_hip
-    
+            
     # Converts protobuf object into json representation and saves it into .json file 
     def save_scenario_json(self, file_name: str):
         print("LOG: | call save_scenario_json()|")

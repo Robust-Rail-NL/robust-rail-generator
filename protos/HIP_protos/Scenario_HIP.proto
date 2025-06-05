@@ -9,6 +9,12 @@ import "Location_HIP.proto";
 message Scenario {
     ScenarioIn in = 1;
     ScenarioOut out = 2;
+    ScenarioInStanding inStanding = 3;
+    ScenarioOutStanding outStanding = 4;
+
+    uint64 startTime = 5;
+    uint64 endTime = 6;
+
 }
 
 // Defines all trains arriving at the shunting area.
@@ -20,6 +26,18 @@ message ScenarioIn {
 message ScenarioOut {
     repeated TrainRequest trainRequests = 1;
 }
+
+
+// Defines all trains that were alrady at the shunting area (before the scenario starts).
+message ScenarioInStanding {
+    repeated IncomingTrain trains = 1;
+}
+
+// Defines all trains that will stay at the shunting area (after the scenario ends).
+message ScenarioOutStanding {
+    repeated TrainRequest trainRequests = 1;
+}
+
 
 // An incoming train
 message IncomingTrain {
@@ -64,6 +82,10 @@ message TrainRequest {
 
     // Outgoing train units; if in a TrainUnit the id field is not specified, then any train unit will do, provided that the other fields (train type, number of carriages) are still adhered to.
     repeated TrainUnit trainUnits = 5;
+
+    // The index of the train unit when in- or outstanding, with lower indices 
+    // at the A-side of the track
+    double standingIndex = 7;
 }
 
 // TrainUnit represents a combination of carriages which can move independently.
@@ -119,6 +141,10 @@ message ShuntingUnit {
     // that is, the shuntingunits which contain parts of this shuntingunit.
     // Alternatively, ShuntingUnit S has parent P iff P has child S.
     repeated string childIDs = 4;
+
+    // If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
+    // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one
+    string standingType = 5;
 }
 
 // A task specification specifies a certain task.
