@@ -24,19 +24,35 @@ def load_location(scenario_generator, file_name):
 
 # Helper program to convert easily scenario files to robust-rail-solver (HIP) format scenario
 def main():
-    scenario_generator = ScenarioGenerator()
-    load_location(scenario_generator, "../../data/locations/location_kleineBinckhorst.json")
+    # CONVERT SCENARIO TO HIP
+    # scenario_generator = ScenarioGenerator()
+    # load_location(scenario_generator, "/workspace/algorithm-files/locations/location.json")
+    # scenario_generator.convert_location_to_hip_location("/workspace/algorithm-files/locations/location_hip.json")
 
-    scenario_generator.load_scenario("../../data/scenarios/scenario_kleineBinckhorst_6t_custom_config3.json")
+    # Convert location to HIP
+    scenario_generator = ScenarioGenerator()
+    load_location(scenario_generator, "/workspace/algorithm-files/locations/location_reuben.json")
+    scenario_generator.convert_location_to_hip_location("/workspace/algorithm-files/locations/location_reuben_hip.json")
+
+
+    # scenario_generator.load_scenario("../../data/scenarios/scenario_kleineBinckhorst_6t_custom_config3.json")
     
     # scenario_generator.convert_location_to_hip_location("./kleineBinckhorst/location_kleineBinckhorst_HIP.json")
     
-    scenario_generator.create_HIP_scenario_from_Source()
+    # scenario_generator.create_HIP_scenario_from_Source()
     
-    scenario_generator.convert_location_to_hip_location("../../data/locations/location_kleineBinckhorst_solver.json")
-    scenario_generator_hip = ScenarioGeneratorHIP(scenario_generator)
-    
-    scenario_generator_hip.save_scenario_json("../../data/scenarios/solver-compatible/scenario_kleineBinckhorst_6t_custom_config3-fixed.json")
+    # scenario_generator.convert_location_to_hip_location("../../data/locations/location_kleineBinckhorst_solver.json")
+
+
+
+
+
+
+    # scenario_generator = ScenarioGenerator()
+    # scenario_generator.load_scenario("/workspace/algorithm-files/scenarios/scenario.json")
+    # scenario_generator_hip = ScenarioGeneratorHIP(scenario_generator)
+    # scenario_generator.create_HIP_scenario_from_Source()
+    # scenario_generator_hip.save_scenario_json("/workspace/algorithm-files/scenarios/scenario_hip.json")
     
     
 if __name__ == "__main__":
