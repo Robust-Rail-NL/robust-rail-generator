@@ -184,7 +184,7 @@ class ScenarioGenerator:
                         train_unit.type.combineDuration = trainUnitType.combineDuration
                         train_unit.type.splitDuration = trainUnitType.splitDuration
                         train_unit.type.backNormTime = trainUnitType.backNormTime
-                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTimes               
+                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime           
 
         # print(MessageToJson(self.scenario_hip, including_default_value_fields=True))
         
