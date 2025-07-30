@@ -28,11 +28,30 @@ class RandomGenerator:
                 bumper_b = [location.trackParts[a].id 
                             for a in track.bSide 
                             if location.trackParts[a].type == TrackPartType.Bumper]
-                if len(bumper_a) == 0 and len(bumper_b) == 1:
-                    gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
+                
+                if len(bumper_a) == 0 and len(bumper_b) == 1: 
+                    if location.trackParts[bumper_b[0]].aSide:
+                        gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
+                    elif location.trackParts[bumper_b[0]].bSide:
+                        gateway = location.trackParts[location.trackParts[bumper_b[0]].bSide[0]]
+                    
                     if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
-                        print(f"Found gateway track {gateway.name}")
                         gateways.append((gateway, location.trackParts[bumper_b[0]]))
+                        print(f"Found gateway track {gateway.name}")
+                elif len(bumper_a) == 1 and len(bumper_b) == 0: 
+                    if location.trackParts[bumper_a[0]].aSide:
+                        gateway = location.trackParts[location.trackParts[bumper_a[0]].aSide[0]]
+                    elif location.trackParts[bumper_a[0]].bSide:
+                        gateway = location.trackParts[location.trackParts[bumper_a[0]].bSide[0]]
+                    if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
+                        gateways.append((gateway, location.trackParts[bumper_a[0]]))
+                        print(f"Found gateway track {gateway.name}") 
+                        
+                # if len(bumper_a) == 0 and len(bumper_b) == 1:
+                #     gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
+                #     if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
+                #         print(f"Found gateway track {gateway.name}")
+                #         gateways.append((gateway, location.trackParts[bumper_b[0]]))
         return gateways
 
     def generate_train_compositions(self, config, scenario_generator):
