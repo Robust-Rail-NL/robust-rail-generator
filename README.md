@@ -62,7 +62,7 @@ protoc -I=. --python_out=../../src/py_protobuf Location_HIP.proto
 ### Example of usage
 ```bash
 cd src/scenario_generator
-python create_scenario.py --config "../../examples/example_config1.json" --scenario-file "custom-named-scenario.json"
+python create_scenario.py --config "examples/example_config1.json" --scenario-file "custom-named-scenario.json"
 ```
 
 ### Some hints for configuration
