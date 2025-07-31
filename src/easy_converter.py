@@ -20,6 +20,7 @@ def main(location_file_path, scenario_filepath_evaluator_format, scenario_filepa
     """Helper program to convert easily scenario files to robust-rail-solver (HIP) format scenario"""
     scenario_generator = ScenarioGenerator()
     load_location(scenario_generator, location_file_path)
+    scenario_generator.convert_location_to_solver_format(location_file_path.replace(".json", "_solver.json"))
 
     scenario_generator.load_scenario(scenario_filepath_evaluator_format)
     scenario_generator.create_solver_format_scenario(use_scenario=False)
@@ -30,7 +31,7 @@ def main(location_file_path, scenario_filepath_evaluator_format, scenario_filepa
     
 if __name__ == "__main__":
     # Example files
-    location_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "locations", "kleineBinckhorst.json")
+    location_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "locations", "simple_service_location.json")
     scenario_filepath_formatE = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", "scenario_kleineBinckhorst_6t_custom_config3.json")
     scenario_filepath_formatS = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", "scenario_kleineBinckhorst_6t_custom_config3_solver.json")
     main(location_file_path, scenario_filepath_formatE, scenario_filepath_formatS)
