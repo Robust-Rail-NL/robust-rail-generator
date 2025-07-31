@@ -1,13 +1,13 @@
 import math
 import random
-from itertools import product
+import logging
 
-from Location_pb2 import TrackPartType
+from py_protobuf.Location_pb2 import TrackPartType
 
 class RandomGenerator:
     def __init__(self, gen, seed, location):
         """Initialize the random generator for a specific scenario generator."""
-        print("LOG: | Random Generator has been initialized. |")
+        logging.info("Random Generator has been initialized. |")
         self.scenario_generator = gen
         self.seed = seed
         random.seed(self.seed)
@@ -28,11 +28,23 @@ class RandomGenerator:
                 bumper_b = [location.trackParts[a].id 
                             for a in track.bSide 
                             if location.trackParts[a].type == TrackPartType.Bumper]
-                if len(bumper_a) == 0 and len(bumper_b) == 1:
-                    gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
+                if len(bumper_a) == 0 and len(bumper_b) == 1: 
+                    if location.trackParts[bumper_b[0]].aSide:
+                        gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
+                    elif location.trackParts[bumper_b[0]].bSide:
+                        gateway = location.trackParts[location.trackParts[bumper_b[0]].bSide[0]]
+                    
                     if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
-                        print(f"Found gateway track {gateway.name}")
                         gateways.append((gateway, location.trackParts[bumper_b[0]]))
+                        logging.info(f"Found gateway track {gateway.name}")
+                elif len(bumper_a) == 1 and len(bumper_b) == 0: 
+                    if location.trackParts[bumper_a[0]].aSide:
+                        gateway = location.trackParts[location.trackParts[bumper_a[0]].aSide[0]]
+                    elif location.trackParts[bumper_a[0]].bSide:
+                        gateway = location.trackParts[location.trackParts[bumper_a[0]].bSide[0]]
+                    if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
+                        gateways.append((gateway, location.trackParts[bumper_a[0]]))
+                        logging.info(f"Found gateway track {gateway.name}")
         return gateways
 
     def generate_train_compositions(self, config, scenario_generator):
@@ -89,7 +101,7 @@ class RandomGenerator:
         for i in range(number_train_units):
             # TODO servicing tasks
             if not distribution_config:
-                print("WARNING: no distribution config provided, number of train units cannot be simply distributed over number of trains")
+                logging.warning("No distribution config provided, number of train units cannot be simply distributed over number of trains")
             else:
                 if "unit_types" in distribution_config:
                     unit_type = distribution_config["train_unit_types"][distribution_config["unit_types"][i]]
@@ -112,7 +124,7 @@ class RandomGenerator:
                 self.train_units[unit_type].append(unit)
                 self.number_of_train_units += 1
         if self.number_of_train_units != number_train_units:
-            print(f"ERROR: expected {number_train_units} train units and {self.number_of_train_units} were created")
+            logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
 
     def generate_trains(self, num: int, distribution_config = None):
         distribution = self.distribute_train_units(num, distribution_config)

@@ -1,14 +1,14 @@
+from __future__ import annotations
 import sys
 import os
 import json
-from typing import List, Dict, Any
-
-from typing import Union
+import logging
+from typing import List
 from google.protobuf.json_format import MessageToJson
 from google.protobuf.json_format import ParseDict
 
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../py_protobuf")))
+sys.path.append(os.path.join(os.path.dirname(__file__), "py_protobuf"))
 
 # Import standard protos (Scenario, Location, TrainUintTypes, Utilities)
 import Scenario_pb2
@@ -25,9 +25,8 @@ import Location_HIP_pb2
 
 class ScenarioGenerator:
     def __init__(self):
-        """Initialize the scenario generator"""
-      
-        print("LOG: | Scenario Generator has been initialized. |")
+        """Initialize the scenario generator, which create a JSON file according to the Scenario.proto structure. The 'hip' file structure is specialized for the robust-rail-solver."""
+        logging.info("Scenario Generator has been initialized.")
         self.scenario = Scenario_pb2.Scenario()
         self.scenario_in: List[Scenario_pb2.Train] = []
         self.scenario_out: List[Scenario_pb2.Train] = []
@@ -39,24 +38,37 @@ class ScenarioGenerator:
         self.location = Location_pb2.Location()
         self.location_hip = Location_HIP_pb2.Location()
     
-    # Converts protobuf object into json representation and saves it into .json file 
     def save_scenario_json(self, file_name: str):
-        print("LOG: | call save_scenario_json()|")
+        # Converts protobuf object into json representation and saves it into .json file 
+        logging.info("Call save_scenario_json()")
         json_data = MessageToJson(self.scenario, including_default_value_fields=True, indent=4)
         with open(file_name, "w") as f:
             f.write(json_data)
             
     def load_scenario(self, file_name):
-        print("LOG: | call load_scenario()|")
+        logging.info("Call load_scenario()")
         with open(file_name, "r") as f:
             json_scenario = json.load(f)
         self.scenario = ParseDict(json_scenario, Scenario_pb2.Scenario())
         
-    
-    def create_HIP_scenario(self):
-        print("LOG: | call create_HIP_scenario()|")
+    def create_HIP_scenario(self, use_scenario=True):
+        """Create the solver format of the scenario file. The default source to use is `self.scenario['<attr>']` (use_scenario=True), otherwise we use 'self.scenario_in' and 'self.scenario_out'."""
+        logging.info("Call create_HIP_scenario()")
+        if use_scenario:
+            incoming_trains_scenario = getattr(self.scenario, "in")
+            outgoing_trains_scenario = getattr(self.scenario, "out")
+            logging.info("Using `self.scenario.attribute` as the source of the train information")
+        else:
+            incoming_trains_scenario = self.scenario_in
+            outgoing_trains_scenario = self.scenario_out
+            logging.info("Using `self.scenario_<attr>` as the source of the train information")
+            self.scenario_hip.startTime = self.scenario.startTime
+            self.scenario_hip.endTime = self.scenario.endTime            
+            logging.info("Copy the start and end time from self.scenario")
+        
+        # Create the incoming train objects
         incomingTrains = getattr(self.scenario_hip, "in")
-        for train_standard in self.scenario_in:
+        for train_standard in incoming_trains_scenario:
             train = incomingTrains.trains.add()
             train.entryTrackPart = train_standard.sideTrackPart
             train.firstParkingTrackPart = train_standard.parkingTrackPart
@@ -64,11 +76,13 @@ class ScenarioGenerator:
             train.departure = train_standard.time
             train.id = train_standard.id
             
+            # Collect information of the train unit members of the current train
             members_standard = train_standard.members
             for member in members_standard:
                 train_member = train.members.add()
                 train_member.trainUnit.id = member.id
                 
+                # Add the information about service tasks for the individual train units
                 for task_standard in member.tasks:
                     task = train_member.tasks.add()
                     if task_standard.type.predefined:
@@ -79,7 +93,7 @@ class ScenarioGenerator:
                     task.priority = task_standard.priority
                     task.duration = task_standard.duration
                 
-                #Get typeDisplayName associated to the typeDisplayName
+                # Collect the information of the train unit type using the typeDisplayName
                 for trainUnitType in self.scenario_TrainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
                         train_member.trainUnit.type.displayName = trainUnitType.typePrefix          
@@ -89,169 +103,50 @@ class ScenarioGenerator:
                         train_member.trainUnit.type.splitDuration = trainUnitType.splitDuration
                         train_member.trainUnit.type.backNormTime = trainUnitType.backNormTime
                         train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
-        
-       
-        trainRequest = getattr(self.scenario_hip, "out")
-        for train_standard in self.scenario_out:
-            train = trainRequest.trainRequests.add()
-            train.leaveTrackPart = train_standard.sideTrackPart
-            train.lastParkingTrackPart = train_standard.parkingTrackPart
-            
-            train.arrival = train_standard.time
-            train.departure = train_standard.time
-            train.displayName = train_standard.id
-            
-            ## Add train units 
-            
-            
-            members_standard = train_standard.members
-            for member in members_standard:
-                train_unit = train.trainUnits.add()
-                # train_unit.id = member.id -> it is "***" in cTORS in HIP it is simply undefined
-                 
-                for trainUnitType in self.scenario_TrainUnitTypes:
-                    if trainUnitType.displayName == member.typeDisplayName:
-                        train_unit.type.displayName = trainUnitType.typePrefix          
-                        train_unit.type.carriages = trainUnitType.carriages
-                        train_unit.type.length = trainUnitType.length
-                        train_unit.type.combineDuration = trainUnitType.combineDuration
-                        train_unit.type.splitDuration = trainUnitType.splitDuration
-                        train_unit.type.backNormTime = trainUnitType.backNormTime
-                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
-                
-        inStandningTrains = getattr(self.scenario_hip, "inStanding")
-        
-        _inStandingTrains = getattr(self.scenario, "inStanding")
-        
-        for train_standard in _inStandingTrains:
-            train = inStandningTrains.trains.add()
-            train.entryTrackPart = train_standard.sideTrackPart
-            train.firstParkingTrackPart = train_standard.parkingTrackPart
-            train.arrival = train_standard.time
-            train.departure = train_standard.time
-            train.id = train_standard.id
-            
-            members_standard = train_standard.members
-            for member in members_standard:
-                train_member = train.members.add()
-                train_member.trainUnit.id = member.id
-                
-                for task_standard in member.tasks:
-                    task = train_member.tasks.add()
-                    if task_standard.type.predefined:
-                        task.type.predefined = task_standard.type.predefined
-                    elif task_standard.type.other:
-                        task.type.other = task_standard.type.other
-                   
-                    task.priority = task_standard.priority
-                    task.duration = task_standard.duration
-                
-                #Get typeDisplayName associated to the typeDisplayName
-                for trainUnitType in self.scenario.trainUnitTypes:
-                    if trainUnitType.displayName == member.typeDisplayName:
-                        train_member.trainUnit.type.displayName = trainUnitType.typePrefix          
-                        train_member.trainUnit.type.carriages = trainUnitType.carriages
-                        train_member.trainUnit.type.length = trainUnitType.length
-                        train_member.trainUnit.type.combineDuration = trainUnitType.combineDuration
-                        train_member.trainUnit.type.splitDuration = trainUnitType.splitDuration
-                        train_member.trainUnit.type.backNormTime = trainUnitType.backNormTime
-                        train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
-                        
-        trainRequest = getattr(self.scenario_hip, "outStanding")
-                
-        for train_standard in self.scenario.outStanding:
-            train = trainRequest.trainRequests.add()
-            train.leaveTrackPart = train_standard.sideTrackPart
-            train.lastParkingTrackPart = train_standard.parkingTrackPart
-            
-            train.arrival = train_standard.time
-            train.departure = train_standard.time
-            train.displayName = train_standard.id
-            
-            ## Add train units 
-            
-            
-            members_standard = train_standard.members
-            for member in members_standard:                
-                train_unit = train.trainUnits.add()
-                # train_unit.id = member.id -> it is "***" in cTORS in HIP it is simply undefined
-                 
-                for trainUnitType in self.scenario.trainUnitTypes:
-                    if trainUnitType.displayName == member.typeDisplayName:
-                        train_unit.type.displayName = trainUnitType.typePrefix          
-                        train_unit.type.carriages = trainUnitType.carriages
-                        train_unit.type.length = trainUnitType.length
-                        train_unit.type.combineDuration = trainUnitType.combineDuration
-                        train_unit.type.splitDuration = trainUnitType.splitDuration
-                        train_unit.type.backNormTime = trainUnitType.backNormTime
-                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTimes               
 
-        # print(MessageToJson(self.scenario_hip, including_default_value_fields=True))
-        
-       
-    def create_HIP_scenario_from_Source(self):
-        print("LOG: | call create_HIP_scenario()|")
-        incomingTrains = getattr(self.scenario_hip, "in")
-        
-        self.scenario_hip.startTime = self.scenario.startTime
-        self.scenario_hip.endTime = self.scenario.endTime
-        
-        
-        _in = getattr(self.scenario, "in")
-        
-        for train_standard in _in:
-            train = incomingTrains.trains.add()
-            train.entryTrackPart = train_standard.sideTrackPart
-            train.firstParkingTrackPart = train_standard.parkingTrackPart
+        # Create the outgoing train objects
+        trainRequest = getattr(self.scenario_hip, "out")
+        for train_standard in outgoing_trains_scenario:
+            train = trainRequest.trainRequests.add()
+            train.leaveTrackPart = train_standard.sideTrackPart
+            train.lastParkingTrackPart = train_standard.parkingTrackPart
             train.arrival = train_standard.time
             train.departure = train_standard.time
-            train.id = train_standard.id
+            train.displayName = train_standard.id
             
+            # Collect information of the train unit members of the current train
             members_standard = train_standard.members
             for member in members_standard:
-                train_member = train.members.add()
-                train_member.trainUnit.id = member.id
-                
-                for task_standard in member.tasks:
-                    task = train_member.tasks.add()
-                    if task_standard.type.predefined:
-                        task.type.predefined = task_standard.type.predefined
-                    elif task_standard.type.other:
-                        task.type.other = task_standard.type.other
-                    
-                    task.priority = task_standard.priority
-                    task.duration = task_standard.duration
-                
-                #Get typeDisplayName associated to the typeDisplayName
-                for trainUnitType in self.scenario.trainUnitTypes:
+                # The HIP format does not use id of the outgoing train units (simply '****')
+                train_unit = train.trainUnits.add()
+                for trainUnitType in self.scenario_TrainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
-                        train_member.trainUnit.type.displayName = trainUnitType.typePrefix          
-                        train_member.trainUnit.type.carriages = trainUnitType.carriages
-                        train_member.trainUnit.type.length = trainUnitType.length
-                        train_member.trainUnit.type.combineDuration = trainUnitType.combineDuration
-                        train_member.trainUnit.type.splitDuration = trainUnitType.splitDuration
-                        train_member.trainUnit.type.backNormTime = trainUnitType.backNormTime
-                        train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
-                       
+                        train_unit.type.displayName = trainUnitType.typePrefix          
+                        train_unit.type.carriages = trainUnitType.carriages
+                        train_unit.type.length = trainUnitType.length
+                        train_unit.type.combineDuration = trainUnitType.combineDuration
+                        train_unit.type.splitDuration = trainUnitType.splitDuration
+                        train_unit.type.backNormTime = trainUnitType.backNormTime
+                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
         
-        
-        inStandningTrains = getattr(self.scenario_hip, "inStanding")
-        
+        # Create the in-standing train objects (train that are already in the yard at the start of the scenario)
+        inStandingTrains = getattr(self.scenario_hip, "inStanding")        
         _inStandingTrains = getattr(self.scenario, "inStanding")
-        
         for train_standard in _inStandingTrains:
-            train = inStandningTrains.trains.add()
+            train = inStandingTrains.trains.add()
             train.entryTrackPart = train_standard.sideTrackPart
             train.firstParkingTrackPart = train_standard.parkingTrackPart
             train.arrival = train_standard.time
             train.departure = train_standard.time
             train.id = train_standard.id
             
+            # Collect information of the train unit members of the current train
             members_standard = train_standard.members
             for member in members_standard:
                 train_member = train.members.add()
                 train_member.trainUnit.id = member.id
                 
+                # Add the information about service tasks for the individual train units
                 for task_standard in member.tasks:
                     task = train_member.tasks.add()
                     if task_standard.type.predefined:
@@ -262,7 +157,7 @@ class ScenarioGenerator:
                     task.priority = task_standard.priority
                     task.duration = task_standard.duration
                 
-                #Get typeDisplayName associated to the typeDisplayName
+                # Collect the information of the train unit type using the typeDisplayName
                 for trainUnitType in self.scenario.trainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
                         train_member.trainUnit.type.displayName = trainUnitType.typePrefix          
@@ -273,57 +168,22 @@ class ScenarioGenerator:
                         train_member.trainUnit.type.backNormTime = trainUnitType.backNormTime
                         train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
                         
-            
-        trainRequest = getattr(self.scenario_hip, "out")
-        _out = getattr(self.scenario, "out")
-        
-        for train_standard in _out:
-            train = trainRequest.trainRequests.add()
-            train.leaveTrackPart = train_standard.sideTrackPart
-            train.lastParkingTrackPart = train_standard.parkingTrackPart
-            
-            train.arrival = train_standard.time
-            train.departure = train_standard.time
-            train.displayName = train_standard.id
-            
-            ## Add train units 
-            
-            
-            members_standard = train_standard.members
-            for member in members_standard:                
-                train_unit = train.trainUnits.add()
-                # train_unit.id = member.id -> it is "***" in cTORS in HIP it is simply undefined
-                 
-                for trainUnitType in self.scenario.trainUnitTypes:
-                    if trainUnitType.displayName == member.typeDisplayName:
-                        train_unit.type.displayName = trainUnitType.typePrefix          
-                        train_unit.type.carriages = trainUnitType.carriages
-                        train_unit.type.length = trainUnitType.length
-                        train_unit.type.combineDuration = trainUnitType.combineDuration
-                        train_unit.type.splitDuration = trainUnitType.splitDuration
-                        train_unit.type.backNormTime = trainUnitType.backNormTime
-                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
-        
-       
+        # Create the outstanding train requests: trains that remain in the yard at the end of the scenario
         trainRequest = getattr(self.scenario_hip, "outStanding")
-                
-        for train_standard in self.scenario.outStanding:
+        _outStandingTrains = getattr(self.scenario, "outStanding")
+        for train_standard in _outStandingTrains:
             train = trainRequest.trainRequests.add()
             train.leaveTrackPart = train_standard.sideTrackPart
             train.lastParkingTrackPart = train_standard.parkingTrackPart
-            
             train.arrival = train_standard.time
             train.departure = train_standard.time
             train.displayName = train_standard.id
-            
-            ## Add train units 
-            
-            
+
+            # Collect information of the train unit members of the current train            
             members_standard = train_standard.members
             for member in members_standard:                
+                # The HIP format does not use id of the outgoing train units (simply '****')
                 train_unit = train.trainUnits.add()
-                # train_unit.id = member.id -> it is "***" in cTORS in HIP it is simply undefined
-                 
                 for trainUnitType in self.scenario.trainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
                         train_unit.type.displayName = trainUnitType.typePrefix          
@@ -332,52 +192,37 @@ class ScenarioGenerator:
                         train_unit.type.combineDuration = trainUnitType.combineDuration
                         train_unit.type.splitDuration = trainUnitType.splitDuration
                         train_unit.type.backNormTime = trainUnitType.backNormTime
-                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
-                
-        print(MessageToJson(self.scenario_hip, including_default_value_fields=True))
-        
+                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime 
+
     # Add outgoing train to the scenario
     def add_outgoingTrain(self, out_train: Scenario_pb2.Train):
-        print("LOG: | call add_outgoingTrain()|")
+        # Add outgoing train to the scenario
+        logging.info("Call add_outgoingTrain()")
         
         trainUnits = out_train.members
         for trainUnit in trainUnits:
             trainUnit.id = "****"
-        
+    
         train = self.scenario.out.add()
         train.MergeFrom(out_train)
-        
         self.scenario_out.append(out_train)
     
-    # Add incoming Train to the scenario
     def add_incomingTrain(self, in_train: Scenario_pb2.Train):
-        print("LOG: | call add_incomingTrain()|")
+        # Add incoming Train to the scenario
+        logging.info("Call add_incomingTrain()")
         train = getattr(self.scenario, "in").add()
         train.MergeFrom(in_train)
-        
         self.scenario_in.append(in_train)
         
-        # train.sideTrackPart = in_train.sideTrackPart
-        # train.parkingTrackPart = in_train.parkingTrackPart
-        # train.time = in_train.time
-        # train.id = in_train.id
-        
-        # train.members.MergeFrom(in_train.members)
-        
-        
-        # train.canDepartFromAnyTrack = in_train.canDepartFromAnyTrack
-        # train.standingIndex = in_train.standingIndex
-        # train.minimumDuration = in_train.minimumDuration
-        
-    # Add inStanding Train to the scenario
     def add_inStandingTrain(self, in_standingTrain: Scenario_pb2.Train):
-        print("LOG: | call add_inStandingTrain()|")
+        # Add inStanding Train to the scenario
+        logging.info("Call add_inStandingTrain()")
         train = self.scenario.inStanding.add()
         train.MergeFrom(in_standingTrain)
         
-    # Add outStanding Train to the scenario
     def add_outStandingTrain(self, out_standingTrain: Scenario_pb2.Train):
-        print("LOG: | call add_outStandingTrain()|")
+        # Add outStanding Train to the scenario
+        logging.info("Call add_outStandingTrain()")
         trainUnits = out_standingTrain.members
         for trainUnit in trainUnits:
             trainUnit.id = "****"
@@ -385,39 +230,38 @@ class ScenarioGenerator:
         train = self.scenario.outStanding.add()
         train.MergeFrom(out_standingTrain)
         
-    # Add nonServiceTraffic to the scenario
     def add_nonServiceTraffic(self, nonServiceTraffic: Scenario_pb2.NonServiceTraffic):
-        print("LOG: | call add_nonServiceTraffic()|")
+        # Add nonServiceTraffic to the scenario
+        logging.info("Call add_nonServiceTraffic()")
         service = self.scenario.nonServiceTraffic.add()
         service.MergeFrom(nonServiceTraffic)
         
-     # Add disabledTrackPart to the scenario
     def add_disabledTrackPart(self, disabledTrackPart: Scenario_pb2.DisabledTrackPart):
-        print("LOG: | call add_disabledTrackPart()|")
+        # Add disabledTrackPart to the scenario
+        logging.info("Call add_disabledTrackPart()")
         track_part = self.scenario.disabledTrackPart.add()
         track_part.MergeFrom(disabledTrackPart)
         
-    # Add MemberOfStaff to the scenario
     def add_workers(self, workers: Scenario_pb2.MemberOfStaff):
-        print("LOG: | call add_workers()|")
+        # Add MemberOfStaff to the scenario
+        logging.info("Call add_workers()")
         staff = self.scenario.workers.add()
         staff.MergeFrom(workers)
     
-    # Add startTime and endTime to scenario
     def add_start_and_end_times(self, start: int, end: int):
-        print("LOG: | call add_start_and_end_times()|")
+        # Add startTime and endTime to scenario
+        logging.info("Call add_start_and_end_times()")
         self.scenario.startTime = start
         self.scenario.endTime = end
         
-    # Add TrainUnitType to scenario    
     def add_TrainUnitType(self, trainUnitType: TrainUnitTypes_pb2.TrainUnitType):
-        print("LOG: | call add_TrainUnitType()|")
+        # Add TrainUnitType to scenario    
+        logging.info("Call add_TrainUnitType()")
         trainUnitTypes = self.scenario.trainUnitTypes.add()
         trainUnitTypes.MergeFrom(trainUnitType)
         
         self.scenario_TrainUnitTypes.append(trainUnitType)
         
-    # Create a incoming/leaving train or a train which stays on the location 
     def create_Train(self, sideTrackPart: int, trackPart: int, time: int, id: str, members: List[Scenario_pb2.TrainUnit], canDepartFromAnyTrack: bool = None, standingIndex: float = None, minimumDuration: str = None)->Scenario_pb2.Train:
         """_summary_
         Method used to create train objects that are added either as an in- or an out-going train.
@@ -437,7 +281,7 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.Train: incoming/leaving train or a train which stays on the location 
         """
-        print("LOG: | call create_Train() |")
+        logging.info("Call create_Train()")
         
         train = Scenario_pb2.Train()
         
@@ -458,8 +302,6 @@ class ScenarioGenerator:
         
         return train
     
-    # Create a TaskSpec which specifies a certain task, with its type, priority, duration and the 
-    # requiredSkills  (no personnel required) e.g.: ["B-controle"] => one member of staff with skill "B-controle" required
     def create_TaskSpec(self, taskType: Location_pb2.TaskType, priority: int, duration: int, requiredSkills: List[str])->Scenario_pb2.TaskSpec:
         """_summary_
 
@@ -472,53 +314,48 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.TaskSpec: task specification specifies a certain task.
         """
-        print("LOG: | call create_TaskSpec() |")
-        
+        logging.info("Call create_TaskSpec()")
         task_spec = Scenario_pb2.TaskSpec()
         
         # Since taskType is a protobuf object its content must be copied to the other proto object
         # indeed it is a nested message structure => TaskSpec contains TaskType message 
         task_spec.type.CopyFrom(taskType)
-        
         task_spec.priority = priority
-       
         task_spec.duration = duration
-        
         task_spec.requiredSkills.MergeFrom(requiredSkills)
-    
         return task_spec
         
-
-    #Create a train unit 
-    # "id" is the train unit id e.g.: "2401"
-    # "typeDisplayName" is the type name e.g.:  "SLT4"
     def create_TrainUnit(self, id: str, typeDisplayName: str, tasks: List[Scenario_pb2.TaskSpec]):
         """_summary_
+        Creates a train unit object with specific member id.
 
         Args:
-            id (str):  A unique identifier of the unit
-            typeDisplayName (str): displayName of the TrainUnitType
+            id (str):  A unique identifier of the unit, e.g. '2401'
+            typeDisplayName (str): displayName of the TrainUnitType, e.g. 'SLT4'
             tasks (List[Scenario_pb2.TaskSpec]): Tasks for this train unit
 
         Returns:
             _type_: represents a combination of carriages which can move independently
         """
-        print("LOG: | call create_TrainUnit() |")
+        logging.info("Call create_TrainUnit()")
         trainUnit = Scenario_pb2.TrainUnit()
         
         trainUnit.id = id
         trainUnit.typeDisplayName = typeDisplayName
-        
         trainUnit.tasks.MergeFrom(tasks)
-        
         return trainUnit
 
-
-    # Create a train unit with unmatched members (outgoing train request with unit types)
-    # Such a train has an empty id **** and always has an empty task list.
-    # "typeDisplayName" is the type name e.g.:  "SLT4"
     def create_TrainUnitUnmatchedMembers(self, typeDisplayName: str):
-        print("LOG: | call create_TrainUnitUnmatchedMembers() |")
+        """_summary_
+        Creates a train unit object with no specific member (no ids), used for outgoing train requests.
+
+        Args:
+            typeDisplayName (str): displayName of the TrainUnitType, e.g. 'SLT4'
+
+        Returns:
+            _type_: represents a combination of carriages which can move independently
+        """
+        logging.info("Call create_TrainUnitUnmatchedMembers()")
         trainUnit = Scenario_pb2.TrainUnit()
         
         trainUnit.id = "****"
@@ -527,10 +364,9 @@ class ScenarioGenerator:
         return trainUnit
         
 
-    # Create a task type - which is the task assigned o the give train (in fact a train
-    # can contain a list of tasks). e.g., "type" : {"other" : "inwendige_reiniging"} 
     def create_TaskType(self, predefinedTaskType: int = None, other: str = None)->Location_pb2.TaskType:
         """_summary_
+        Create a task type, of the tasks assigned to train units. Matches the predefined task type. e.g., "type" : {"other" : "inwendige_reiniging"}
 
         Args:
             predefinedTaskType (int, optional):  If the task type maps to one of PredefinedTaskType, use this type here. Defaults to None.
@@ -542,7 +378,7 @@ class ScenarioGenerator:
         Returns:
             Location_pb2.TaskType: Specifies the task type - PredefinedTaskType {Move, Split, Combine, Wait, Arrive, Exit, Walking, Break, NonService, BeginMove, EndMove}
         """
-        print("LOG: | call create_TaskType() |")
+        logging.info("Call create_TaskType()")
         task_type = Location_pb2.TaskType()
         
         if predefinedTaskType:
@@ -554,8 +390,8 @@ class ScenarioGenerator:
         else:
             raise ValueError("Either 'predefinedTaskType' or 'other' must be provided.")
 
-    # Create a Traffic without service
     def create_NonServiceTraffic(self, members: List[int], arrival: int, departure: int, id: str)->Scenario_pb2.NonServiceTraffic:
+        # TODO: what is this used for
         """_summary_
 
         Args:
@@ -567,19 +403,17 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.NonServiceTraffic: Traffic without service
         """
-        print("LOG: | call create_NonServiceTraffic() |")
-        
+        logging.info("Call create_NonServiceTraffic()")
         nonServiceTraffic = Scenario_pb2.NonServiceTraffic()
-        
         nonServiceTraffic.members.extend(members)
         nonServiceTraffic.arrival = arrival
         nonServiceTraffic.departure = departure
         nonServiceTraffic.id = id
-        
         return nonServiceTraffic
     
-    # Create and incoming magic train
     def create_DisabledTrackPart(self, trackPart: int = None, arrival: int = None, departure: int = None)->Scenario_pb2.DisabledTrackPart:
+        # Create and incoming magic train
+        # TODO : what is this used for
         """_summary_
 
         Args:
@@ -591,7 +425,7 @@ class ScenarioGenerator:
             Scenario_pb2.DisabledTrackPart: An incoming magic train
 
         """
-        print("LOG: | call create_NonServiceTraffic() |")
+        logging.info("Call create_NonServiceTraffic()")
         
         disabled_trackpart = Scenario_pb2.DisabledTrackPart()
         if trackPart:
@@ -600,13 +434,11 @@ class ScenarioGenerator:
             disabled_trackpart.arrival = arrival
         if departure:
             disabled_trackpart.departure = departure
-      
         return disabled_trackpart
 
-    # Create a single time interval
     def create_TimeInterval(self, start: float = None, end: float = None)->Utilities_pb2.TimeInterval:
         """_summary_
-
+        Create the time interval of the scenario.
         Args:
             start (float, optional):  Start of the interval in seconds since the epoch. Defaults to None.
             end (float, optional): End of the interval in seconds since the epoch. Defaults to None.
@@ -614,19 +446,17 @@ class ScenarioGenerator:
         Returns:
             Utilities_pb2.TimeInterval: representing a single time interval.
         """
-        print("LOG: | call create_TimeInterval() |")
+        logging.info("Call create_TimeInterval()")
         timeInterval = Utilities_pb2.TimeInterval()
-
         if start:
             timeInterval.start = start
         if end:
             timeInterval.end = end
-        
         return timeInterval            
      
-    # Create Member of Staff which is a human that is able to perform various tasks at the facility
     def create_MemberOfStaff(self, id: int = None, type: str = None, skills: List[str] = None, shifts: List[Utilities_pb2.TimeInterval] = None, breakWindows: List[Utilities_pb2.TimeInterval] = None, breakDuration: float = None, startLocationId: int = None, endLocationId: int = None, canMoveTrains: bool = None, name: str = None, breakLocationId: int = None)->Scenario_pb2.MemberOfStaff:
         """_summary_
+        Create Member of Staff which is a human that is able to perform various tasks at the facility
 
         Args:
             id (int, optional): unique ID which is referenced by other messages. Defaults to None.
@@ -644,38 +474,38 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.MemberOfStaff: a human that is able to perform various tasks at the facility
         """
-        print("LOG: | call create_MemberOfStaff() |")
+        logging.info("Call create_MemberOfStaff()")
         
-        memberOfStuff = Scenario_pb2.MemberOfStaff()
+        memberOfStaff = Scenario_pb2.MemberOfStaff()
         
         if id:
-            memberOfStuff.id = id
+            memberOfStaff.id = id
         if type:
-            memberOfStuff.type = type
+            memberOfStaff.type = type
         if skills:
-            memberOfStuff.skills.extend(skills)
+            memberOfStaff.skills.extend(skills)
         if shifts:
-            memberOfStuff.shifts.MergeFrom(shifts)
+            memberOfStaff.shifts.MergeFrom(shifts)
         if  breakWindows:
-            memberOfStuff.breakWindows.MergeFrom(breakWindows)   
+            memberOfStaff.breakWindows.MergeFrom(breakWindows)   
         if breakDuration:
-            memberOfStuff.breakDuration = breakDuration
+            memberOfStaff.breakDuration = breakDuration
         if startLocationId:
-            memberOfStuff.startLocationId = startLocationId
+            memberOfStaff.startLocationId = startLocationId
         if endLocationId:
-            memberOfStuff.endLocationId = endLocationId
+            memberOfStaff.endLocationId = endLocationId
         if canMoveTrains:
-            memberOfStuff.canMoveTrains = canMoveTrains
+            memberOfStaff.canMoveTrains = canMoveTrains
         if name:
-            memberOfStuff.name = name
+            memberOfStaff.name = name
         if breakLocationId:
-            memberOfStuff.breakLocationId = breakLocationId
+            memberOfStaff.breakLocationId = breakLocationId
         
-        return memberOfStuff
+        return memberOfStaff
     
-    # Create Train Unit type
     def create_TrainUnitType(self, displayName: str, carriages: int, length: float, combineDuration: int, splitDuration: int, backNormTime: int, backAdditionTime: int, travelSpeed: int, startUpTime: int, typePrefix: str, needsLoco: bool, isLoco: bool, needsElectricity: bool, idPrefix: int = None)->TrainUnitTypes_pb2.TrainUnitType:
         """_summary_
+        Create the type of train units, of which multiple instances can be created. The type specifies all the train characteristics.
 
         Args:
             displayName (str): Name of the train unit type. For example, "SGM" or "SLT". Currently, this is "SLT4" or "SLT6", see 'typeprefix' later on. #warning
@@ -696,7 +526,7 @@ class ScenarioGenerator:
         Returns:
             TrainUnitTypes_pb2.TrainUnitType: _description_
         """
-        print("LOG: | call create_TrainUnitType() |")
+        logging.info("Call create_TrainUnitType()")
 
         trainUnitType = TrainUnitTypes_pb2.TrainUnitType()
         
@@ -718,38 +548,34 @@ class ScenarioGenerator:
             trainUnitType.idPrefix = idPrefix
             
         return trainUnitType
-    
 
-    # Create a TrainUnit which is an element of the members in the scenario
-    #def create_TrainUnit(self, unit_id: str, type_display_name: str, taskSpec: Scenario_pb2.TaskSpec) -> Scenario_pb2.TrainUnit: 
-    #   print()
-    # def create_Train(self)
-    
-
-    # Load json format location  
-    def load_location(self, file_name):
-        print("LOG: | call load_location()|")
+    def load_location(self, file_name, location_path):
+        # Load json format location  
+        logging.info("Call load_location()")
         if not os.path.isfile(file_name):
-            file_name = os.path.join(os.path.dirname(__file__), "..", "..", "data", "locations", f"{file_name}{'.json' if '.json' not in file_name else ''}")
+            if location_path is None:
+                file_name = os.path.join(os.path.dirname(__file__), "..", "data", "locations", f"{file_name}{'.json' if '.json' not in file_name else ''}")
+            else:
+                file_name = os.path.join(location_path, f"{file_name}{'.json' if '.json' not in file_name else ''}")
         with open(file_name, "r") as f:
             json_location = json.load(f)
         
         self.location = ParseDict(json_location, Location_pb2.Location())
 
-    # Converts a standard location into a HIP compatible location file
     def convert_location_to_hip_location(self, file_name):
-        print("LOG: | call convert_location_to_hip_location()|")
+        # Converts a standard location into a HIP compatible location file
+        logging.info("Call convert_location_to_hip_location()")
         
         # Check if self.location is not empty
         if self.location.ListFields():
             trackParts = self.location.trackParts
+            # Add each track part to the location
             for trackPart in trackParts:
                 hip_trackPart = self.location_hip.trackParts.add()
-                    
                 hip_trackPart.id = trackPart.id
                 
                 if trackPart.type == Location_pb2.TrackPartType.Building:
-                    print("Building type cannot be added to HIP")
+                    logging.warning("Building type cannot be added to HIP")
                 else:
                    hip_trackPart.type = trackPart.type
                 
@@ -760,14 +586,16 @@ class ScenarioGenerator:
                 hip_trackPart.sawMovementAllowed = trackPart.sawMovementAllowed
                 hip_trackPart.parkingAllowed = trackPart.parkingAllowed
                 
-                
+            # Add each facility to the location
             facilities = self.location.facilities
             for facility in facilities:
                 hip_facility = self.location_hip.facilities.add()
                 hip_facility.id = facility.id  
                 hip_facility.type = facility.type
                 hip_facility.relatedTrackParts.MergeFrom(facility.relatedTrackParts)
+                hip_facility.simultaneousUsageCount = facility.simultaneousUsageCount
                 
+                # Add the possible task types of the facility
                 if facility.taskTypes:
                     for facility_taskTypes in facility.taskTypes:
                         hip_facility_taskTypes = hip_facility.taskTypes.add()
@@ -775,10 +603,6 @@ class ScenarioGenerator:
                 else: 
                     taskType = hip_facility.taskTypes.add()
                     taskType.other = facility.type
-                
-                
-                hip_facility.simultaneousUsageCount = facility.simultaneousUsageCount
-            
             
             taskTypes = self.location.taskTypes
             for taskType in taskTypes:
@@ -789,18 +613,12 @@ class ScenarioGenerator:
             json_data = MessageToJson(self.location_hip, including_default_value_fields=False, indent=4)
             with open(file_name, "w") as f:
                 f.write(json_data)
-            with open("location.dat", "wb") as f:
-                f.write(self.location_hip.SerializeToString())    
-           #def save_json(self, json_file: str):
-            
         else:
-            print("No location file was loaded - call: load_location() function ")
-        
-
+            logging.warning("No location file was loaded - call: load_location() function")
 
     def add_DefaultTrainUnitTypes(self):
         """Creates the default train unit types from the data/train_unit_types.json data."""
-        train_unit_file = os.path.join(os.path.dirname(__file__), "..", "..", "data", "train_unit_types.json")
+        train_unit_file = os.path.join(os.path.dirname(__file__), "..", "data", "train_unit_types.json")
         train_unit_data = json.load(open(train_unit_file, "r"))
         for unit_type in train_unit_data:
             self.add_TrainUnitType(
@@ -827,12 +645,10 @@ class ScenarioGeneratorHIP(ScenarioGenerator):
     def __init__(self, standardScenarioGenerator: ScenarioGenerator):
         super().__init__()
         self.scenario_hip = standardScenarioGenerator.scenario_hip
-            
+    
     # Converts protobuf object into json representation and saves it into .json file 
     def save_scenario_json(self, file_name: str):
-        print("LOG: | call save_scenario_json()|")
+        logging.info("Call save_scenario_json()")
         json_data = MessageToJson(self.scenario_hip, including_default_value_fields=False, indent=4)
         with open(file_name, "w") as f:
             f.write(json_data)
-        with open("scanario.dat", "wb") as f:
-            f.write(self.scenario_hip.SerializeToString())
