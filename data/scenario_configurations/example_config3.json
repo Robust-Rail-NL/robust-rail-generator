@@ -1,5 +1,5 @@
 {
-    "location": "kleineBinckhorst",
+    "location": "kleineBinckhorst_HIP_dump",
     "start_time": 0,
     "end_time": 7200,
     "track_ids_used": false,
@@ -25,18 +25,18 @@
             "services": ["clean_train"]
         },
         {
-            "id": "2601",
-            "type": "SLT-6",
+            "id": "2402",
+            "type": "SLT-4",
             "services": ["clean_train"]
         },
         {
-            "id": "2801",
-            "type": "SNG-3",
+            "id": "2403",
+            "type": "SLT-4",
             "services": []
         },
         {
-            "id": "2802",
-            "type": "SNG-4",
+            "id": "2404",
+            "type": "SLT-4",
             "services": []
         }
     ],
@@ -49,13 +49,13 @@
         },
         {
             "id": "3000",
-            "members": ["2601"],
+            "members": ["2402", "2403"],
             "arrival_time": 600,
             "arrival_track": "906a"
         },
         {
             "id": "4000",
-            "members": ["2801", "2802"],
+            "members": ["2404"],
             "arrival_time": 900,
             "arrival_track": "906a"
         },
@@ -67,13 +67,13 @@
         },
         {
             "id": "3001",
-            "member_types": ["SLT-6"],
+            "member_types": ["SLT-4"],
             "departure_time": 3900,
             "departure_track": "906a"
         },
         {
             "id": "4001",
-            "member_types": ["SNG-3", "SNG-4"],
+            "member_types": ["SLT-4", "SLT-4"],
             "departure_time": 4200,
             "departure_track": "906a"
         }

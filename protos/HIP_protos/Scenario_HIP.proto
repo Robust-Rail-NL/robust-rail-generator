@@ -28,7 +28,7 @@ message ScenarioOut {
 }
 
 
-// Defines all trains that were alrady at the shunting area (before the scenario starts).
+// Defines all trains that were already at the shunting area (before the scenario starts).
 message ScenarioInStanding {
     repeated IncomingTrain trains = 1;
 }
@@ -142,8 +142,8 @@ message ShuntingUnit {
     // Alternatively, ShuntingUnit S has parent P iff P has child S.
     repeated string childIDs = 4;
 
-    // If field is defined it states InStanding when the train unit was alredy on the yard even if the action says it is an arrival
-    // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exite one
+    // If field is defined it states InStanding when the train unit was already on the yard even if the action says it is an arrival
+    // or it states OutStanding when the train unit will stay in the shunting yards after the scenario ends even if the action is an exit one
     string standingType = 5;
 }
 

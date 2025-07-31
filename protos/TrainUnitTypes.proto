@@ -26,7 +26,7 @@ message TrainUnitType {
     uint64 backNormTime = 7;
     uint64 backAdditionTime = 8;
 
-	// this is the speed of the train but that is yet to be determinded wether that is here or location specific #warning
+	// this is the speed of the train but that is yet to be determined wether that is here or location specific #warning
 	uint64 travelSpeed = 9;
 
 	// Startup + Shutdown
