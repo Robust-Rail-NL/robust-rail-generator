@@ -16,7 +16,7 @@ import TrainUnitTypes_pb2
 import Location_pb2
 import Utilities_pb2
 
-# Import HIP required protos
+# Import HIP required protos - HIP is name of the solver
 import Scenario_HIP_pb2
 import Location_HIP_pb2
 
@@ -26,34 +26,31 @@ import Location_HIP_pb2
 class ScenarioGenerator:
     def __init__(self):
         """Initialize the scenario generator, which create a JSON file according to the Scenario.proto structure. The 'hip' file structure is specialized for the robust-rail-solver."""
-        logging.info("Scenario Generator has been initialized.")
         self.scenario = Scenario_pb2.Scenario()
         self.scenario_in: List[Scenario_pb2.Train] = []
         self.scenario_out: List[Scenario_pb2.Train] = []
 
         self.scenario_TrainUnitTypes: List[TrainUnitTypes_pb2.TrainUnitType] = []
-        self.scenario_hip =  Scenario_HIP_pb2.Scenario()
+        self.scenario_solver =  Scenario_HIP_pb2.Scenario()
         
         # Location where the scenario happens
         self.location = Location_pb2.Location()
-        self.location_hip = Location_HIP_pb2.Location()
+        self.location_solver = Location_HIP_pb2.Location()
     
     def save_scenario_json(self, file_name: str):
         # Converts protobuf object into json representation and saves it into .json file 
-        logging.info("Call save_scenario_json()")
         json_data = MessageToJson(self.scenario, including_default_value_fields=True, indent=4)
         with open(file_name, "w") as f:
             f.write(json_data)
+        logging.info(f"Scenario saved to {file_name}")
             
     def load_scenario(self, file_name):
-        logging.info("Call load_scenario()")
         with open(file_name, "r") as f:
             json_scenario = json.load(f)
         self.scenario = ParseDict(json_scenario, Scenario_pb2.Scenario())
         
-    def create_HIP_scenario(self, use_scenario=True):
+    def create_solver_format_scenario(self, use_scenario=True):
         """Create the solver format of the scenario file. The default source to use is `self.scenario['<attr>']` (use_scenario=True), otherwise we use 'self.scenario_in' and 'self.scenario_out'."""
-        logging.info("Call create_HIP_scenario()")
         if use_scenario:
             incoming_trains_scenario = getattr(self.scenario, "in")
             outgoing_trains_scenario = getattr(self.scenario, "out")
@@ -62,12 +59,12 @@ class ScenarioGenerator:
             incoming_trains_scenario = self.scenario_in
             outgoing_trains_scenario = self.scenario_out
             logging.info("Using `self.scenario_<attr>` as the source of the train information")
-            self.scenario_hip.startTime = self.scenario.startTime
-            self.scenario_hip.endTime = self.scenario.endTime            
+            self.scenario_solver.startTime = self.scenario.startTime
+            self.scenario_solver.endTime = self.scenario.endTime            
             logging.info("Copy the start and end time from self.scenario")
         
         # Create the incoming train objects
-        incomingTrains = getattr(self.scenario_hip, "in")
+        incomingTrains = getattr(self.scenario_solver, "in")
         for train_standard in incoming_trains_scenario:
             train = incomingTrains.trains.add()
             train.entryTrackPart = train_standard.sideTrackPart
@@ -105,7 +102,7 @@ class ScenarioGenerator:
                         train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
 
         # Create the outgoing train objects
-        trainRequest = getattr(self.scenario_hip, "out")
+        trainRequest = getattr(self.scenario_solver, "out")
         for train_standard in outgoing_trains_scenario:
             train = trainRequest.trainRequests.add()
             train.leaveTrackPart = train_standard.sideTrackPart
@@ -117,7 +114,7 @@ class ScenarioGenerator:
             # Collect information of the train unit members of the current train
             members_standard = train_standard.members
             for member in members_standard:
-                # The HIP format does not use id of the outgoing train units (simply '****')
+                # The Solver format does not use id of the outgoing train units (simply '****')
                 train_unit = train.trainUnits.add()
                 for trainUnitType in self.scenario_TrainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
@@ -130,7 +127,7 @@ class ScenarioGenerator:
                         train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
         
         # Create the in-standing train objects (train that are already in the yard at the start of the scenario)
-        inStandingTrains = getattr(self.scenario_hip, "inStanding")        
+        inStandingTrains = getattr(self.scenario_solver, "inStanding")        
         _inStandingTrains = getattr(self.scenario, "inStanding")
         for train_standard in _inStandingTrains:
             train = inStandingTrains.trains.add()
@@ -169,7 +166,7 @@ class ScenarioGenerator:
                         train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
                         
         # Create the outstanding train requests: trains that remain in the yard at the end of the scenario
-        trainRequest = getattr(self.scenario_hip, "outStanding")
+        trainRequest = getattr(self.scenario_solver, "outStanding")
         _outStandingTrains = getattr(self.scenario, "outStanding")
         for train_standard in _outStandingTrains:
             train = trainRequest.trainRequests.add()
@@ -182,7 +179,7 @@ class ScenarioGenerator:
             # Collect information of the train unit members of the current train            
             members_standard = train_standard.members
             for member in members_standard:                
-                # The HIP format does not use id of the outgoing train units (simply '****')
+                # The Solver format does not use id of the outgoing train units (simply '****')
                 train_unit = train.trainUnits.add()
                 for trainUnitType in self.scenario.trainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
@@ -196,70 +193,57 @@ class ScenarioGenerator:
 
     # Add outgoing train to the scenario
     def add_outgoingTrain(self, out_train: Scenario_pb2.Train):
-        # Add outgoing train to the scenario
-        logging.info("Call add_outgoingTrain()")
-        
+        # Add outgoing train to the scenario        
         trainUnits = out_train.members
         for trainUnit in trainUnits:
             trainUnit.id = "****"
-    
         train = self.scenario.out.add()
         train.MergeFrom(out_train)
         self.scenario_out.append(out_train)
     
     def add_incomingTrain(self, in_train: Scenario_pb2.Train):
         # Add incoming Train to the scenario
-        logging.info("Call add_incomingTrain()")
         train = getattr(self.scenario, "in").add()
         train.MergeFrom(in_train)
         self.scenario_in.append(in_train)
         
     def add_inStandingTrain(self, in_standingTrain: Scenario_pb2.Train):
         # Add inStanding Train to the scenario
-        logging.info("Call add_inStandingTrain()")
         train = self.scenario.inStanding.add()
         train.MergeFrom(in_standingTrain)
         
     def add_outStandingTrain(self, out_standingTrain: Scenario_pb2.Train):
         # Add outStanding Train to the scenario
-        logging.info("Call add_outStandingTrain()")
         trainUnits = out_standingTrain.members
         for trainUnit in trainUnits:
             trainUnit.id = "****"
-        
         train = self.scenario.outStanding.add()
         train.MergeFrom(out_standingTrain)
         
     def add_nonServiceTraffic(self, nonServiceTraffic: Scenario_pb2.NonServiceTraffic):
         # Add nonServiceTraffic to the scenario
-        logging.info("Call add_nonServiceTraffic()")
         service = self.scenario.nonServiceTraffic.add()
         service.MergeFrom(nonServiceTraffic)
         
     def add_disabledTrackPart(self, disabledTrackPart: Scenario_pb2.DisabledTrackPart):
         # Add disabledTrackPart to the scenario
-        logging.info("Call add_disabledTrackPart()")
         track_part = self.scenario.disabledTrackPart.add()
         track_part.MergeFrom(disabledTrackPart)
         
     def add_workers(self, workers: Scenario_pb2.MemberOfStaff):
         # Add MemberOfStaff to the scenario
-        logging.info("Call add_workers()")
         staff = self.scenario.workers.add()
         staff.MergeFrom(workers)
     
     def add_start_and_end_times(self, start: int, end: int):
         # Add startTime and endTime to scenario
-        logging.info("Call add_start_and_end_times()")
         self.scenario.startTime = start
         self.scenario.endTime = end
         
     def add_TrainUnitType(self, trainUnitType: TrainUnitTypes_pb2.TrainUnitType):
         # Add TrainUnitType to scenario    
-        logging.info("Call add_TrainUnitType()")
         trainUnitTypes = self.scenario.trainUnitTypes.add()
         trainUnitTypes.MergeFrom(trainUnitType)
-        
         self.scenario_TrainUnitTypes.append(trainUnitType)
         
     def create_Train(self, sideTrackPart: int, trackPart: int, time: int, id: str, members: List[Scenario_pb2.TrainUnit], canDepartFromAnyTrack: bool = None, standingIndex: float = None, minimumDuration: str = None)->Scenario_pb2.Train:
@@ -281,10 +265,7 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.Train: incoming/leaving train or a train which stays on the location 
         """
-        logging.info("Call create_Train()")
-        
-        train = Scenario_pb2.Train()
-        
+        train = Scenario_pb2.Train()        
         train.sideTrackPart = sideTrackPart 
         train.parkingTrackPart = trackPart
         train.time = time
@@ -292,14 +273,12 @@ class ScenarioGenerator:
         
         # Merge all the members a.k.a TrainUnit(s) with the existing members if there are
         train.members.MergeFrom(members)
-
         if canDepartFromAnyTrack:
             train.canDepartFromAnyTrack = canDepartFromAnyTrack
         if standingIndex:
             train.standingIndex = standingIndex
         if minimumDuration:
             train.minimumDuration = minimumDuration
-        
         return train
     
     def create_TaskSpec(self, taskType: Location_pb2.TaskType, priority: int, duration: int, requiredSkills: List[str])->Scenario_pb2.TaskSpec:
@@ -314,9 +293,7 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.TaskSpec: task specification specifies a certain task.
         """
-        logging.info("Call create_TaskSpec()")
-        task_spec = Scenario_pb2.TaskSpec()
-        
+        task_spec = Scenario_pb2.TaskSpec()        
         # Since taskType is a protobuf object its content must be copied to the other proto object
         # indeed it is a nested message structure => TaskSpec contains TaskType message 
         task_spec.type.CopyFrom(taskType)
@@ -337,9 +314,7 @@ class ScenarioGenerator:
         Returns:
             _type_: represents a combination of carriages which can move independently
         """
-        logging.info("Call create_TrainUnit()")
         trainUnit = Scenario_pb2.TrainUnit()
-        
         trainUnit.id = id
         trainUnit.typeDisplayName = typeDisplayName
         trainUnit.tasks.MergeFrom(tasks)
@@ -355,12 +330,9 @@ class ScenarioGenerator:
         Returns:
             _type_: represents a combination of carriages which can move independently
         """
-        logging.info("Call create_TrainUnitUnmatchedMembers()")
-        trainUnit = Scenario_pb2.TrainUnit()
-        
+        trainUnit = Scenario_pb2.TrainUnit()        
         trainUnit.id = "****"
         trainUnit.typeDisplayName = typeDisplayName
-        # trainUnit.tasks = []
         return trainUnit
         
 
@@ -378,9 +350,7 @@ class ScenarioGenerator:
         Returns:
             Location_pb2.TaskType: Specifies the task type - PredefinedTaskType {Move, Split, Combine, Wait, Arrive, Exit, Walking, Break, NonService, BeginMove, EndMove}
         """
-        logging.info("Call create_TaskType()")
-        task_type = Location_pb2.TaskType()
-        
+        task_type = Location_pb2.TaskType()        
         if predefinedTaskType:
             task_type.predefined = predefinedTaskType
             return task_type
@@ -403,7 +373,6 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.NonServiceTraffic: Traffic without service
         """
-        logging.info("Call create_NonServiceTraffic()")
         nonServiceTraffic = Scenario_pb2.NonServiceTraffic()
         nonServiceTraffic.members.extend(members)
         nonServiceTraffic.arrival = arrival
@@ -424,9 +393,7 @@ class ScenarioGenerator:
         Returns:
             Scenario_pb2.DisabledTrackPart: An incoming magic train
 
-        """
-        logging.info("Call create_NonServiceTraffic()")
-        
+        """        
         disabled_trackpart = Scenario_pb2.DisabledTrackPart()
         if trackPart:
             disabled_trackpart.trackPart = trackPart
@@ -446,7 +413,6 @@ class ScenarioGenerator:
         Returns:
             Utilities_pb2.TimeInterval: representing a single time interval.
         """
-        logging.info("Call create_TimeInterval()")
         timeInterval = Utilities_pb2.TimeInterval()
         if start:
             timeInterval.start = start
@@ -473,11 +439,8 @@ class ScenarioGenerator:
 
         Returns:
             Scenario_pb2.MemberOfStaff: a human that is able to perform various tasks at the facility
-        """
-        logging.info("Call create_MemberOfStaff()")
-        
+        """        
         memberOfStaff = Scenario_pb2.MemberOfStaff()
-        
         if id:
             memberOfStaff.id = id
         if type:
@@ -526,10 +489,7 @@ class ScenarioGenerator:
         Returns:
             TrainUnitTypes_pb2.TrainUnitType: _description_
         """
-        logging.info("Call create_TrainUnitType()")
-
         trainUnitType = TrainUnitTypes_pb2.TrainUnitType()
-        
         trainUnitType.displayName = displayName
         trainUnitType.carriages = carriages
         trainUnitType.length = length
@@ -551,7 +511,6 @@ class ScenarioGenerator:
 
     def load_location(self, file_name, location_path):
         # Load json format location  
-        logging.info("Call load_location()")
         if not os.path.isfile(file_name):
             if location_path is None:
                 file_name = os.path.join(os.path.dirname(__file__), "..", "data", "locations", f"{file_name}{'.json' if '.json' not in file_name else ''}")
@@ -559,62 +518,61 @@ class ScenarioGenerator:
                 file_name = os.path.join(location_path, f"{file_name}{'.json' if '.json' not in file_name else ''}")
         with open(file_name, "r") as f:
             json_location = json.load(f)
-        
+        logging.info(f"Loading location from {file_name}")
         self.location = ParseDict(json_location, Location_pb2.Location())
 
-    def convert_location_to_hip_location(self, file_name):
-        # Converts a standard location into a HIP compatible location file
-        logging.info("Call convert_location_to_hip_location()")
-        
+    def convert_location_to_solver_format(self, file_name):
+        # Converts a standard location into a solver compatible location file format    
         # Check if self.location is not empty
         if self.location.ListFields():
             trackParts = self.location.trackParts
             # Add each track part to the location
             for trackPart in trackParts:
-                hip_trackPart = self.location_hip.trackParts.add()
-                hip_trackPart.id = trackPart.id
+                solver_trackPart = self.location_solver.trackParts.add()
+                solver_trackPart.id = trackPart.id
                 
                 if trackPart.type == Location_pb2.TrackPartType.Building:
-                    logging.warning("Building type cannot be added to HIP")
+                    logging.warning("Building type cannot be added to Solver format, skipping this track part")
                 else:
-                   hip_trackPart.type = trackPart.type
+                   solver_trackPart.type = trackPart.type
                 
-                hip_trackPart.aSide.MergeFrom(trackPart.aSide)
-                hip_trackPart.bSide.MergeFrom(trackPart.bSide)
-                hip_trackPart.length = trackPart.length
-                hip_trackPart.name = trackPart.name
-                hip_trackPart.sawMovementAllowed = trackPart.sawMovementAllowed
-                hip_trackPart.parkingAllowed = trackPart.parkingAllowed
+                solver_trackPart.aSide.MergeFrom(trackPart.aSide)
+                solver_trackPart.bSide.MergeFrom(trackPart.bSide)
+                solver_trackPart.length = trackPart.length
+                solver_trackPart.name = trackPart.name
+                solver_trackPart.sawMovementAllowed = trackPart.sawMovementAllowed
+                solver_trackPart.parkingAllowed = trackPart.parkingAllowed
                 
             # Add each facility to the location
             facilities = self.location.facilities
             for facility in facilities:
-                hip_facility = self.location_hip.facilities.add()
-                hip_facility.id = facility.id  
-                hip_facility.type = facility.type
-                hip_facility.relatedTrackParts.MergeFrom(facility.relatedTrackParts)
-                hip_facility.simultaneousUsageCount = facility.simultaneousUsageCount
+                solver_facility = self.location_solver.facilities.add()
+                solver_facility.id = facility.id  
+                solver_facility.type = facility.type
+                solver_facility.relatedTrackParts.MergeFrom(facility.relatedTrackParts)
+                solver_facility.simultaneousUsageCount = facility.simultaneousUsageCount
                 
                 # Add the possible task types of the facility
                 if facility.taskTypes:
                     for facility_taskTypes in facility.taskTypes:
-                        hip_facility_taskTypes = hip_facility.taskTypes.add()
-                        hip_facility_taskTypes.other = facility_taskTypes.other
+                        solver_facility_taskTypes = solver_facility.taskTypes.add()
+                        solver_facility_taskTypes.other = facility_taskTypes.other
                 else: 
-                    taskType = hip_facility.taskTypes.add()
+                    taskType = solver_facility.taskTypes.add()
                     taskType.other = facility.type
             
             taskTypes = self.location.taskTypes
             for taskType in taskTypes:
-                hip_taskType = self.location_hip.taskTypes.add()
-                hip_taskType.MergeFrom(taskType)
+                solver_taskType = self.location_solver.taskTypes.add()
+                solver_taskType.MergeFrom(taskType)
         
-            # Create a json location file - this one is compatible with HIP
-            json_data = MessageToJson(self.location_hip, including_default_value_fields=False, indent=4)
+            # Create a json location file - this one is compatible with the solver format
+            json_data = MessageToJson(self.location_solver, including_default_value_fields=False, indent=4)
             with open(file_name, "w") as f:
                 f.write(json_data)
+            logging.info(f"Successfully converted location to Solver format and saved to {file_name}")
         else:
-            logging.warning("No location file was loaded - call: load_location() function")
+            logging.warning("No location file was loaded")
 
     def add_DefaultTrainUnitTypes(self):
         """Creates the default train unit types from the data/train_unit_types.json data."""
@@ -641,14 +599,13 @@ class ScenarioGenerator:
                 )
             )
 
-class ScenarioGeneratorHIP(ScenarioGenerator):
+class SolverScenarioGenerator(ScenarioGenerator):
     def __init__(self, standardScenarioGenerator: ScenarioGenerator):
         super().__init__()
-        self.scenario_hip = standardScenarioGenerator.scenario_hip
+        self.scenario_solver = standardScenarioGenerator.scenario_solver
     
     # Converts protobuf object into json representation and saves it into .json file 
     def save_scenario_json(self, file_name: str):
-        logging.info("Call save_scenario_json()")
-        json_data = MessageToJson(self.scenario_hip, including_default_value_fields=False, indent=4)
+        json_data = MessageToJson(self.scenario_solver, including_default_value_fields=False, indent=4)
         with open(file_name, "w") as f:
             f.write(json_data)

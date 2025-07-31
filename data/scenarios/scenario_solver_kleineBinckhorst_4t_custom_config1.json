@@ -97,5 +97,68 @@
                 "lastParkingTrackPart": "41"
             }
         ]
+    },
+    "inStanding": {
+        "trains": [
+            {
+                "entryTrackPart": "56",
+                "id": "4002",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "2802",
+                            "type": {
+                                "displayName": "SNG",
+                                "carriages": 4,
+                                "length": 75.7,
+                                "combineDuration": "180",
+                                "splitDuration": "120"
+                            }
+                        }
+                    }
+                ],
+                "firstParkingTrackPart": "3"
+            }
+        ]
+    },
+    "outStanding": {
+        "trainRequests": [
+            {
+                "leaveTrackPart": "68",
+                "displayName": "2000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "length": 69.36,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "16"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "11"
+            },
+            {
+                "leaveTrackPart": "61",
+                "displayName": "3000",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 6,
+                            "length": 100.54,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "15"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "10"
+            }
+        ]
     }
 }
