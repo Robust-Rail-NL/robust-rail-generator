@@ -2,10 +2,9 @@ import os
 import json
 import logging
 import argparse
-from scenario import ScenarioGenerator,ScenarioGeneratorHIP
+from scenario import ScenarioGenerator, SolverScenarioGenerator
 from random_generator import RandomGenerator
 from check_config import *
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config-file", help="Name of configuration file for the scenario generation.", required=True)
@@ -16,11 +15,12 @@ parser.add_argument("-l", "--location-path", help="Path to the folder where the 
 ### Add logging to the arguments
 parser.add_argument("--log-level", default="ERROR", required=False, help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.")
 
-
 def create_scenario_from_config(config_file, path, scenario_file, location_path):
     # Use the path if specified, otherwise check at default location for configuration file
     if path is None:
         filepath = os.path.join(os.path.dirname(__file__), "..", "data", "scenario_configurations", config_file)
+    elif path == ".":
+        filepath = os.path.join(os.getcwd(), config_file)
     else:
         filepath = os.path.join(path, config_file)
     config = json.load(open(filepath, "r"))
@@ -80,8 +80,8 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
         pass
     
     # Also generate the format of the solver
-    scenario_generator_hip = ScenarioGeneratorHIP(scenario_generator)
-    scenario_generator.create_HIP_scenario()
+    solver_scenario_generator = SolverScenarioGenerator(scenario_generator)
+    scenario_generator.create_solver_format_scenario()
 
     if scenario_file is None:
         # If no name is given, generate it
@@ -91,14 +91,17 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
     if "/" in scenario_file:
         # Use the specified output path
         output_filepath = scenario_file
+        output_filepath = output_filepath.replace("./", os.path.join(os.getcwd(), ""))
     else:
         # Create a scenario file at the default location
         output_filepath = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", f"{scenario_file}.json")
-    output_hip_filepath = output_filepath.replace(".json", "_hip.json")
+    output_solver_filepath = output_filepath.replace("scenario_", "scenario_solver_")
     # Write TORS scenario file
     scenario_generator.save_scenario_json(output_filepath)
-    # Write HIP scenario file
-    scenario_generator_hip.save_scenario_json(output_hip_filepath)   
+    # Write Solver format scenario file
+    solver_scenario_generator.save_scenario_json(output_solver_filepath)
+    logging.info(f"Scenario file created: {output_filepath}")
+    logging.info(f"Solver format scenario file created: {output_solver_filepath}")
 
 def create_trains(scenario_generator, config, services):
     created_train_units = {}

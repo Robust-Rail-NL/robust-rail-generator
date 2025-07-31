@@ -2,7 +2,7 @@
     "in": {
         "trains": [
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "5149",
                 "departure": "5149",
                 "id": "0",
@@ -50,10 +50,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "5771",
                 "departure": "5771",
                 "id": "1",
@@ -101,10 +101,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "6332",
                 "departure": "6332",
                 "id": "2",
@@ -152,10 +152,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "827",
                 "departure": "827",
                 "id": "3",
@@ -203,10 +203,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "5207",
                 "departure": "5207",
                 "id": "4",
@@ -254,10 +254,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "3032",
                 "departure": "3032",
                 "id": "5",
@@ -305,10 +305,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "5749",
                 "departure": "5749",
                 "id": "6",
@@ -356,10 +356,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "4375",
                 "departure": "4375",
                 "id": "7",
@@ -407,10 +407,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "3108",
                 "departure": "3108",
                 "id": "8",
@@ -458,10 +458,10 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "43",
                 "arrival": "6294",
                 "departure": "6294",
                 "id": "9",
@@ -509,14 +509,14 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "40"
             }
         ]
     },
     "out": {
         "trainRequests": [
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "8282",
                 "departure": "8282",
                 "displayName": "10",
@@ -555,10 +555,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "6655",
                 "departure": "6655",
                 "displayName": "11",
@@ -597,10 +597,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "8117",
                 "departure": "8117",
                 "displayName": "12",
@@ -639,10 +639,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "4540",
                 "departure": "4540",
                 "displayName": "13",
@@ -681,10 +681,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "9223",
                 "departure": "9223",
                 "displayName": "14",
@@ -723,10 +723,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "6542",
                 "departure": "6542",
                 "displayName": "15",
@@ -765,10 +765,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "9148",
                 "departure": "9148",
                 "displayName": "16",
@@ -807,10 +807,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "6980",
                 "departure": "6980",
                 "displayName": "17",
@@ -849,10 +849,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "5919",
                 "departure": "5919",
                 "displayName": "18",
@@ -891,10 +891,10 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             },
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "43",
                 "arrival": "7123",
                 "departure": "7123",
                 "displayName": "19",
@@ -933,7 +933,7 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "40"
             }
         ]
     }

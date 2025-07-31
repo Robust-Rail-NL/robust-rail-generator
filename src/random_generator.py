@@ -7,7 +7,6 @@ from py_protobuf.Location_pb2 import TrackPartType
 class RandomGenerator:
     def __init__(self, gen, seed, location):
         """Initialize the random generator for a specific scenario generator."""
-        logging.info("Random Generator has been initialized. |")
         self.scenario_generator = gen
         self.seed = seed
         random.seed(self.seed)
