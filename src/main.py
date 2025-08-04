@@ -80,9 +80,9 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
         pass
     
     # Also generate the format of the solver
-    solver_scenario_generator = SolverScenarioGenerator(scenario_generator)
     scenario_generator.create_solver_format_scenario()
-
+    solver_scenario_generator = SolverScenarioGenerator(scenario_generator)
+    
     if scenario_file is None:
         # If no name is given, generate it
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
@@ -100,8 +100,8 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
     scenario_generator.save_scenario_json(output_filepath)
     # Write Solver format scenario file
     solver_scenario_generator.save_scenario_json(output_solver_filepath)
-    logging.info(f"Scenario file created: {output_filepath}")
-    logging.info(f"Solver format scenario file created: {output_solver_filepath}")
+    print(f"Scenario file created: {output_filepath}")
+    print(f"Solver format scenario file created: {output_solver_filepath}")
 
 def create_trains(scenario_generator, config, services):
     created_train_units = {}
@@ -144,11 +144,12 @@ def create_trains(scenario_generator, config, services):
                 )
             )                
         if "end_at_track" in train:
+            unmatched_train_units = [scenario_generator.create_TrainUnitUnmatchedMembers(train_unit) for train_unit in train["member_types"]]
             scenario_generator.add_outStandingTrain(
                 scenario_generator.create_Train(
                     id=train["id"], 
                     time=0,
-                    members=[created_train_units[i] for i in train["members"]], 
+                    members=unmatched_train_units, 
                     trackPart=train["end_at_track"],
                     sideTrackPart=train["end_at_track_side"],
                     standingIndex=train["parking_index"] if "parking_index" in train else 1

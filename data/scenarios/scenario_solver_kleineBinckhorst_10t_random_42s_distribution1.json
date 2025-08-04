@@ -936,5 +936,8 @@
                 "lastParkingTrackPart": "40"
             }
         ]
-    }
+    },
+    "endTime": "9600",
+    "inStanding": {},
+    "outStanding": {}
 }

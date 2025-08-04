@@ -78,7 +78,7 @@ def check_configuration_file(config, location_path):
         logging.warning("No 'partial_matching' found")
     # TODO check other custom objects
     return True, config
-
+    
 
 def check_train_details_file(config, location):
     if "track_ids_used" not in config:
@@ -103,6 +103,9 @@ def check_train_details_file(config, location):
             if "members" not in train and "member_types" not in train:
                 logging.error(f"Incorrectly specified the {i}th custom train: missing members or member_types")
                 return False, config
+            if "member_types" in train and "members" in train:
+                logging.error(f"Both 'members' and 'member_types' defined for train {train['id']}, only one should be defined")
+                return False, config
             if "members" in train:
                 member_type_check = set()
                 for u in train["members"]:
@@ -119,8 +122,24 @@ def check_train_details_file(config, location):
                     logging.warning(f"Train {train['id']} has members from different train unit types: {member_type_check}")
             if "arrival_track" not in train and "start_at_track" not in train:
                 logging.warning(f"No 'arrival_track' or 'start_at_track' defined for train {train['id']}, picking random gateway track part")
+            if "arrival_track" in train and "start_at_track" in train:
+                logging.error(f"Both 'arrival_track' (train should arrive) and 'start_at_track' (train is already in yard) defined for train {train['id']}, only one should be defined")
+            if "arrival_track" in train and "end_at_track" in train:
+                logging.error(f"Both 'arrival_track' and 'end_at_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+            if "arrival_track" in train and "departure_track" in train:
+                logging.error(f"Both 'arrival_track' and 'departure_track' defined for train {train['id']},only one should be defined (create separate objects for in(standing) and out(standing) trains)")
             if "departure_track" not in train and "end_at_track" not in train:
                 logging.warning(f"No 'departure_track' or 'end_at_track' defined for train {train['id']}, picking random gateway track part")
+            if "departure_track" in train and "end_at_track" in train:
+                logging.error(f"Both 'departure_track' (train should depart) and 'end_at_track' (train should reamin in yard) defined for train {train['id']}, only one should be defined")
+            if "departure_track" in train and "start_at_track" in train:
+                logging.error(f"Both 'departure_track' and 'start_at_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+            if "departure_track" in train and "arrival_track" in train:
+                logging.error(f"Both 'departure_track' and 'arrival_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+            if "members" in train and ("departure_track" in train or "end_at_track" in train):
+                logging.error(f"Outgoing or outstanding train {train['id']} has members defined, but should have member_types defined for the train request instead of specific member id")
+            if "member_types" in train and ("arrival_track" in train or "start_at_track" in train):
+                logging.error(f"Incoming or standing train {train['id']} has member_types defined, but should have members defined for the specific train members")
             # Check if tracks exist in the location
             # Add the parking track parts: the track defined in the file is the actual track (used as parking track), but we also need the connected bumper
             correct, config = check_track_part_in_train(config, train, "arrival_track", track_names_to_ids, location, i, True)

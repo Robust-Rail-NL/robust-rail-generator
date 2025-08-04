@@ -45,14 +45,22 @@
             "id": "2000",
             "members": ["2401"],
             "arrival_time": 600,
-            "arrival_track": "906a",
-            "end_at_track": "62"
+            "arrival_track": "906a"
         },
+        {
+            "id": "2001",
+            "member_types": ["SLT-4"],
+            "end_at_track": "62"
+        },        
         {
             "id": "3000",
             "members": ["2601"],
             "arrival_time": 900,
-            "arrival_track": "906a",
+            "arrival_track": "906a"
+        },
+        {
+            "id": "3001",
+            "member_types": ["SLT-6"],
             "end_at_track": "61"
         },
         {
