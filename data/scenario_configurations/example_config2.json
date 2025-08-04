@@ -38,6 +38,11 @@
             "id": "2802",
             "type": "SNG-4",
             "services": []
+        },
+        {
+            "id": "2901",
+            "type": "SLT-4",
+            "services": []
         }
     ],
     "custom_trains": [
@@ -76,6 +81,16 @@
             "member_types": ["SNG-3", "SNG-4"],
             "departure_time": 4200,
             "departure_track": "906a"
-        }
+        },
+        {
+            "id": "2002",
+            "members": ["2901"],
+            "start_at_track": "52"
+        },
+        {
+            "id": "2032",
+            "member_types": ["SLT-4"],
+            "end_at_track": "52"
+        }        
     ]
 }

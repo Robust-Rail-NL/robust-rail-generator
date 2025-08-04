@@ -82,7 +82,7 @@
     "inStanding": [
         {
             "id": "4002",
-            "sideTrackPart": "56",
+            "sideTrackPart": "54",
             "parkingTrackPart": "3",
             "members": [
                 {
@@ -99,25 +99,14 @@
     ],
     "outStanding": [
         {
-            "id": "2000",
+            "id": "2001",
             "sideTrackPart": "68",
             "parkingTrackPart": "11",
             "members": [
                 {
                     "id": "****",
                     "typeDisplayName": "SLT-4",
-                    "tasks": [
-                        {
-                            "type": {
-                                "other": "Reinigingsperron"
-                            },
-                            "priority": 1,
-                            "duration": "900",
-                            "requiredSkills": [
-                                "inwendige_reiniging"
-                            ]
-                        }
-                    ]
+                    "tasks": []
                 }
             ],
             "standingIndex": 1.0,
@@ -126,25 +115,14 @@
             "minimumDuration": ""
         },
         {
-            "id": "3000",
+            "id": "3001",
             "sideTrackPart": "61",
             "parkingTrackPart": "10",
             "members": [
                 {
                     "id": "****",
                     "typeDisplayName": "SLT-6",
-                    "tasks": [
-                        {
-                            "type": {
-                                "other": "Reinigingsperron"
-                            },
-                            "priority": 1,
-                            "duration": "900",
-                            "requiredSkills": [
-                                "inwendige_reiniging"
-                            ]
-                        }
-                    ]
+                    "tasks": []
                 }
             ],
             "standingIndex": 1.0,

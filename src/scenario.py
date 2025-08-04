@@ -59,9 +59,9 @@ class ScenarioGenerator:
             incoming_trains_scenario = self.scenario_in
             outgoing_trains_scenario = self.scenario_out
             logging.info("Using `self.scenario_<attr>` as the source of the train information")
-            self.scenario_solver.startTime = self.scenario.startTime
-            self.scenario_solver.endTime = self.scenario.endTime            
-            logging.info("Copy the start and end time from self.scenario")
+        self.scenario_solver.startTime = self.scenario.startTime
+        self.scenario_solver.endTime = self.scenario.endTime            
+        logging.info("Copy the start and end time from self.scenario")
         
         # Create the incoming train objects
         incomingTrains = getattr(self.scenario_solver, "in")
@@ -74,8 +74,7 @@ class ScenarioGenerator:
             train.id = train_standard.id
             
             # Collect information of the train unit members of the current train
-            members_standard = train_standard.members
-            for member in members_standard:
+            for member in train_standard.members:
                 train_member = train.members.add()
                 train_member.trainUnit.id = member.id
                 
@@ -102,9 +101,9 @@ class ScenarioGenerator:
                         train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
 
         # Create the outgoing train objects
-        trainRequest = getattr(self.scenario_solver, "out")
+        outgoingTrainRequests = getattr(self.scenario_solver, "out")
         for train_standard in outgoing_trains_scenario:
-            train = trainRequest.trainRequests.add()
+            train = outgoingTrainRequests.trainRequests.add()
             train.leaveTrackPart = train_standard.sideTrackPart
             train.lastParkingTrackPart = train_standard.parkingTrackPart
             train.arrival = train_standard.time
@@ -112,8 +111,7 @@ class ScenarioGenerator:
             train.displayName = train_standard.id
             
             # Collect information of the train unit members of the current train
-            members_standard = train_standard.members
-            for member in members_standard:
+            for member in train_standard.members:
                 # The Solver format does not use id of the outgoing train units (simply '****')
                 train_unit = train.trainUnits.add()
                 for trainUnitType in self.scenario_TrainUnitTypes:
@@ -127,7 +125,7 @@ class ScenarioGenerator:
                         train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
         
         # Create the in-standing train objects (train that are already in the yard at the start of the scenario)
-        inStandingTrains = getattr(self.scenario_solver, "inStanding")        
+        inStandingTrains = getattr(self.scenario_solver, "inStanding")
         _inStandingTrains = getattr(self.scenario, "inStanding")
         for train_standard in _inStandingTrains:
             train = inStandingTrains.trains.add()
@@ -138,8 +136,7 @@ class ScenarioGenerator:
             train.id = train_standard.id
             
             # Collect information of the train unit members of the current train
-            members_standard = train_standard.members
-            for member in members_standard:
+            for member in train_standard.members:
                 train_member = train.members.add()
                 train_member.trainUnit.id = member.id
                 
@@ -166,10 +163,10 @@ class ScenarioGenerator:
                         train_member.trainUnit.type.backAdditionTime = trainUnitType.backAdditionTime
                         
         # Create the outstanding train requests: trains that remain in the yard at the end of the scenario
-        trainRequest = getattr(self.scenario_solver, "outStanding")
+        outStandingTrainRequests = getattr(self.scenario_solver, "outStanding")
         _outStandingTrains = getattr(self.scenario, "outStanding")
         for train_standard in _outStandingTrains:
-            train = trainRequest.trainRequests.add()
+            train = outStandingTrainRequests.trainRequests.add()
             train.leaveTrackPart = train_standard.sideTrackPart
             train.lastParkingTrackPart = train_standard.parkingTrackPart
             train.arrival = train_standard.time
@@ -177,8 +174,7 @@ class ScenarioGenerator:
             train.displayName = train_standard.id
 
             # Collect information of the train unit members of the current train            
-            members_standard = train_standard.members
-            for member in members_standard:                
+            for member in train_standard.members:                
                 # The Solver format does not use id of the outgoing train units (simply '****')
                 train_unit = train.trainUnits.add()
                 for trainUnitType in self.scenario.trainUnitTypes:
@@ -189,7 +185,7 @@ class ScenarioGenerator:
                         train_unit.type.combineDuration = trainUnitType.combineDuration
                         train_unit.type.splitDuration = trainUnitType.splitDuration
                         train_unit.type.backNormTime = trainUnitType.backNormTime
-                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime 
+                        train_unit.type.backAdditionTime = trainUnitType.backAdditionTime
 
     # Add outgoing train to the scenario
     def add_outgoingTrain(self, out_train: Scenario_pb2.Train):
@@ -607,5 +603,13 @@ class SolverScenarioGenerator(ScenarioGenerator):
     # Converts protobuf object into json representation and saves it into .json file 
     def save_scenario_json(self, file_name: str):
         json_data = MessageToJson(self.scenario_solver, including_default_value_fields=False, indent=4)
+
+        obj = json.loads(json_data)
+        if "inStanding" not in obj:
+            obj["inStanding"] = {}
+        if "outStanding" not in obj:
+            obj["outStanding"] = {}
+        json_data = json.dumps(obj, indent=4)
+        
         with open(file_name, "w") as f:
             f.write(json_data)

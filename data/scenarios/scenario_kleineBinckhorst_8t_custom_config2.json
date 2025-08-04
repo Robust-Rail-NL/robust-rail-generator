@@ -132,6 +132,42 @@
         }
     ],
     "endTime": "7200",
+    "inStanding": [
+        {
+            "id": "2002",
+            "sideTrackPart": "71",
+            "parkingTrackPart": "1",
+            "members": [
+                {
+                    "id": "2901",
+                    "typeDisplayName": "SLT-4",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "time": "0",
+            "canDepartFromAnyTrack": false,
+            "minimumDuration": ""
+        }
+    ],
+    "outStanding": [
+        {
+            "id": "2032",
+            "sideTrackPart": "58",
+            "parkingTrackPart": "1",
+            "members": [
+                {
+                    "id": "****",
+                    "typeDisplayName": "SLT-4",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "time": "0",
+            "canDepartFromAnyTrack": false,
+            "minimumDuration": ""
+        }
+    ],
     "trainUnitTypes": [
         {
             "displayName": "VIRM-4",
@@ -422,8 +458,6 @@
             "idPrefix": 0
         }
     ],
-    "inStanding": [],
-    "outStanding": [],
     "nonServiceTraffic": [],
     "disabledTrackPart": [],
     "workers": [],
