@@ -35,7 +35,7 @@ def check_configuration_file(config, location_path):
             logging.error("No 'number_of_train_unit_types' defined while train unit types should be generated ('use_default_material' is false)")
             return False, config
     else:
-        default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "train_unit_types.json")))]
+        default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "default_train_unit_types.json")))]
     if config["trains_given"] and ("custom_train_units" not in config or "custom_trains" not in config):
         logging.error("No 'custom_train_units' or 'custom_trains defined' while 'trains_given' is true.")
         return False, config
@@ -84,7 +84,7 @@ def check_train_details_file(config, location):
     if "track_ids_used" not in config:
         logging.warning("Not defined: 'track_ids_used', assuming ids are used")
         config["custom_trains"]["track_ids_used"] = True
-    default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "train_unit_types.json")))]        
+    default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "default_train_unit_types.json")))]        
     for i, t in enumerate(config["custom_train_units"]):
         if "id" not in t or "type" not in t or "services" not in t:
             logging.error(f"Incorrectly specified the {i}th custom train unit: missing id, type or service parameter")
@@ -203,3 +203,67 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
         config["custom_trains"][i][f"{track_name}_side"] = side_id
     return True, config
         
+def check_gateways(config, location, gateways):
+    if "arrive" in config["gateway"]:
+        for arrive_id in config["gateway"]["arrive"]:
+            if int(arrive_id) not in [t.id for t in location.trackParts]:
+                print(f"ERROR: arrival gateway {arrive_id} not found in in location")
+                return False, config
+            arrive = location.trackParts[int(arrive_id)]
+            if arrive.type != TrackPartType.RailRoad:
+                print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
+                return False, config        
+            if not arrive.parkingAllowed:
+                print(f"ERROR: arrival gateway {arrive_id} does not allow parking")
+                return False, config
+            if not arrive.sawMovementAllowed:
+                print(f"ERROR: arrival gateway {arrive_id} does not allow saw movements")
+                return False, config
+            if arrive.length == 0:
+                print(f"ERROR: arrival gateway {arrive_id} has length 0")
+                return False, config
+            bumper_a = [location.trackParts[a]
+                        for a in arrive.aSide 
+                        if location.trackParts[a].type == TrackPartType.Bumper]
+            bumper_b = [location.trackParts[a]
+                    for a in arrive.bSide 
+                    if location.trackParts[a].type == TrackPartType.Bumper]
+            if len(bumper_a) == 1:
+                gateways["arrival"].append((arrive, bumper_a[0]))
+            elif len(bumper_b) == 1:
+                gateways["arrival"].append((arrive, bumper_b[0]))
+            else:
+                print(f"ERROR: arrival gateway {arrive_id} does not have a bumper side")
+                return False, config            
+    if "depart" in config["gateway"]:
+        for depart_id in config["gateway"]["depart"]:
+            if int(depart_id) not in [t.id for t in location.trackParts]:
+                print(f"ERROR: departure gateway {depart_id} not found in in location")
+                return False, config
+            depart = location.trackParts[int(depart_id)]
+            if depart.type != TrackPartType.RailRoad:
+                print(f"ERROR: departure gateway {depart_id} is not a railroad")
+                return False, config        
+            if not depart.parkingAllowed:
+                print(f"ERROR: departure gateway {depart_id} does not allow parking")
+                return False, config
+            if not depart.sawMovementAllowed:
+                print(f"ERROR: departure gateway {depart_id} does not allow saw movements")
+                return False, config
+            if depart.length == 0:
+                print(f"ERROR: departure gateway {depart_id} has length 0")
+                return False, config
+            bumper_a = [location.trackParts[a]
+                        for a in depart.aSide 
+                        if location.trackParts[a].type == TrackPartType.Bumper]
+            bumper_b = [location.trackParts[b] 
+                    for b in depart.bSide 
+                    if location.trackParts[b].type == TrackPartType.Bumper]
+            if len(bumper_a) == 1:
+                gateways["departure"].append((depart, bumper_a[0]))
+            elif len(bumper_b) == 1:
+                gateways["departure"].append((depart, bumper_b[0]))
+            else:
+                print(f"ERROR: departure gateway {depart_id} does not have a bumper side")
+                return False, config
+    return gateways

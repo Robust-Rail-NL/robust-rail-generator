@@ -11,5 +11,9 @@
         "type_ratio": 0,
         "units_per_composition": [3],
         "matching_complexity": 0
+    },
+    "gateway": {
+        "arrive": ["41"],
+        "depart": ["41"]
     }
 }

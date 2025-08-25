@@ -5,7 +5,7 @@ import logging
 from py_protobuf.Location_pb2 import TrackPartType
 
 class RandomGenerator:
-    def __init__(self, gen, seed, location):
+    def __init__(self, gen, seed, location, gateways):
         """Initialize the random generator for a specific scenario generator."""
         self.scenario_generator = gen
         self.seed = seed
@@ -14,7 +14,11 @@ class RandomGenerator:
         self.train_units = {}
         self.number_of_train_units = 0
         self.trains = []
-        self.gateways = self.get_gateway_tracks(location)
+        self.gateways = gateways
+        if len(self.gateways["arrival"]) == 0:
+            self.gateways["arrival"] = self.get_gateway_tracks(location)
+        if len(self.gateways["departure"]) == 0:
+            self.gateways["departure"] = self.get_gateway_tracks(location)
 
     def get_gateway_tracks(self, location):
         gateways = []
@@ -24,24 +28,23 @@ class RandomGenerator:
                 bumper_a = [location.trackParts[a].id 
                             for a in track.aSide 
                             if location.trackParts[a].type == TrackPartType.Bumper]
-                bumper_b = [location.trackParts[a].id 
-                            for a in track.bSide 
-                            if location.trackParts[a].type == TrackPartType.Bumper]
-                if len(bumper_a) == 0 and len(bumper_b) == 1: 
+                bumper_b = [location.trackParts[b].id 
+                            for b in track.bSide 
+                            if location.trackParts[b].type == TrackPartType.Bumper]
+                if len(bumper_a) == 0 and len(bumper_b) == 1:
                     if location.trackParts[bumper_b[0]].aSide:
                         gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
                     elif location.trackParts[bumper_b[0]].bSide:
                         gateway = location.trackParts[location.trackParts[bumper_b[0]].bSide[0]]
-                    
-                    if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
+                    if gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.length > 0:
                         gateways.append((gateway, location.trackParts[bumper_b[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
-                elif len(bumper_a) == 1 and len(bumper_b) == 0: 
+                elif len(bumper_a) == 1 and len(bumper_b) == 0:
                     if location.trackParts[bumper_a[0]].aSide:
                         gateway = location.trackParts[location.trackParts[bumper_a[0]].aSide[0]]
                     elif location.trackParts[bumper_a[0]].bSide:
                         gateway = location.trackParts[location.trackParts[bumper_a[0]].bSide[0]]
-                    if gateway.type == TrackPartType.RailRoad and not gateway.sawMovementAllowed and not gateway.parkingAllowed and not gateway.stationPlatform and gateway.id not in facilities:
+                    if gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.length > 0:
                         gateways.append((gateway, location.trackParts[bumper_a[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
         return gateways
@@ -129,7 +132,7 @@ class RandomGenerator:
         distribution = self.distribute_train_units(num, distribution_config)
         for (i, train_units) in enumerate(distribution):
             ### Incoming train
-            gateway, side = random.choice(self.gateways)
+            gateway, side = random.choice(self.gateways["arrival"])
             # Arrive in 2/3 of total time
             start_time = random.randrange(self.scenario_generator.scenario.startTime, self.scenario_generator.scenario.endTime * 2 / 3)
             # Minimum time in yard is 10 minutes + total servicing time
@@ -149,7 +152,7 @@ class RandomGenerator:
 
             ### Outgoing train
             # TODO matching
-            gateway, side = random.choice(self.gateways)
+            gateway, side = random.choice(self.gateways["departure"])
             unmatched_train_units = [self.scenario_generator.create_TrainUnitUnmatchedMembers(train_unit.typeDisplayName) for train_unit in train_units]
             train_out = self.scenario_generator.create_Train(
                 id=f"{i+num}",

@@ -571,8 +571,8 @@ class ScenarioGenerator:
             logging.warning("No location file was loaded")
 
     def add_DefaultTrainUnitTypes(self):
-        """Creates the default train unit types from the data/train_unit_types.json data."""
-        train_unit_file = os.path.join(os.path.dirname(__file__), "..", "data", "train_unit_types.json")
+        """Creates the default train unit types from the `data/default_train_unit_types.json` data."""
+        train_unit_file = os.path.join(os.path.dirname(__file__), "..", "data", "default_train_unit_types.json")
         train_unit_data = json.load(open(train_unit_file, "r"))
         for unit_type in train_unit_data:
             self.add_TrainUnitType(

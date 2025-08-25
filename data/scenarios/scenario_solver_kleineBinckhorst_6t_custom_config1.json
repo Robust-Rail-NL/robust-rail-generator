@@ -101,7 +101,7 @@
     "inStanding": {
         "trains": [
             {
-                "entryTrackPart": "54",
+                "entryTrackPart": "56",
                 "id": "4002",
                 "members": [
                     {
@@ -124,7 +124,7 @@
     "outStanding": {
         "trainRequests": [
             {
-                "leaveTrackPart": "68",
+                "leaveTrackPart": "61",
                 "displayName": "2001",
                 "trainUnits": [
                     {
