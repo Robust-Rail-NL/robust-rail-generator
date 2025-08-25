@@ -21,6 +21,8 @@ The configuration file is a JSON file with the following parameters defined in t
   - `units_per_composition` (list): list with integers describing number of train units per composition, can be just one item in the list, then it's the same for all trains, or multiple to specify a distribution
   - `type_ratio` (float): number between 0 and 1, where 1 means, each train has unique type and 0 means each train has the same type.
   - `matching_complexity` (float): a number between 0 and 1, where 1 means all outgoing train units are reversed from incoming train units and 0 means the same train compositions can be used for outgoing trains as the incoming trains. A number in between means that randomly some trains need to be coupled/decoupled, where higher number means more operations required
+  - `arrival_track` (int/string) (optional): track (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on. If not provided, it will be generated.
+  - `departure_track` (int/string) (optional): track (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on. If not provided, it will be generated.
 - `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
   - `id` (int): unique train unit id
   - `type` (string): type of the train unit, should be compatible with the default options if `use_default_material` is true (otherwise trains must also be generated randomly)
@@ -31,13 +33,13 @@ The configuration file is a JSON file with the following parameters defined in t
   - A train can be either incoming or already in the shunting yard, and can depart from the scenario or end its service at the shunting yard. Therefore, some combinations are possible of the following options:
     - Option 1: train arrives into scenario (called `in` train), you must specify;
       - `arrival_time` (int): time at which train enters the scenario
-      - `arrival_track` (int/string): track (id or name) at which train enters the scenario
+      - `arrival_track` (int/string): track (id or name) at which train enters the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
     - Option 2: train starts in the shunting yard (called `in_standing` train), you must specify:
       - `start_at_track` (int/string): track (id or name) at which train is parked at the start of the scenario
       - `parking_index` (int) (optional): if multiple trains park at same track as in standing, define index for the other of the trains (lower index is Aside)
       - `side_track_part` (int/string) (optional): track part (id or name) on which side the train is parked, can be a bumper or a different track/switch. If not specified, random one is chosen (shortest length neighbor)
     - Option 3: train departs from scenario (called `out` train), you must specify:
-      - `departure_track` (int): track (id or name) from which train leaves the scenario
+      - `departure_track` (int): track (id or name) from which train leaves the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
       - `departure_time` (int/string): time at which train start moving toward departure track
       - `depart_any_track` (bool) (optional): whether train can depart from any track or only the departure track
     - Option 4: train remains in shunting yard (called `out_standing` train), you must specify:

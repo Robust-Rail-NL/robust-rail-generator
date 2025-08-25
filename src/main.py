@@ -42,13 +42,17 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
         correct_file, config = check_train_details_file(config, scenario_generator.location)
         if not correct_file:
             exit()
+    gateways = {"departure": [], "arrival": []}
+    if "gateway" in config:
+        gateways = check_gateways(config, scenario_generator.location, gateways)
+
 
     # Setup random generator with seed
     if "seed" in config:
-        random_generator = RandomGenerator(scenario_generator, config["seed"], scenario_generator.location)
+        random_generator = RandomGenerator(scenario_generator, config["seed"], scenario_generator.location, gateways)
     else:
         config["seed"] = 42
-        random_generator = RandomGenerator(scenario_generator, 42, scenario_generator.location)
+        random_generator = RandomGenerator(scenario_generator, 42, scenario_generator.location, gateways)
 
     # Load the default train materials if specified
     if config["use_default_material"]:

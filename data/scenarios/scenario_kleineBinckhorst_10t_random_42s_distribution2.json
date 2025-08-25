@@ -3,8 +3,8 @@
         {
             "time": "5977",
             "id": "0",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "46",
+            "parkingTrackPart": "14",
             "members": [
                 {
                     "id": "23",
@@ -22,10 +22,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "645",
+            "time": "3100",
             "id": "1",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "46",
+            "parkingTrackPart": "14",
             "members": [
                 {
                     "id": "11",
@@ -43,10 +43,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "5771",
+            "time": "5149",
             "id": "2",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "15",
@@ -69,10 +69,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "6332",
+            "time": "1575",
             "id": "3",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "3",
@@ -95,10 +95,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "827",
+            "time": "5417",
             "id": "4",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "46",
+            "parkingTrackPart": "14",
             "members": [
                 {
                     "id": "10",
@@ -116,10 +116,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "5207",
+            "time": "1907",
             "id": "5",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "46",
+            "parkingTrackPart": "14",
             "members": [
                 {
                     "id": "2",
@@ -142,10 +142,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "3032",
+            "time": "3714",
             "id": "6",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "22",
@@ -163,10 +163,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "5749",
+            "time": "3032",
             "id": "7",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "46",
+            "parkingTrackPart": "14",
             "members": [
                 {
                     "id": "5",
@@ -189,10 +189,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "4375",
+            "time": "2187",
             "id": "8",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "19",
@@ -215,10 +215,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "3108",
+            "time": "584",
             "id": "9",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "12",
@@ -240,8 +240,8 @@
         {
             "time": "8458",
             "id": "10",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "****",
@@ -259,10 +259,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "6048",
+            "time": "4345",
             "id": "11",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "****",
@@ -280,10 +280,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "6655",
+            "time": "8282",
             "id": "12",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -306,10 +306,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "8117",
+            "time": "7946",
             "id": "13",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "46",
+            "parkingTrackPart": "14",
             "members": [
                 {
                     "id": "****",
@@ -332,10 +332,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "4540",
+            "time": "6950",
             "id": "14",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -353,10 +353,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "9223",
+            "time": "3334",
             "id": "15",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -371,6 +371,27 @@
                 {
                     "id": "****",
                     "typeDisplayName": "SLT-6",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "canDepartFromAnyTrack": false,
+            "minimumDuration": ""
+        },
+        {
+            "time": "9521",
+            "id": "16",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
+            "members": [
+                {
+                    "id": "****",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                },
+                {
+                    "id": "****",
+                    "typeDisplayName": "VIRM-6",
                     "tasks": []
                 }
             ],
@@ -380,30 +401,9 @@
         },
         {
             "time": "6542",
-            "id": "16",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
-            "members": [
-                {
-                    "id": "****",
-                    "typeDisplayName": "VIRM-6",
-                    "tasks": []
-                },
-                {
-                    "id": "****",
-                    "typeDisplayName": "VIRM-6",
-                    "tasks": []
-                }
-            ],
-            "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
-        },
-        {
-            "time": "9148",
             "id": "17",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "46",
+            "parkingTrackPart": "14",
             "members": [
                 {
                     "id": "****",
@@ -426,10 +426,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "6980",
+            "time": "8536",
             "id": "18",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "****",
@@ -452,10 +452,10 @@
             "minimumDuration": ""
         },
         {
-            "time": "5919",
+            "time": "3987",
             "id": "19",
-            "sideTrackPart": "43",
-            "parkingTrackPart": "40",
+            "sideTrackPart": "47",
+            "parkingTrackPart": "41",
             "members": [
                 {
                     "id": "****",
