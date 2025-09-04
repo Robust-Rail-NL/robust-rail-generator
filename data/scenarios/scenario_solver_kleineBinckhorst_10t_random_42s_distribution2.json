@@ -2,51 +2,14 @@
     "in": {
         "trains": [
             {
-                "entryTrackPart": "46",
-                "arrival": "5977",
-                "departure": "5977",
+                "entryTrackPart": "47",
+                "arrival": "1575",
+                "departure": "1575",
                 "id": "0",
                 "members": [
                     {
                         "trainUnit": {
-                            "id": "23",
-                            "type": {
-                                "displayName": "VIRM",
-                                "carriages": 6,
-                                "length": 162.06,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "280",
-                                "backAdditionTime": "24"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "24",
-                            "type": {
-                                "displayName": "VIRM",
-                                "carriages": 6,
-                                "length": 162.06,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "280",
-                                "backAdditionTime": "24"
-                            }
-                        }
-                    }
-                ],
-                "firstParkingTrackPart": "14"
-            },
-            {
-                "entryTrackPart": "46",
-                "arrival": "3100",
-                "departure": "3100",
-                "id": "1",
-                "members": [
-                    {
-                        "trainUnit": {
-                            "id": "11",
+                            "id": "6",
                             "type": {
                                 "displayName": "SLT",
                                 "carriages": 4,
@@ -55,196 +18,6 @@
                                 "splitDuration": "120",
                                 "backNormTime": "120",
                                 "backAdditionTime": "16"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "14",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 4,
-                                "length": 69.36,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "16"
-                            }
-                        }
-                    }
-                ],
-                "firstParkingTrackPart": "14"
-            },
-            {
-                "entryTrackPart": "42",
-                "arrival": "5149",
-                "departure": "5149",
-                "id": "2",
-                "members": [
-                    {
-                        "trainUnit": {
-                            "id": "15",
-                            "type": {
-                                "displayName": "VIRM",
-                                "carriages": 4,
-                                "length": 108.56,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "280",
-                                "backAdditionTime": "25"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "20",
-                            "type": {
-                                "displayName": "VIRM",
-                                "carriages": 4,
-                                "length": 108.56,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "280",
-                                "backAdditionTime": "25"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "18",
-                            "type": {
-                                "displayName": "VIRM",
-                                "carriages": 4,
-                                "length": 108.56,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "280",
-                                "backAdditionTime": "25"
-                            }
-                        }
-                    }
-                ],
-                "firstParkingTrackPart": "15"
-            },
-            {
-                "entryTrackPart": "47",
-                "arrival": "1575",
-                "departure": "1575",
-                "id": "3",
-                "members": [
-                    {
-                        "trainUnit": {
-                            "id": "3",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "15"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "7",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "15"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "4",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "15"
-                            }
-                        }
-                    }
-                ],
-                "firstParkingTrackPart": "41"
-            },
-            {
-                "entryTrackPart": "46",
-                "arrival": "5417",
-                "departure": "5417",
-                "id": "4",
-                "members": [
-                    {
-                        "trainUnit": {
-                            "id": "10",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 4,
-                                "length": 69.36,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "16"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "9",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 4,
-                                "length": 69.36,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "16"
-                            }
-                        }
-                    }
-                ],
-                "firstParkingTrackPart": "14"
-            },
-            {
-                "entryTrackPart": "46",
-                "arrival": "1907",
-                "departure": "1907",
-                "id": "5",
-                "members": [
-                    {
-                        "trainUnit": {
-                            "id": "2",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "15"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "0",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "15"
                             }
                         }
                     },
@@ -263,31 +36,54 @@
                         }
                     }
                 ],
-                "firstParkingTrackPart": "14"
+                "firstParkingTrackPart": "41"
             },
             {
-                "entryTrackPart": "42",
-                "arrival": "3714",
-                "departure": "3714",
-                "id": "6",
+                "entryTrackPart": "46",
+                "arrival": "5417",
+                "departure": "5417",
+                "id": "1",
                 "members": [
                     {
                         "trainUnit": {
-                            "id": "22",
+                            "id": "13",
                             "type": {
-                                "displayName": "VIRM",
-                                "carriages": 6,
-                                "length": 162.06,
+                                "displayName": "SLT",
+                                "carriages": 4,
+                                "length": 69.36,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
-                                "backNormTime": "280",
-                                "backAdditionTime": "24"
+                                "backNormTime": "120",
+                                "backAdditionTime": "16"
                             }
                         }
                     },
                     {
                         "trainUnit": {
-                            "id": "21",
+                            "id": "3",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 6,
+                                "length": 100.54,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "15"
+                            }
+                        }
+                    }
+                ],
+                "firstParkingTrackPart": "14"
+            },
+            {
+                "entryTrackPart": "46",
+                "arrival": "1907",
+                "departure": "1907",
+                "id": "2",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "12",
                             "type": {
                                 "displayName": "VIRM",
                                 "carriages": 6,
@@ -300,45 +96,54 @@
                         }
                     }
                 ],
+                "firstParkingTrackPart": "14"
+            },
+            {
+                "entryTrackPart": "42",
+                "arrival": "3714",
+                "departure": "3714",
+                "id": "3",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "11",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 4,
+                                "length": 108.56,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "280",
+                                "backAdditionTime": "25"
+                            }
+                        }
+                    }
+                ],
                 "firstParkingTrackPart": "15"
             },
             {
                 "entryTrackPart": "46",
                 "arrival": "3032",
                 "departure": "3032",
-                "id": "7",
+                "id": "4",
                 "members": [
                     {
                         "trainUnit": {
-                            "id": "5",
+                            "id": "14",
                             "type": {
                                 "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
+                                "carriages": 4,
+                                "length": 69.36,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "15"
+                                "backAdditionTime": "16"
                             }
                         }
                     },
                     {
                         "trainUnit": {
-                            "id": "8",
-                            "type": {
-                                "displayName": "SLT",
-                                "carriages": 6,
-                                "length": 100.54,
-                                "combineDuration": "180",
-                                "splitDuration": "120",
-                                "backNormTime": "120",
-                                "backAdditionTime": "15"
-                            }
-                        }
-                    },
-                    {
-                        "trainUnit": {
-                            "id": "6",
+                            "id": "9",
                             "type": {
                                 "displayName": "SLT",
                                 "carriages": 6,
@@ -357,39 +162,71 @@
                 "entryTrackPart": "47",
                 "arrival": "2187",
                 "departure": "2187",
-                "id": "8",
+                "id": "5",
                 "members": [
                     {
                         "trainUnit": {
-                            "id": "19",
+                            "id": "8",
                             "type": {
                                 "displayName": "VIRM",
-                                "carriages": 4,
-                                "length": 108.56,
+                                "carriages": 6,
+                                "length": 162.06,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "280",
-                                "backAdditionTime": "25"
+                                "backAdditionTime": "24"
+                            }
+                        }
+                    }
+                ],
+                "firstParkingTrackPart": "41"
+            },
+            {
+                "entryTrackPart": "47",
+                "arrival": "584",
+                "departure": "584",
+                "id": "6",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "7",
+                            "type": {
+                                "displayName": "SLT",
+                                "carriages": 6,
+                                "length": 100.54,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "120",
+                                "backAdditionTime": "15"
                             }
                         }
                     },
                     {
                         "trainUnit": {
-                            "id": "16",
+                            "id": "0",
                             "type": {
-                                "displayName": "VIRM",
+                                "displayName": "SLT",
                                 "carriages": 4,
-                                "length": 108.56,
+                                "length": 69.36,
                                 "combineDuration": "180",
                                 "splitDuration": "120",
-                                "backNormTime": "280",
-                                "backAdditionTime": "25"
+                                "backNormTime": "120",
+                                "backAdditionTime": "16"
                             }
                         }
-                    },
+                    }
+                ],
+                "firstParkingTrackPart": "41"
+            },
+            {
+                "entryTrackPart": "47",
+                "arrival": "2005",
+                "departure": "2005",
+                "id": "7",
+                "members": [
                     {
                         "trainUnit": {
-                            "id": "17",
+                            "id": "5",
                             "type": {
                                 "displayName": "VIRM",
                                 "carriages": 4,
@@ -405,14 +242,37 @@
                 "firstParkingTrackPart": "41"
             },
             {
+                "entryTrackPart": "42",
+                "arrival": "2211",
+                "departure": "2211",
+                "id": "8",
+                "members": [
+                    {
+                        "trainUnit": {
+                            "id": "4",
+                            "type": {
+                                "displayName": "VIRM",
+                                "carriages": 6,
+                                "length": 162.06,
+                                "combineDuration": "180",
+                                "splitDuration": "120",
+                                "backNormTime": "280",
+                                "backAdditionTime": "24"
+                            }
+                        }
+                    }
+                ],
+                "firstParkingTrackPart": "15"
+            },
+            {
                 "entryTrackPart": "47",
-                "arrival": "584",
-                "departure": "584",
+                "arrival": "1799",
+                "departure": "1799",
                 "id": "9",
                 "members": [
                     {
                         "trainUnit": {
-                            "id": "12",
+                            "id": "2",
                             "type": {
                                 "displayName": "SLT",
                                 "carriages": 4,
@@ -426,7 +286,7 @@
                     },
                     {
                         "trainUnit": {
-                            "id": "13",
+                            "id": "10",
                             "type": {
                                 "displayName": "SLT",
                                 "carriages": 4,
@@ -446,44 +306,13 @@
     "out": {
         "trainRequests": [
             {
-                "leaveTrackPart": "47",
-                "arrival": "8458",
-                "departure": "8458",
+                "leaveTrackPart": "46",
+                "arrival": "7946",
+                "departure": "7946",
                 "displayName": "10",
                 "trainUnits": [
                     {
                         "type": {
-                            "displayName": "VIRM",
-                            "carriages": 6,
-                            "length": 162.06,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "24"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "VIRM",
-                            "carriages": 6,
-                            "length": 162.06,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "24"
-                        }
-                    }
-                ],
-                "lastParkingTrackPart": "41"
-            },
-            {
-                "leaveTrackPart": "47",
-                "arrival": "4345",
-                "departure": "4345",
-                "displayName": "11",
-                "trainUnits": [
-                    {
-                        "type": {
                             "displayName": "SLT",
                             "carriages": 4,
                             "length": 69.36,
@@ -491,90 +320,6 @@
                             "splitDuration": "120",
                             "backNormTime": "120",
                             "backAdditionTime": "16"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 4,
-                            "length": 69.36,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "16"
-                        }
-                    }
-                ],
-                "lastParkingTrackPart": "41"
-            },
-            {
-                "leaveTrackPart": "42",
-                "arrival": "8282",
-                "departure": "8282",
-                "displayName": "12",
-                "trainUnits": [
-                    {
-                        "type": {
-                            "displayName": "VIRM",
-                            "carriages": 4,
-                            "length": 108.56,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "25"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "VIRM",
-                            "carriages": 4,
-                            "length": 108.56,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "25"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "VIRM",
-                            "carriages": 4,
-                            "length": 108.56,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "25"
-                        }
-                    }
-                ],
-                "lastParkingTrackPart": "15"
-            },
-            {
-                "leaveTrackPart": "46",
-                "arrival": "7946",
-                "departure": "7946",
-                "displayName": "13",
-                "trainUnits": [
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 6,
-                            "length": 100.54,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "15"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 6,
-                            "length": 100.54,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "15"
                         }
                     },
                     {
@@ -595,6 +340,77 @@
                 "leaveTrackPart": "42",
                 "arrival": "6950",
                 "departure": "6950",
+                "displayName": "11",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 4,
+                            "length": 69.36,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "16"
+                        }
+                    },
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 6,
+                            "length": 100.54,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "15"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "42",
+                "arrival": "3334",
+                "departure": "3334",
+                "displayName": "12",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 6,
+                            "length": 162.06,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "280",
+                            "backAdditionTime": "24"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "42",
+                "arrival": "9521",
+                "departure": "9521",
+                "displayName": "13",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 4,
+                            "length": 108.56,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "280",
+                            "backAdditionTime": "25"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "15"
+            },
+            {
+                "leaveTrackPart": "46",
+                "arrival": "6542",
+                "departure": "6542",
                 "displayName": "14",
                 "trainUnits": [
                     {
@@ -606,121 +422,6 @@
                             "splitDuration": "120",
                             "backNormTime": "120",
                             "backAdditionTime": "16"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 4,
-                            "length": 69.36,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "16"
-                        }
-                    }
-                ],
-                "lastParkingTrackPart": "15"
-            },
-            {
-                "leaveTrackPart": "42",
-                "arrival": "3334",
-                "departure": "3334",
-                "displayName": "15",
-                "trainUnits": [
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 6,
-                            "length": 100.54,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "15"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 6,
-                            "length": 100.54,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "15"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 6,
-                            "length": 100.54,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "15"
-                        }
-                    }
-                ],
-                "lastParkingTrackPart": "15"
-            },
-            {
-                "leaveTrackPart": "42",
-                "arrival": "9521",
-                "departure": "9521",
-                "displayName": "16",
-                "trainUnits": [
-                    {
-                        "type": {
-                            "displayName": "VIRM",
-                            "carriages": 6,
-                            "length": 162.06,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "24"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "VIRM",
-                            "carriages": 6,
-                            "length": 162.06,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "24"
-                        }
-                    }
-                ],
-                "lastParkingTrackPart": "15"
-            },
-            {
-                "leaveTrackPart": "46",
-                "arrival": "6542",
-                "departure": "6542",
-                "displayName": "17",
-                "trainUnits": [
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 6,
-                            "length": 100.54,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "15"
-                        }
-                    },
-                    {
-                        "type": {
-                            "displayName": "SLT",
-                            "carriages": 6,
-                            "length": 100.54,
-                            "combineDuration": "180",
-                            "splitDuration": "120",
-                            "backNormTime": "120",
-                            "backAdditionTime": "15"
                         }
                     },
                     {
@@ -741,30 +442,59 @@
                 "leaveTrackPart": "47",
                 "arrival": "8536",
                 "departure": "8536",
-                "displayName": "18",
+                "displayName": "15",
                 "trainUnits": [
                     {
                         "type": {
                             "displayName": "VIRM",
-                            "carriages": 4,
-                            "length": 108.56,
+                            "carriages": 6,
+                            "length": 162.06,
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "280",
-                            "backAdditionTime": "25"
+                            "backAdditionTime": "24"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "41"
+            },
+            {
+                "leaveTrackPart": "47",
+                "arrival": "3987",
+                "departure": "3987",
+                "displayName": "16",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "SLT",
+                            "carriages": 6,
+                            "length": 100.54,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "120",
+                            "backAdditionTime": "15"
                         }
                     },
                     {
                         "type": {
-                            "displayName": "VIRM",
+                            "displayName": "SLT",
                             "carriages": 4,
-                            "length": 108.56,
+                            "length": 69.36,
                             "combineDuration": "180",
                             "splitDuration": "120",
-                            "backNormTime": "280",
-                            "backAdditionTime": "25"
+                            "backNormTime": "120",
+                            "backAdditionTime": "16"
                         }
-                    },
+                    }
+                ],
+                "lastParkingTrackPart": "41"
+            },
+            {
+                "leaveTrackPart": "42",
+                "arrival": "3943",
+                "departure": "3943",
+                "displayName": "17",
+                "trainUnits": [
                     {
                         "type": {
                             "displayName": "VIRM",
@@ -777,12 +507,32 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "15"
             },
             {
                 "leaveTrackPart": "47",
-                "arrival": "3987",
-                "departure": "3987",
+                "arrival": "8053",
+                "departure": "8053",
+                "displayName": "18",
+                "trainUnits": [
+                    {
+                        "type": {
+                            "displayName": "VIRM",
+                            "carriages": 6,
+                            "length": 162.06,
+                            "combineDuration": "180",
+                            "splitDuration": "120",
+                            "backNormTime": "280",
+                            "backAdditionTime": "24"
+                        }
+                    }
+                ],
+                "lastParkingTrackPart": "41"
+            },
+            {
+                "leaveTrackPart": "42",
+                "arrival": "8007",
+                "departure": "8007",
                 "displayName": "19",
                 "trainUnits": [
                     {
@@ -808,7 +558,7 @@
                         }
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "15"
             }
         ]
     },

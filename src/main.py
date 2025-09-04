@@ -58,8 +58,10 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
     if config["use_default_material"]:
         scenario_generator.add_DefaultTrainUnitTypes()
         random_generator.train_unit_types = scenario_generator.scenario_TrainUnitTypes.copy()
+        random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
     else:
         random_generator.generate_train_unit_types(config["number_of_train_unit_types"])
+        random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
 
     # Add the servicing tasks tasks if specified
     services = {}
@@ -99,7 +101,7 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
     else:
         # Create a scenario file at the default location
         output_filepath = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", f"{scenario_file}.json")
-    output_solver_filepath = output_filepath.replace("scenario_", "scenario_solver_")
+    output_solver_filepath = "/".join(output_filepath.split("/")[:-1] + [output_filepath.split("/")[-1].replace("scenario", "scenario_solver")])
     # Write TORS scenario file
     scenario_generator.save_scenario_json(output_filepath)
     # Write Solver format scenario file
