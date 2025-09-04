@@ -204,15 +204,15 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
     return True, config
         
 def check_gateways(config, location, gateways):
-    if "arrive" in config["gateway"]:
-        for arrive_id in config["gateway"]["arrive"]:
+    if "arrival" in config["gateway"]:
+        for arrive_id in config["gateway"]["arrival"]:
             if int(arrive_id) not in [t.id for t in location.trackParts]:
                 print(f"ERROR: arrival gateway {arrive_id} not found in in location")
                 return False, config
             arrive = location.trackParts[int(arrive_id)]
             if arrive.type != TrackPartType.RailRoad:
                 print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
-                return False, config        
+                return False, config
             if not arrive.parkingAllowed:
                 print(f"ERROR: arrival gateway {arrive_id} does not allow parking")
                 return False, config
@@ -235,8 +235,8 @@ def check_gateways(config, location, gateways):
             else:
                 print(f"ERROR: arrival gateway {arrive_id} does not have a bumper side")
                 return False, config            
-    if "depart" in config["gateway"]:
-        for depart_id in config["gateway"]["depart"]:
+    if "departure" in config["gateway"]:
+        for depart_id in config["gateway"]["departure"]:
             if int(depart_id) not in [t.id for t in location.trackParts]:
                 print(f"ERROR: departure gateway {depart_id} not found in in location")
                 return False, config
