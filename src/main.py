@@ -46,7 +46,6 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
     if "gateway" in config:
         gateways = check_gateways(config, scenario_generator.location, gateways)
 
-
     # Setup random generator with seed
     if "seed" in config:
         random_generator = RandomGenerator(scenario_generator, config["seed"], scenario_generator.location, gateways)
