@@ -46,8 +46,8 @@ def check_configuration_file(config, location_path):
         if "units_per_composition" not in config["train_unit_distribution"]:
             logging.error("No 'units_per_composition' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
             return False, config
-        if "type_ratio" not in config["train_unit_distribution"]:
-            logging.error("No 'type_ratio' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
+        if "super_type_ratio" not in config["train_unit_distribution"]:
+            logging.error("No 'super_type_ratio' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
             return False, config
         if "matching_complexity" not in config["train_unit_distribution"]:
             logging.error("No 'matching_complexity' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
