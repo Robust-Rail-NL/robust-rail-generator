@@ -143,17 +143,17 @@ class RandomGenerator:
 
     def generate_trains(self, num: int, distribution_config = None):
         distribution = self.distribute_train_units(num, distribution_config)
+        # Arrive in 2/3 of total time
+        arrival_times = [random.sample(range(self.scenario_generator.scenario.startTime, math.floor(self.scenario_generator.scenario.endTime * 2/3)), 1)[0] for _ in range(num)]
+        # Minimum time in yard is 10 minutes + total servicing time
+        # TODO servicing time
+        departure_times = [random.sample(range(arrival_times[j] + 600, self.scenario_generator.scenario.endTime), 1)[0] for j in range(num)]
         for (i, train_units) in enumerate(distribution):
             ### Incoming train
             gateway, side = random.choice(self.gateways["arrival"])
-            # Arrive in 2/3 of total time
-            start_time = random.randrange(self.scenario_generator.scenario.startTime, self.scenario_generator.scenario.endTime * 2 / 3)
-            # Minimum time in yard is 10 minutes + total servicing time
-            # TODO servicing time
-            end_time = random.randrange(start_time + 600, self.scenario_generator.scenario.endTime)
             train_in = self.scenario_generator.create_Train(
                 id=str(i),
-                time=start_time,
+                time=arrival_times[i],
                 members=train_units,
                 standingIndex=1, # assume
                 sideTrackPart=side.id,
@@ -169,7 +169,7 @@ class RandomGenerator:
             unmatched_train_units = [self.scenario_generator.create_TrainUnitUnmatchedMembers(train_unit.typeDisplayName) for train_unit in train_units]
             train_out = self.scenario_generator.create_Train(
                 id=f"{i+num}",
-                time=end_time,
+                time=departure_times[i],
                 members=unmatched_train_units,
                 standingIndex=1, # assume
                 sideTrackPart=side.id,
