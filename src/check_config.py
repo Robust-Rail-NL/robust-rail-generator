@@ -59,6 +59,30 @@ def check_configuration_file(config, location_path):
             for t in config["train_unit_distribution"]["train_unit_types"]:
                 if t not in default_train_unit_names:
                     logging.error(f"Defined 'train_unit_distribution' and 'train_unit_types' with an unknown train unit type {t}.")
+                    return False, config
+    if not config["trains_given"]:
+        if "mixed_traffic" in config:
+            if not isinstance(config["mixed_traffic"], bool):
+                logging.error("'mixed_traffic' should be a boolean (true/false).")
+                return False, config
+        else:
+            config["mixed_traffic"] = True
+        if "min_gap_on_gateway" in config:
+            if not isinstance(config["min_gap_on_gateway"], int) or config["min_gap_on_gateway"] < 0:
+                logging.error("'min_gap_on_gateway' should be a non-negative integer.")
+                return False, config
+        else:
+            config["min_gap_on_gateway"] = 30
+        if "min_time_in_yard" in config:
+            if not isinstance(config["min_time_in_yard"], int) or config["min_time_in_yard"] < 0:
+                logging.error("'min_time_in_yard' should be a non-negative integer.")
+                return False, config
+        else:
+            config["min_time_in_yard"] = 600
+    # TODO Consider the servicing time
+    if config["end_time"] - config["start_time"] // config["min_gap_on_gateway"] < config["number_of_trains"] * 2.1:
+        logging.warning(f"Not enough time to shunt all {config['number_of_trains']} trains within {config['end_time'] - config['start_time']} allowing a gap of {config['min_gap_on_gateway']}, results in {config['end_time'] - config['start_time'] // config['min_gap_on_gateway']} slots")
+        return False, config
     if "perform_servicing" not in config:
         logging.error("Not defined: 'perform_servicing'.")
         return False, config

@@ -6,5 +6,6 @@
     "trains_given": false,
     "perform_servicing": false,
     "number_of_trains": 10,
-    "number_of_train_unit_types": 2
+    "number_of_train_unit_types": 2,
+    "mixed_traffic": false
 }

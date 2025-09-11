@@ -89,8 +89,12 @@ class RandomGenerator:
             distribution_config = {"random_unit_types_per_train": [(random.choice(self.train_unit_types), random.randrange(1, 4, 1)) for _ in range(config["number_of_trains"])]}
             number_train_units = sum([num for _, num in distribution_config["random_unit_types_per_train"]])
         self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config)
-        self.generate_trains(config["number_of_trains"], distribution_config)
-
+        self.generate_trains(
+            config["number_of_trains"], 
+            distribution_config, 
+            config["mixed_traffic"],
+            config["min_gap_on_gateway"],
+            config["min_time_in_yard"])
         
     def generate_train_unit_types(self, num: int):
         for i in range(num):
@@ -141,13 +145,24 @@ class RandomGenerator:
         if self.number_of_train_units != number_train_units:
             logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
 
-    def generate_trains(self, num: int, distribution_config = None):
+    def generate_trains(self, num: int, distribution_config = None, mixed_traffic = True, min_gap_on_gateway = 30, min_time_in_yard = 600):
         distribution = self.distribute_train_units(num, distribution_config)
-        # Arrive in 2/3 of total time
-        arrival_times = [random.sample(range(self.scenario_generator.scenario.startTime, math.floor(self.scenario_generator.scenario.endTime * 2/3)), 1)[0] for _ in range(num)]
-        # Minimum time in yard is 10 minutes + total servicing time
-        # TODO servicing time
-        departure_times = [random.sample(range(arrival_times[j] + 600, self.scenario_generator.scenario.endTime), 1)[0] for j in range(num)]
+        arrival_times = []
+        departure_times = []
+        # Mixed traffic allows trains to depart before all trains have arrived
+        if mixed_traffic:
+            # Arrive in 2/3 of total time - generate 
+            arrival_times = random.sample(range(self.scenario_generator.scenario.startTime, math.floor(self.scenario_generator.scenario.endTime * 2 / 3), min_gap_on_gateway), num)
+            possible_departure_times = [t for t in range(min(arrival_times) + min_time_in_yard, self.scenario_generator.scenario.endTime, min_gap_on_gateway) if t not in arrival_times]
+            # TODO allow extra minimum servicing time
+            for y in range(num):
+                departure_times.append(random.sample([x for x in possible_departure_times if x > arrival_times[y]], 1)[0])
+                possible_departure_times.remove(departure_times[-1])
+        else:
+            # Arrive in first half of total time
+            arrival_times = random.sample(range(self.scenario_generator.scenario.startTime, math.floor(self.scenario_generator.scenario.endTime / 2), min_gap_on_gateway), num)
+            # Depart in second half of total time
+            departure_times = random.sample(range(math.floor(self.scenario_generator.scenario.endTime / 2), self.scenario_generator.scenario.endTime, min_gap_on_gateway), num)
         for (i, train_units) in enumerate(distribution):
             ### Incoming train
             gateway, side = random.choice(self.gateways["arrival"])
