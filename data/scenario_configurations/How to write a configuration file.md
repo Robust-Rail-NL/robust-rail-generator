@@ -16,13 +16,15 @@ The configuration file is a JSON file with the following parameters defined in t
 - `seed` (int): seed used for any random generation (defaults to 42)
 - `number_of_trains` (int): if `trains_given` is false, this is the number of trains to be generated: each gets a random number of units between 1 and 3
 - `number_of_train_unit_types` (int): if `use_default_material` is false, this is the number of train unit types to be generated
+- `mixed_traffic` (bool) (optional): if `trains_given` is false, this parameter can be used to say that if true all trains must arrive before the first can depart again. Assumed to be true.
+- `gateway` (optional) (dict), if `trains_given` is false, this parameter can be used to specify the track(s) at which trains must arrive/depart. If not provided, they will be generated.
+  - `arrival` (list of int/string) (optional): tracks (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
+  - `departure` (list int/string) (optional): tracks (id or name) at which trains must enter the scenario. Each track must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
 - `train_unit_distribution` (dict): if `trains_given` is false, this parameter can be used to control the train generation, 
   - `train_unit_types` (list): optional list of train unit type names that are included in this scenario (if `use_default_material` is true)
   - `units_per_composition` (list): list with integers describing number of train units per composition, can be just one item in the list, then it's the same for all trains, or multiple to specify a distribution
   - `type_ratio` (float): number between 0 and 1, where 1 means, each train has unique type and 0 means each train has the same type.
   - `matching_complexity` (float): a number between 0 and 1, where 1 means all outgoing train units are reversed from incoming train units and 0 means the same train compositions can be used for outgoing trains as the incoming trains. A number in between means that randomly some trains need to be coupled/decoupled, where higher number means more operations required
-  - `arrival_track` (int/string) (optional): track (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on. If not provided, it will be generated.
-  - `departure_track` (int/string) (optional): track (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on. If not provided, it will be generated.
 - `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
   - `id` (int): unique train unit id
   - `type` (string): type of the train unit, should be compatible with the default options if `use_default_material` is true (otherwise trains must also be generated randomly)
