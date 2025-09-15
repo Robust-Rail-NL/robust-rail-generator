@@ -5,6 +5,7 @@ import argparse
 from scenario import ScenarioGenerator, SolverScenarioGenerator
 from random_generator import RandomGenerator
 from check_config import *
+from check_matching import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config-file", help="Name of configuration file for the scenario generation.", required=True)
@@ -73,16 +74,19 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
     # Add the trains when specified
     if config["trains_given"]:
         create_trains(scenario_generator, config, services)
+        matching_possible = check_matching(scenario_generator.scenario)
+        if not matching_possible:
+            logging.error("The specified incoming and outgoing trains do not match. Please check the configuration file.")
+            exit()
     else:
         # Generate random trains if none are specified
-        random_generator.generate_train_compositions(config, scenario_generator)
-    
-    if config["through_traffic_given"]:
-        pass
-    if config["partial_plan_given"]:
-        pass
-    if config["partial_matching_given"]:
-        pass
+        distribution_config = random_generator.generate_train_compositions(config, scenario_generator)
+        # Check matching of incoming and outgoing trains
+        matching_possible = check_matching(scenario_generator.scenario)
+        while not matching_possible:
+            logging.warning("The generated incoming and outgoing trains do not match. Resampling arrival and departure times.")
+            random_generator.resample_arrival_departure_times(scenario_generator.scenario, distribution_config)
+            matching_possible = check_matching(scenario_generator.scenario)
     
     # Also generate the format of the solver
     scenario_generator.create_solver_format_scenario()
@@ -97,6 +101,9 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
         # Use the specified output path
         output_filepath = scenario_file
         output_filepath = output_filepath.replace("./", os.path.join(os.getcwd(), ""))
+    elif path is not None:
+        # Use the given path to the config file to also store the scenario file
+        output_filepath = os.path.join(path, scenario_file if scenario_file.endswith(".json") else f"{scenario_file}.json")
     else:
         # Create a scenario file at the default location
         output_filepath = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", f"{scenario_file}.json")

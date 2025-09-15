@@ -17,6 +17,9 @@ The configuration file is a JSON file with the following parameters defined in t
 - `number_of_trains` (int): if `trains_given` is false, this is the number of trains to be generated: each gets a random number of units between 1 and 3
 - `number_of_train_unit_types` (int): if `use_default_material` is false, this is the number of train unit types to be generated
 - `mixed_traffic` (bool) (optional): if `trains_given` is false, this parameter can be used to say that if true all trains must arrive before the first can depart again. Assumed to be true.
+- `matching` (int) (optional): if `trains_given` is false, this parameter can be used to say that if `0` the same train compositions are required for departure as generated for arrival, if `1`  the sequences and number of units per train are regenerated and allows for different number of trains (assumed value), if `2` the trains are treated as last in last out.
+- `min_gap_on_gateway` (int) (optional): if `trains_given` is false, this parameter can be used to give the minimal time between an arrival/departure action and another arrival/departure section on a gateway track. This time is used in generating the arrival/departure times. Set to 30 if not specified. 
+- `min_time_in_yard` (int) (optional): if `trains_given` is false, this parameter can be used to give the minimal time between arrival and departure of the same train (unit), the service time will also be checked to generate arrival/departure times. Set to 600 if not specified.
 - `gateway` (optional) (dict), if `trains_given` is false, this parameter can be used to specify the track(s) at which trains must arrive/depart. If not provided, they will be generated.
   - `arrival` (list of int/string) (optional): tracks (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
   - `departure` (list int/string) (optional): tracks (id or name) at which trains must enter the scenario. Each track must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
@@ -24,7 +27,6 @@ The configuration file is a JSON file with the following parameters defined in t
   - `train_unit_types` (list): optional list of train unit type names that are included in this scenario (if `use_default_material` is true)
   - `units_per_composition` (list): list with integers describing number of train units per composition, can be just one item in the list, then it's the same for all trains, or multiple to specify a distribution
   - `type_ratio` (float): number between 0 and 1, where 1 means, each train has unique type and 0 means each train has the same type.
-  - `matching_complexity` (float): a number between 0 and 1, where 1 means all outgoing train units are reversed from incoming train units and 0 means the same train compositions can be used for outgoing trains as the incoming trains. A number in between means that randomly some trains need to be coupled/decoupled, where higher number means more operations required
 - `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
   - `id` (int): unique train unit id
   - `type` (string): type of the train unit, should be compatible with the default options if `use_default_material` is true (otherwise trains must also be generated randomly)
@@ -54,30 +56,3 @@ The configuration file is a JSON file with the following parameters defined in t
   - `priority` (int): priority of the servicing task (lower is more important)
   - `duration` (int): time to execute servicing task
   - `required_skills` (list): list of strings giving the required skills to perform a servicing task, must be compatible with `custom_worker_skills`
-
-The following is not yet implemented:
-- `custom_through_traffic` (list): if `through_traffic_given` is true, this is a list of through traffic objects with the following parameters:
-  - `id` (int): unique train id
-  - `arriving_track` (int/string): track (id or name) where train arrives
-  - `departing_track` (int/string): track (id or name) where train departs
-  - `station_platform` (int/string): (optional) if train should visit station, this is the station platform track (id or name) where train make the short stop
-  - `station_time` (int): (optional) if train should visit station this is how long the train should stay at the station platform before continuing
-- `partial_matching` (list): if `partial_matching_given` is true, this is a list of train unit matches that are predefined, where each object has the following parameters:
-  - `train_unit_A` (int): id of shunting unit on the A-side
-  - `train_unit_B` (int): id of shunting unit on the B-side
-- `partial_plan` (list): if `partial_plan_given` is true, this is a list of task objects with the following required parameters:
-  - `task` (string): type of task which can be "move", "park", "shortstop", "service", "finish_service", "combine", "split"
-  - `time` (int): start time of the task
-  - Parameters for "move" tasks:
-    - `train` (int): id of train to move
-    - `path` (list): list of track part ids that are visited in order by the move
-  - Parameters for "shortstop" and "park" tasks:
-    - `train` (int): id of train that is making a stop
-    - `track` (int/string): id or name of track where train is stopping
-  - Parameters for "service" and "finish_service" tasks:
-    - `train` (int): id of train that is being serviced
-    - `track` (int/string): id or name of track where train is being serviced
-    - `type` (string): type of servicing task that is being done
-  - Parameters for "combine" and "split" tasks:
-    - `train_units` (list): list of train units id, in order
-    - `track` (int/string): id or name of track where the combining or splitting of train units takes place
