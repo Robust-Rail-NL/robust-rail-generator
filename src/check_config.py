@@ -49,9 +49,6 @@ def check_configuration_file(config, location_path):
         if "super_type_ratio" not in config["train_unit_distribution"]:
             logging.error("No 'super_type_ratio' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
             return False, config
-        if "matching_complexity" not in config["train_unit_distribution"]:
-            logging.error("No 'matching_complexity' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
-            return False, config
         if "train_unit_types" in config["train_unit_distribution"]:
             if not config["use_default_material"]:
                 logging.error("Defined 'train_unit_types' in the 'train_unit_distribution' while 'use_default_material' was false, cannot specify specify unit types for randomly generated unit types.")
@@ -79,6 +76,12 @@ def check_configuration_file(config, location_path):
                 return False, config
         else:
             config["min_time_in_yard"] = 600
+        if "matching" in config:
+            if not isinstance(config["matching"], int) or config["matching"] not in [0, 1, 2]:
+                logging.error("'matching' should be a value (0, 1, 2).")
+                return False, config
+        else:
+            config["matching"] = 1
     # TODO Consider the servicing time
     if config["end_time"] - config["start_time"] // config["min_gap_on_gateway"] < config["number_of_trains"] * 2.1:
         logging.warning(f"Not enough time to shunt all {config['number_of_trains']} trains within {config['end_time'] - config['start_time']} allowing a gap of {config['min_gap_on_gateway']}, results in {config['end_time'] - config['start_time'] // config['min_gap_on_gateway']} slots")
