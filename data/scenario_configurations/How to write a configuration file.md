@@ -23,10 +23,12 @@ The configuration file is a JSON file with the following parameters defined in t
 - `gateway` (optional) (dict), if `trains_given` is false, this parameter can be used to specify the track(s) at which trains must arrive/depart. If not provided, they will be generated.
   - `arrival` (list of int/string) (optional): tracks (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
   - `departure` (list int/string) (optional): tracks (id or name) at which trains must enter the scenario. Each track must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
-- `train_unit_distribution` (dict): if `trains_given` is false, this parameter can be used to control the train generation, 
+- `train_unit_distribution` (dict) (optional): if `trains_given` is false, this parameter can be used to control the train generation, 
   - `train_unit_types` (list): optional list of train unit type names that are included in this scenario (if `use_default_material` is true)
   - `units_per_composition` (list): list with integers describing number of train units per composition, can be just one item in the list, then it's the same for all trains, or multiple to specify a distribution
   - `type_ratio` (float): number between 0 and 1, where 1 means, each train has unique type and 0 means each train has the same type.
+  - `instanding_ratio` (float): number between, 0 and 1, where 1 means, all trains start as parked in the yard and 0 means all trains arrive in the yard
+  - `outstanding_ratio` (float): number between, 0 and 1, where 1 means, all trains stay parked in the yard and 0 means all trains depart from the year
 - `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
   - `id` (int): unique train unit id
   - `type` (string): type of the train unit, should be compatible with the default options if `use_default_material` is true (otherwise trains must also be generated randomly)
