@@ -10,7 +10,7 @@ from google.protobuf.json_format import ParseDict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "py_protobuf"))
 
-# Import standard protos (Scenario, Location, TrainUintTypes, Utilities)
+# Import standard protos (Scenario, Location, TrainUnitTypes, Utilities)
 import Scenario_pb2
 import TrainUnitTypes_pb2
 import Location_pb2
