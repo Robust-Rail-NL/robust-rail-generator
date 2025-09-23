@@ -186,6 +186,7 @@ class RandomGenerator:
                     sideTrackPart=standing_trains["instanding"][i].aSide[0] if len(self.scenario_generator.location.trackParts[standing_trains["instanding"][i].aSide[0]].aSide) == 0 else standing_trains["instanding"][i].bSide[0],
                     trackPart=standing_trains["instanding"][i].id,
                     canDepartFromAnyTrack=True,
+                    minimumDuration="60"
                 )
                 self.scenario_generator.add_inStandingTrain(train_in)
             else:
@@ -197,6 +198,7 @@ class RandomGenerator:
                     sideTrackPart=side.id,
                     trackPart=gateway.id,
                     canDepartFromAnyTrack=False,
+                    minimumDuration="60"
                 )
                 self.scenario_generator.add_incomingTrain(train_in)
             self.trains.append(train_in)
@@ -213,6 +215,7 @@ class RandomGenerator:
                     sideTrackPart=standing_trains["outstanding"][i+id_offset].aSide[0] if len(self.scenario_generator.location.trackParts[standing_trains["outstanding"][i+id_offset].aSide[0]].aSide) == 0 else standing_trains["outstanding"][i+id_offset].bSide[0],
                     trackPart=standing_trains["outstanding"][i+id_offset].id,
                     canDepartFromAnyTrack=True,
+                    minimumDuration="60"
                 )
                 self.scenario_generator.add_outStandingTrain(train_out)
             else:
@@ -224,7 +227,8 @@ class RandomGenerator:
                     standingIndex=1, # assume
                     sideTrackPart=side.id,
                     trackPart=gateway.id,
-                    canDepartFromAnyTrack=False, # assume
+                    canDepartFromAnyTrack=False,
+                    minimumDuration="60"
                 )
                 self.scenario_generator.add_outgoingTrain(train_out)
             self.trains.append(train_out)
@@ -239,7 +243,12 @@ class RandomGenerator:
             possible_departure_times = [t for t in range(min(arrival_times) + distribution_config["min_time_in_yard"], self.scenario_generator.scenario.endTime, distribution_config["min_gap_on_gateway"]) if t not in arrival_times]
             # TODO allow extra minimum servicing time
             for y in range(distribution_config["number_trains_out"]):
-                departure_times.append(random.sample([x for x in possible_departure_times if x > arrival_times[y]], 1)[0])
+                # Possible that there are more departing trains then arriving
+                if y >= len(arrival_times):
+                    departure_times.append(random.sample(possible_departure_times, 1)[0])
+                else:
+                # Make sure that the departure time is after the arrival time for at least one train
+                    departure_times.append(random.sample([x for x in possible_departure_times if x > arrival_times[y]], 1)[0])
                 possible_departure_times.remove(departure_times[-1])
         else:
             # Arrive in first half of total time

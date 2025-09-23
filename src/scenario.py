@@ -4,7 +4,7 @@ import os
 import json
 import logging
 from typing import List
-from google.protobuf.json_format import MessageToJson
+from google.protobuf.json_format import MessageToJson, MessageToDict
 from google.protobuf.json_format import ParseDict
 
 
@@ -39,9 +39,10 @@ class ScenarioGenerator:
     
     def save_scenario_json(self, file_name: str):
         # Converts protobuf object into json representation and saves it into .json file 
-        json_data = MessageToJson(self.scenario, including_default_value_fields=True, indent=4)
+        # Use the Dict step to ensure that 0-values are written
+        json_data = MessageToDict(self.scenario, including_default_value_fields=True)
         with open(file_name, "w") as f:
-            f.write(json_data)
+            json.dump(json_data, f, indent=4)
         logging.info(f"Scenario saved to {file_name}")
             
     def load_scenario(self, file_name):
@@ -242,7 +243,7 @@ class ScenarioGenerator:
         trainUnitTypes.MergeFrom(trainUnitType)
         self.scenario_TrainUnitTypes.append(trainUnitType)
         
-    def create_Train(self, sideTrackPart: int, trackPart: int, time: int, id: str, members: List[Scenario_pb2.TrainUnit], canDepartFromAnyTrack: bool = None, standingIndex: float = None, minimumDuration: str = None)->Scenario_pb2.Train:
+    def create_Train(self, sideTrackPart: int, trackPart: int, time: int, id: str, members: List[Scenario_pb2.TrainUnit], canDepartFromAnyTrack: bool = True, standingIndex: float = 1.0, minimumDuration: str = "60")->Scenario_pb2.Train:
         """_summary_
         Method used to create train objects that are added either as an in- or an out-going train.
 
@@ -563,9 +564,9 @@ class ScenarioGenerator:
                 solver_taskType.MergeFrom(taskType)
         
             # Create a json location file - this one is compatible with the solver format
-            json_data = MessageToJson(self.location_solver, including_default_value_fields=False, indent=4)
+            json_data = MessageToDict(self.location_solver, including_default_value_fields=True)
             with open(file_name, "w") as f:
-                f.write(json_data)
+                json.dump(json_data, f, indent=4)
             logging.info(f"Successfully converted location to Solver format and saved to {file_name}")
         else:
             logging.warning("No location file was loaded")
@@ -600,16 +601,12 @@ class SolverScenarioGenerator(ScenarioGenerator):
         super().__init__()
         self.scenario_solver = standardScenarioGenerator.scenario_solver
     
-    # Converts protobuf object into json representation and saves it into .json file 
+    # Converts protobuf object into json representation and saves it into json file 
     def save_scenario_json(self, file_name: str):
-        json_data = MessageToJson(self.scenario_solver, including_default_value_fields=False, indent=4)
-
-        obj = json.loads(json_data)
-        if "inStanding" not in obj:
-            obj["inStanding"] = {}
-        if "outStanding" not in obj:
-            obj["outStanding"] = {}
-        json_data = json.dumps(obj, indent=4)
-        
+        json_data = MessageToDict(self.scenario_solver, including_default_value_fields=True)
+        if "inStanding" not in json_data:
+            json_data["inStanding"] = {}
+        if "outStanding" not in json_data:
+            json_data["outStanding"] = {}
         with open(file_name, "w") as f:
-            f.write(json_data)
+            json.dump(json_data, f, indent=4)      
