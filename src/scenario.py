@@ -61,7 +61,7 @@ class ScenarioGenerator:
             outgoing_trains_scenario = self.scenario_out
             logging.info("Using `self.scenario_<attr>` as the source of the train information")
         self.scenario_solver.startTime = self.scenario.startTime
-        self.scenario_solver.endTime = self.scenario.endTime            
+        self.scenario_solver.endTime = self.scenario.endTime
         logging.info("Copy the start and end time from self.scenario")
         
         # Create the incoming train objects
@@ -89,9 +89,8 @@ class ScenarioGenerator:
                     
                     task.priority = task_standard.priority
                     task.duration = task_standard.duration
-                
                 # Collect the information of the train unit type using the typeDisplayName
-                for trainUnitType in self.scenario_TrainUnitTypes:
+                for trainUnitType in self.scenario.trainUnitTypes:
                     if trainUnitType.displayName == member.typeDisplayName:
                         train_member.trainUnit.type.displayName = trainUnitType.typePrefix          
                         train_member.trainUnit.type.carriages = trainUnitType.carriages
