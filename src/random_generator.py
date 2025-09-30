@@ -134,6 +134,7 @@ class RandomGenerator:
                 typePrefix="random",
             )
             self.train_unit_types.append(unit_type)
+            self.scenario_generator.add_TrainUnitType(unit_type)
 
     def generate_train_units(self, number_train_units, servicing, distribution_config):
         random.shuffle(self.train_unit_types)
@@ -272,6 +273,7 @@ class RandomGenerator:
 
         if "unit_types_per_train" in distribution_config:
             # For each train of a certain type, randomly select the train units part of this train for the predetermined number of units
+            logging.info(f"Number of units per train is assigned, assigning the actual units to trains.")
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
                     in_trains[i].append(in_units[t.displayName].pop())
@@ -286,6 +288,7 @@ class RandomGenerator:
         elif "subtypes_per_in_train" in distribution_config:
             # The number of units per train and its train type were already generated, so allocate the units.
             # This is the only method that allows train units of same supertype in one composition
+            logging.info("Using the predefined subtypes and number of train units assigned per train to assign individual units.")
             for train_num, sub_type_list in enumerate(distribution_config["subtypes_per_in_train"]):
                 for sub_type in sub_type_list:
                     in_trains[train_num].append(in_units[sub_type].pop())
@@ -295,6 +298,7 @@ class RandomGenerator:
         else:
             # Without any prior knowledge, randomly distribute, though this is prone to vulnerabilities. 
             # Select number of trains per type
+            logging.info("Randomly sample a number of units per train and select a type for this train.")
             for typ in in_units:
                 number_trains_of_type = random.randint(math.ceil(len(in_units[typ]) / 3), math.floor(distribution_config["number_trains_in"] / len(in_units)))
                 for _ in range(number_trains_of_type):
