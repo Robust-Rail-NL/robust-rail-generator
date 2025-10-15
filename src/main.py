@@ -80,16 +80,14 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
             exit()
     else:
         # Generate random trains if none are specified
-        distribution_config = random_generator.generate_train_compositions(config, scenario_generator)
+        random_generator.generate_train_compositions(config, scenario_generator)
         # Check matching of incoming and outgoing trains
         matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
-        test = 0
-        while not matching_possible and test < 5:
-            logging.warning("The generated incoming and outgoing trains do not match. Resampling arrival and departure times." + str(test))
-            random_generator.distribute_train_units(distribution_config)
-            random_generator.resample_arrival_departure_times(scenario_generator.scenario, distribution_config)
+        while not matching_possible:
+            logging.warning("The generated incoming and outgoing trains do not match. Regenerating train compositions.")
+            random_generator.reset()
+            random_generator.generate_train_compositions(config, scenario_generator)
             matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
-            test += 1
     
     # Also generate the format of the solver
     scenario_generator.create_solver_format_scenario()

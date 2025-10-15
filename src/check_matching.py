@@ -56,8 +56,9 @@ def check_train_lengths(scenario_generator, use_default_material):
     for train, length in long_trains:
         longest_track = [(t, l) for t, l in track_lengths.items() if l == max(track_lengths.values())]
         if length > longest_track[0][1]:
+            logging.warning(f"Train {train.id} has length {length}, which exceeds the longest available track {longest_track[0]} of length {longest_track[1]}.")
             return False
         else:
             logging.info(f"Primitively assigned train {train.id} to track {longest_track[0][0]} of length {longest_track[0][1]}")
-            track_lengths.remove(longest_track[0][0])
+            track_lengths.pop(longest_track[0][0])
     return True

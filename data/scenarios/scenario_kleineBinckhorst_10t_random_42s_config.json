@@ -12,9 +12,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "2070",
@@ -28,9 +28,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "4260",
@@ -54,9 +54,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "1680",
@@ -80,9 +80,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "2490",
@@ -106,9 +106,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "420",
@@ -122,9 +122,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "1740",
@@ -148,9 +148,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "240",
@@ -164,9 +164,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "2400",
@@ -190,9 +190,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "3060",
@@ -211,9 +211,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         }
     ],
     "out": [
@@ -240,8 +240,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "5280",
@@ -261,8 +261,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "6420",
@@ -277,8 +277,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "9150",
@@ -303,8 +303,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "7200",
@@ -319,8 +319,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "8610",
@@ -335,8 +335,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "7830",
@@ -361,8 +361,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "8310",
@@ -377,8 +377,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "5880",
@@ -403,8 +403,8 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "6810",
@@ -429,16 +429,49 @@
                 }
             ],
             "standingIndex": 1.0,
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         }
     ],
     "endTime": "9600",
+    "trainUnitTypes": [
+        {
+            "displayName": "unitType0",
+            "carriages": 3,
+            "length": 40.0,
+            "combineDuration": "470",
+            "splitDuration": "170",
+            "backNormTime": "150",
+            "backAdditionTime": "140",
+            "travelSpeed": "90",
+            "startUpTime": "470",
+            "typePrefix": "random",
+            "needsElectricity": true,
+            "needsLoco": false,
+            "isLoco": false,
+            "idPrefix": 0
+        },
+        {
+            "displayName": "unitType1",
+            "carriages": 3,
+            "length": 145.0,
+            "combineDuration": "470",
+            "splitDuration": "570",
+            "backNormTime": "340",
+            "backAdditionTime": "50",
+            "travelSpeed": "230",
+            "startUpTime": "270",
+            "typePrefix": "random",
+            "needsElectricity": true,
+            "needsLoco": false,
+            "isLoco": false,
+            "idPrefix": 0
+        }
+    ],
     "inStanding": [],
     "outStanding": [],
     "nonServiceTraffic": [],
     "disabledTrackPart": [],
     "workers": [],
-    "startTime": "0",
-    "trainUnitTypes": []
+    "startTime": "0"
 }

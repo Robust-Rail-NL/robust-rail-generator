@@ -22,6 +22,19 @@ class RandomGenerator:
         if len(self.gateways["departure"]) == 0:
             self.gateways["departure"] = self.get_gateway_tracks(location)
 
+    def reset(self):
+        """Reset the random generator to its initial state."""
+        logging.info("Resetting the random generator to its initial state. Keeping the gateways the same.")
+        self.train_unit_types = []
+        self.train_units = {}
+        self.train_units_subtypes = {}
+        self.number_of_train_units = 0
+        self.trains = []
+        getattr(self.scenario_generator.scenario, "in").clear()
+        getattr(self.scenario_generator.scenario, "out").clear()
+        getattr(self.scenario_generator.scenario, "inStanding").clear()
+        getattr(self.scenario_generator.scenario, "outStanding").clear()
+
     def get_gateway_tracks(self, location):
         gateways = []
         facilities = [t for f in location.facilities for t in f.relatedTrackParts]
@@ -86,12 +99,12 @@ class RandomGenerator:
                 # Same arrival and distribution compositions
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
             elif distribution_config["matching"] == 1:
-                # Redistribute the train units over the ougoing trains
+                # Redistribute the incoming train units over the outgoing trains
                 subtypes_per_super_type = {t: [sub for sub in distribution_config["unit_types"] if t in sub] for t in super_types}
                 distribution_config["subtypes_per_out_train"] = []
                 for sup_type in subtypes_per_super_type:
                     while len(subtypes_per_super_type[sup_type]) > 0:
-                        if len(subtypes_per_super_type[sup_type]) > min(distribution_config["units_per_composition"]):
+                        if len(subtypes_per_super_type[sup_type]) > max(distribution_config["units_per_composition"]):
                             num_units = random.choice(distribution_config["units_per_composition"])
                         else:
                             num_units = len(subtypes_per_super_type[sup_type])
@@ -114,7 +127,6 @@ class RandomGenerator:
             number_train_units = sum([num for _, num in distribution_config["unit_types_per_train"]])
         self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config)
         self.generate_trains(distribution_config)
-        return distribution_config
         
     def generate_train_unit_types(self, num: int):
         for i in range(num):
