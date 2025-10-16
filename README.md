@@ -1,8 +1,8 @@
 # TUSS-Instance-Generator
 Generator for scenarios of the Train Unit Shunting and Servicing Problem. The scenarios can be solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver). The plans produced by the **robust-rail-solver** can be evaluated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator), which also requires the scenarios issued by [**TUSS-Instance-Generator**](https://github.com/Robust-Rail-NL/robust-rail-generator) 
 
-## Getting started - Conda Environemnt
-* Create a conda environemnt
+## Getting started - Conda Environment
+* Create a conda environment
   * If not first time setup, create it with the existing dependencies
 
     `conda env create -f env.yml`
@@ -11,7 +11,7 @@ Generator for scenarios of the Train Unit Shunting and Servicing Problem. The sc
     
     `conda activate TUSS_Instance_generator`
 
-  * To deactivate the project environement
+  * To deactivate the project environment
 
     `conda deactivate`
 

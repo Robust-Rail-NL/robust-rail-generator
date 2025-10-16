@@ -30,10 +30,10 @@ class RandomGenerator:
         self.train_units_subtypes = {}
         self.number_of_train_units = 0
         self.trains = []
-        getattr(self.scenario_generator.scenario, "in").clear()
-        getattr(self.scenario_generator.scenario, "out").clear()
-        getattr(self.scenario_generator.scenario, "inStanding").clear()
-        getattr(self.scenario_generator.scenario, "outStanding").clear()
+        self.scenario_generator.scenario.ClearField("in")
+        self.scenario_generator.scenario.ClearField("out")
+        self.scenario_generator.scenario.ClearField("inStanding")
+        self.scenario_generator.scenario.ClearField("outStanding")
 
     def get_gateway_tracks(self, location):
         gateways = []
