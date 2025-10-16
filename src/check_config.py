@@ -57,9 +57,6 @@ def check_configuration_file(config, location_path):
                 if t not in default_train_unit_names:
                     logging.error(f"Defined 'train_unit_distribution' and 'train_unit_types' with an unknown train unit type {t}.")
                     return False, config
-                if "6" in t and max(config["train_unit_distribution"]["units_per_composition"]) > 2:
-                    logging.error(f"A train unit type with 6 carriages ({t}) cannot be combined into train compositions with more than two train units.")
-                return False, config
     if not config["trains_given"]:
         if "mixed_traffic" in config:
             if not isinstance(config["mixed_traffic"], bool):

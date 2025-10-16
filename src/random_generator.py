@@ -83,6 +83,12 @@ class RandomGenerator:
             distribution_config["super_types_in_train"] = [range(different_types)[i % different_types] for i in range(config["number_of_trains"])]
             random.shuffle(distribution_config["super_types_in_train"])
 
+            # Ensure that trains with subtypes of 6 carriages do not have more than 2 units
+            for i, t in enumerate(distribution_config["super_types_in_train"]):
+                super_type = list(self.train_units_subtypes.keys())[t]
+                if f"{super_type}-6" in self.train_units_subtypes[super_type] and distribution_config["number_units_per_in_train"][i] > 2:
+                    distribution_config["number_units_per_in_train"][i] = 2
+
             # For each unit subtype we calculate the number of associated train units
             distribution_config["units_per_super_type"] = {t: sum([units for i, units in enumerate(distribution_config["number_units_per_in_train"]) if distribution_config["super_types_in_train"][i] == t]) for t in range(different_types)}
             super_types = list(self.train_units_subtypes.keys())
