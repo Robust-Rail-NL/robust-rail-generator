@@ -64,24 +64,24 @@ def check_configuration_file(config, location_path):
                 return False, config
         else:
             config["mixed_traffic"] = True
-        if "min_gap_on_gateway" in config:
-            if not isinstance(config["min_gap_on_gateway"], int) or config["min_gap_on_gateway"] < 0:
-                logging.error("'min_gap_on_gateway' should be a non-negative integer.")
-                return False, config
-        else:
-            config["min_gap_on_gateway"] = 30
-        if "min_time_in_yard" in config:
-            if not isinstance(config["min_time_in_yard"], int) or config["min_time_in_yard"] < 0:
-                logging.error("'min_time_in_yard' should be a non-negative integer.")
-                return False, config
-        else:
-            config["min_time_in_yard"] = 600
         if "matching" in config:
             if not isinstance(config["matching"], int) or config["matching"] not in [0, 1, 2]:
                 logging.error("'matching' should be a value (0, 1, 2).")
                 return False, config
         else:
             config["matching"] = 1
+    if "min_time_in_yard" in config:
+        if not isinstance(config["min_time_in_yard"], int) or config["min_time_in_yard"] < 0:
+            logging.error("'min_time_in_yard' should be a non-negative integer.")
+            return False, config
+    else:
+        config["min_time_in_yard"] = 600
+    if "min_gap_on_gateway" in config:
+        if not isinstance(config["min_gap_on_gateway"], int) or config["min_gap_on_gateway"] < 0:
+            logging.error("'min_gap_on_gateway' should be a non-negative integer.")
+            return False, config
+    else:
+        config["min_gap_on_gateway"] = 300
     # TODO Consider the servicing time
     if config["end_time"] - config["start_time"] // config["min_gap_on_gateway"] < config["number_of_trains"] * 2.1:
         logging.warning(f"Not enough time to shunt all {config['number_of_trains']} trains within {config['end_time'] - config['start_time']} allowing a gap of {config['min_gap_on_gateway']}, results in {config['end_time'] - config['start_time'] // config['min_gap_on_gateway']} slots")
@@ -110,7 +110,7 @@ def check_configuration_file(config, location_path):
 def check_train_details_file(config, location):
     if "track_ids_used" not in config:
         logging.warning("Not defined: 'track_ids_used', assuming ids are used")
-        config["custom_trains"]["track_ids_used"] = True
+        config["track_ids_used"] = True
     default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "default_train_unit_types.json")))]        
     for i, t in enumerate(config["custom_train_units"]):
         if "id" not in t or "type" not in t or "services" not in t:
@@ -119,8 +119,8 @@ def check_train_details_file(config, location):
         if t["type"] not in default_train_unit_names:
             logging.error(f"Custom train unit with id {t['id']} has unknown type {t['type']}")
             return False, config
-    train_units_check = {u["id"]: u["type"] for u in config["custom_train_units"]}
-    train_units_check = {u["id"]: u["type"] for u in config["custom_train_units"]}
+    train_units_check_arrival = {u["id"]: u["type"] for u in config["custom_train_units"]}
+    train_units_check_departure = [u["type"] for u in config["custom_train_units"]]
     track_names_to_ids = {track.name: int(track.id) for track in location.trackParts}
     if config["trains_given"]:
         for i, train in enumerate(config["custom_trains"]):
@@ -133,17 +133,28 @@ def check_train_details_file(config, location):
             if "member_types" in train and "members" in train:
                 logging.error(f"Both 'members' and 'member_types' defined for train {train['id']}, only one should be defined")
                 return False, config
+            if "members" in train and ("departure_track" in train or "end_at_track" in train):
+                logging.error(f"Outgoing or outstanding train {train['id']} has members defined, but should have member_types defined for the train request instead of specific member id")
+                return False, config
+            if "member_types" in train and ("arrival_track" in train or "start_at_track" in train):
+                logging.error(f"Incoming or standing train {train['id']} has member_types defined, but should have members defined for the specific train members")
+                return False, config
             if "members" in train:
                 member_type_check = set()
                 for u in train["members"]:
-                    if u not in train_units_check:
+                    if u not in train_units_check_arrival:
                         logging.error(f"Train {train['id']} has member {u} that is not defined or already used in a different train composition")
                         return False, config
-                    member_type_check.add(train_units_check[u].split("-")[0])
-                    train_units_check.pop(u)
+                    member_type_check.add(train_units_check_arrival[u].split("-")[0])
+                    train_units_check_arrival.pop(u)
                 if len(member_type_check) > 1:
                     logging.warning(f"Train {train['id']} has members from different train unit types: {member_type_check}")
             if "member_types" in train:
+                for u in train["member_types"]:
+                    if u not in train_units_check_departure:
+                        logging.error(f"Train {train['id']} has member {u} that is not defined or already used in a different train composition")
+                        return False, config
+                    train_units_check_departure.remove(u)
                 member_type_check = set([mem.split("-")[0] for mem in train["member_types"]])
                 if len(member_type_check) > 1:
                     logging.warning(f"Train {train['id']} has members from different train unit types: {member_type_check}")
@@ -161,12 +172,10 @@ def check_train_details_file(config, location):
                 logging.error(f"Both 'departure_track' (train should depart) and 'end_at_track' (train should reamin in yard) defined for train {train['id']}, only one should be defined")
             if "departure_track" in train and "start_at_track" in train:
                 logging.error(f"Both 'departure_track' and 'start_at_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+                return False, config
             if "departure_track" in train and "arrival_track" in train:
                 logging.error(f"Both 'departure_track' and 'arrival_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
-            if "members" in train and ("departure_track" in train or "end_at_track" in train):
-                logging.error(f"Outgoing or outstanding train {train['id']} has members defined, but should have member_types defined for the train request instead of specific member id")
-            if "member_types" in train and ("arrival_track" in train or "start_at_track" in train):
-                logging.error(f"Incoming or standing train {train['id']} has member_types defined, but should have members defined for the specific train members")
+                return False, config
             # Check if tracks exist in the location
             # Add the parking track parts: the track defined in the file is the actual track (used as parking track), but we also need the connected bumper
             correct, config = check_track_part_in_train(config, train, "arrival_track", track_names_to_ids, location, i, True)
