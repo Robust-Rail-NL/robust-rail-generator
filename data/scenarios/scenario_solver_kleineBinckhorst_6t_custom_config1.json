@@ -17,7 +17,8 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "16"
+                                "backAdditionTime": "16",
+                                "reversalDuration": "0"
                             }
                         },
                         "tasks": [
@@ -49,7 +50,8 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "15"
+                                "backAdditionTime": "15",
+                                "reversalDuration": "0"
                             }
                         },
                         "tasks": [
@@ -76,25 +78,14 @@
                 "displayName": "4000",
                 "trainUnits": [
                     {
-                        "type": {
-                            "displayName": "SNG",
-                            "carriages": 3,
-                            "length": 59.5,
-                            "combineDuration": "180",
-                            "splitDuration": "120"
-                        }
+                        "id": ""
                     },
                     {
-                        "type": {
-                            "displayName": "SNG",
-                            "carriages": 4,
-                            "length": 75.7,
-                            "combineDuration": "180",
-                            "splitDuration": "120"
-                        }
+                        "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "41",
+                "standingIndex": 0.0
             }
         ]
     },
@@ -112,12 +103,18 @@
                                 "carriages": 4,
                                 "length": 75.7,
                                 "combineDuration": "180",
-                                "splitDuration": "120"
+                                "splitDuration": "120",
+                                "reversalDuration": "0",
+                                "backNormTime": "0",
+                                "backAdditionTime": "0"
                             }
-                        }
+                        },
+                        "tasks": []
                     }
                 ],
-                "firstParkingTrackPart": "3"
+                "firstParkingTrackPart": "3",
+                "arrival": "0",
+                "departure": "0"
             }
         ]
     },
@@ -135,11 +132,16 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "16"
-                        }
+                            "backAdditionTime": "16",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "11"
+                "lastParkingTrackPart": "11",
+                "arrival": "0",
+                "departure": "0",
+                "standingIndex": 0.0
             },
             {
                 "leaveTrackPart": "61",
@@ -153,13 +155,19 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "15"
-                        }
+                            "backAdditionTime": "15",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "10"
+                "lastParkingTrackPart": "10",
+                "arrival": "0",
+                "departure": "0",
+                "standingIndex": 0.0
             }
         ]
     },
-    "endTime": "3600"
+    "endTime": "3600",
+    "startTime": "0"
 }

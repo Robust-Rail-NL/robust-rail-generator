@@ -9,6 +9,7 @@ def check_configuration_file(config, location_path):
     if "location" not in config:
         logging.error("Not defined: 'location'.")
         return False, config
+    # TODO check correct type of location file
     if not os.path.isfile(os.path.join(location_path, f"{config['location']}.json")):
         logging.error(f"Could not find location file '{config['location']}.json' at '{location_path}'.")
         return False, config

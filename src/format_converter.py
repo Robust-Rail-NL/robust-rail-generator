@@ -15,8 +15,8 @@ parser.add_argument("-s", "--scenario-path", help="Path to scenario file that ne
 parser.add_argument("-l", "--location-path", help="Path to location file that needs to be converted.", required=False, default=None)
 parser.add_argument("--log-level", default="ERROR", required=False, help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.")
 
-def convert_location(location_file_path):
-    """Helper program to convert easily scenario files to robust-rail-solver (HIP) format scenario"""
+def convert_location_to_solver(location_file_path):
+    """Helper program to convert location files to the robust-rail-solver format scenario."""
     scenario_generator = ScenarioGenerator()
     with open(location_file_path, "r") as f:
         json_location = json.load(f)
@@ -24,8 +24,8 @@ def convert_location(location_file_path):
     scenario_generator.convert_location_to_solver_format(location_file_path.replace(".json", "_solver.json"))
     print("Wrote location in solver format to:", location_file_path)
 
-def convert_scenario(scenario_file_path):
-    """Helper program to convert easily scenario files to robust-rail-solver (HIP) format scenario"""
+def convert_scenario_from_solver(scenario_file_path):
+    """Helper program to convert scenario files to robust-rail-solver format scenario."""
     scenario_generator = ScenarioGenerator()
     scenario_generator.load_scenario(scenario_file_path)
     scenario_generator.create_solver_format_scenario(use_scenario=True)
@@ -37,16 +37,17 @@ def convert_scenario(scenario_file_path):
 def exmaple():
     location_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "locations", "simple_service_location.json")
     scenario_filepath_evaluator_format = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", "scenario_kleineBinckhorst_6t_custom_config3.json")
-    convert_location(location_file_path)
-    convert_scenario(scenario_filepath_evaluator_format)
+    convert_location_to_solver(location_file_path)
+    convert_scenario_from_solver(scenario_filepath_evaluator_format)
+    # TODO converters from solver to evaluator format
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level.upper())
     if args.location_path:
-        convert_location(args.location_path)
+        convert_location_to_solver(args.location_path)
     if args.scenario_path:
-        convert_scenario(args.scenario_path)
+        convert_scenario_from_solver(args.scenario_path)
     
     
