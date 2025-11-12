@@ -17,7 +17,8 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "16"
+                                "backAdditionTime": "16",
+                                "reversalDuration": "0"
                             }
                         },
                         "tasks": [
@@ -49,7 +50,8 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "16"
+                                "backAdditionTime": "16",
+                                "reversalDuration": "0"
                             }
                         },
                         "tasks": [
@@ -72,9 +74,11 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "16"
+                                "backAdditionTime": "16",
+                                "reversalDuration": "0"
                             }
-                        }
+                        },
+                        "tasks": []
                     }
                 ],
                 "firstParkingTrackPart": "41"
@@ -95,9 +99,11 @@
                                 "combineDuration": "180",
                                 "splitDuration": "120",
                                 "backNormTime": "120",
-                                "backAdditionTime": "16"
+                                "backAdditionTime": "16",
+                                "reversalDuration": "0"
                             }
-                        }
+                        },
+                        "tasks": []
                     }
                 ],
                 "firstParkingTrackPart": "41"
@@ -120,11 +126,14 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "16"
-                        }
+                            "backAdditionTime": "16",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "41",
+                "standingIndex": 0.0
             },
             {
                 "leaveTrackPart": "47",
@@ -140,11 +149,14 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "16"
-                        }
+                            "backAdditionTime": "16",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "41",
+                "standingIndex": 0.0
             },
             {
                 "leaveTrackPart": "47",
@@ -160,8 +172,10 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "16"
-                        }
+                            "backAdditionTime": "16",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
                     },
                     {
                         "type": {
@@ -171,15 +185,19 @@
                             "combineDuration": "180",
                             "splitDuration": "120",
                             "backNormTime": "120",
-                            "backAdditionTime": "16"
-                        }
+                            "backAdditionTime": "16",
+                            "reversalDuration": "0"
+                        },
+                        "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "41"
+                "lastParkingTrackPart": "41",
+                "standingIndex": 0.0
             }
         ]
     },
     "endTime": "7200",
+    "startTime": "0",
     "inStanding": {},
     "outStanding": {}
 }

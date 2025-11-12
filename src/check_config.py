@@ -2,20 +2,25 @@ import os
 import json
 import logging
 import random
-from py_protobuf.Location_pb2 import TrackPartType
+from py_protobuf import Location_pb2
+from google.protobuf.json_format import ParseDict
 
 def check_configuration_file(config, location_path):
     """Checks basic parts of the configuration file to be present"""
     if "location" not in config:
         logging.error("Not defined: 'location'.")
         return False, config
-    # TODO check correct type of location file
     if not os.path.isfile(os.path.join(location_path, f"{config['location']}.json")):
         logging.error(f"Could not find location file '{config['location']}.json' at '{location_path}'.")
         return False, config
     else:
         config["location_file"] = f"{config['location']}.json"
-        config["location_filepath"] = os.path.isfile(os.path.join(location_path, f"{config['location']}.json"))
+        config["location_filepath"] = os.path.join(location_path, f"{config['location']}.json")
+        if not os.path.isfile(config["location_filepath"]):
+            logging.error(f"Could not find the location file {config['location_filepath']}")
+        res, config = check_location_file(config)
+        if not res:
+            return False, config
     if "start_time" not in config:
         logging.error("Not defined: 'start_time'.")
         return False, config
@@ -40,9 +45,12 @@ def check_configuration_file(config, location_path):
     if config["trains_given"] and ("custom_train_units" not in config or "custom_trains" not in config):
         logging.error("No 'custom_train_units' or 'custom_trains defined' while 'trains_given' is true.")
         return False, config
-    if not config["trains_given"] and "number_of_trains" not in config:
-        logging.error("No 'number_of_trains' defined while trains and train units should be generated ('trains_given' is false).")
-        return False, config
+    if "number_of_trains" not in config:
+        if not config["trains_given"]:
+            logging.error("No 'number_of_trains' defined while trains and train units should be generated ('trains_given' is false).")
+            return False, config
+        else:
+            config["number_of_trains"] = len([train for train in config["custom_trains"] if "arrival_track" in train or "start_at_track" in train])
     if not config["trains_given"] and "train_unit_distribution" in config:
         if "units_per_composition" not in config["train_unit_distribution"]:
             logging.error("No 'units_per_composition' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
@@ -107,6 +115,36 @@ def check_configuration_file(config, location_path):
     # TODO check other custom objects
     return True, config
     
+def check_location_file(config):
+    location = json.load(open(config["location_filepath"]))
+    try:
+        ParseDict(location, Location_pb2.Location())
+    except:
+        logging.error(f"Could not parse the location file {config['location_file']} to the correct Location format. Be careful not to use the `_solver` format, or use the converter.")
+        return False, config
+    config["track_id_map"] = {int(t["id"]): t for t in location["trackParts"]}
+    if len(config["track_id_map"]) != max(config["track_id_map"].keys()):
+        logging.warning(f"The ids of the tracks are not correctly set, the ids should be increasing by one and unique.")
+        return True, config
+        # Code to overwrite the ids, not working yet, probably not needed
+        logging.error(f"The ids will be adjusted and the file will be recreated starting at the minimum {min(map_tracks.keys())} with max id {len(map_tracks) + min(map_tracks.keys()) - 1}")
+        new_ids = {}
+        max_ids = sorted(list(map_tracks.keys()), reverse=True)
+        for i in range(min(map_tracks.keys()), len(map_tracks) + min(map_tracks.keys())):
+            if i not in map_tracks.keys():
+                new_ids[max_ids.pop(0)] = i
+        for old, new in new_ids.items():
+            for j in range(len(location["trackParts"])):
+                if location["trackParts"][j]["id"] == old:
+                    location["trackParts"][j]["id"] == new
+                location["trackParts"][j]["aSide"] = [new if a == old else a for a in location["trackParts"][j]["aSide"]]
+                location["trackParts"][j]["bSide"] = [new if b == old else b for b in location["trackParts"][j]["bSide"]]
+            for j in range(len(location["trackParts"])):
+                if location["trackParts"][j]["id"] == old:
+                    location["trackParts"][j]["id"] = new
+        print(location)
+        json.dump(location, open(config["location_filepath"].replace(".json", "_fixedIDs.json"), "w"), indent=4)
+    return True, config
 
 def check_train_details_file(config, location):
     if "track_ids_used" not in config:
@@ -224,10 +262,10 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
             try:
                 bumper_a = [location.trackParts[a].id 
                             for a in location.trackParts[track_id].aSide 
-                            if location.trackParts[a].type == TrackPartType.Bumper]
+                            if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
                 bumper_b = [location.trackParts[a].id 
                             for a in location.trackParts[track_id].bSide 
-                            if location.trackParts[a].type == TrackPartType.Bumper]
+                            if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
                 if len(bumper_a + bumper_b) != 1:
                     logging.warning(f"No bumper found for '{track_name}' for train {train['id']}, picking random `side_track_part'")
                     sides = [location.trackParts[a].id for a in location.trackParts[track_id].aSide] + [location.trackParts[a].id for a in location.trackParts[track_id].bSide]
@@ -247,7 +285,7 @@ def check_gateways(config, location, gateways):
                 print(f"ERROR: arrival gateway {arrive_id} not found in in location")
                 return False, config
             arrive = location.trackParts[int(arrive_id)]
-            if arrive.type != TrackPartType.RailRoad:
+            if arrive.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
                 return False, config
             if not arrive.parkingAllowed:
@@ -261,10 +299,10 @@ def check_gateways(config, location, gateways):
                 return False, config
             bumper_a = [location.trackParts[a]
                         for a in arrive.aSide 
-                        if location.trackParts[a].type == TrackPartType.Bumper]
+                        if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
             bumper_b = [location.trackParts[a]
                     for a in arrive.bSide 
-                    if location.trackParts[a].type == TrackPartType.Bumper]
+                    if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
             if len(bumper_a) == 1:
                 gateways["arrival"].append((arrive, bumper_a[0]))
             elif len(bumper_b) == 1:
@@ -278,7 +316,7 @@ def check_gateways(config, location, gateways):
                 print(f"ERROR: departure gateway {depart_id} not found in in location")
                 return False, config
             depart = location.trackParts[int(depart_id)]
-            if depart.type != TrackPartType.RailRoad:
+            if depart.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: departure gateway {depart_id} is not a railroad")
                 return False, config        
             if not depart.parkingAllowed:
@@ -292,10 +330,10 @@ def check_gateways(config, location, gateways):
                 return False, config
             bumper_a = [location.trackParts[a]
                         for a in depart.aSide 
-                        if location.trackParts[a].type == TrackPartType.Bumper]
+                        if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
             bumper_b = [location.trackParts[b] 
                     for b in depart.bSide 
-                    if location.trackParts[b].type == TrackPartType.Bumper]
+                    if location.trackParts[b].type == Location_pb2.TrackPartType.Bumper]
             if len(bumper_a) == 1:
                 gateways["departure"].append((depart, bumper_a[0]))
             elif len(bumper_b) == 1:

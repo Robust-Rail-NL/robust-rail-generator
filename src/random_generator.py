@@ -6,10 +6,10 @@ from copy import deepcopy
 from py_protobuf.Location_pb2 import TrackPartType
 
 class RandomGenerator:
-    def __init__(self, gen, seed, location, gateways):
+    def __init__(self, gen, config, location, gateways):
         """Initialize the random generator for a specific scenario generator."""
         self.scenario_generator = gen
-        self.seed = seed
+        self.seed = config["seed"]
         random.seed(self.seed)
         self.train_unit_types = []
         self.train_units = {}
@@ -17,11 +17,12 @@ class RandomGenerator:
         self.number_of_train_units = 0
         self.trains = []
         self.gateways = gateways
+        possible_gateways = self.get_gateway_tracks(config, location)
         if len(self.gateways["arrival"]) == 0:
-            self.gateways["arrival"] = self.get_gateway_tracks(location)
+            self.gateways["arrival"] = possible_gateways
         if len(self.gateways["departure"]) == 0:
-            self.gateways["departure"] = self.get_gateway_tracks(location)
-
+            self.gateways["departure"] = possible_gateways
+    
     def reset(self):
         """Reset the random generator to its initial state."""
         logging.info("Resetting the random generator to its initial state. Keeping the gateways the same.")
@@ -35,32 +36,36 @@ class RandomGenerator:
         self.scenario_generator.scenario.ClearField("inStanding")
         self.scenario_generator.scenario.ClearField("outStanding")
 
-    def get_gateway_tracks(self, location):
+    def get_gateway_tracks(self, config, location):
         gateways = []
         facilities = [t for f in location.facilities for t in f.relatedTrackParts]
         for track in location.trackParts:
             if track.type == TrackPartType.RailRoad:
-                bumper_a = [location.trackParts[a].id 
+                bumper_a = [config["track_id_map"][a].id
                             for a in track.aSide 
-                            if location.trackParts[a].type == TrackPartType.Bumper]
-                bumper_b = [location.trackParts[b].id 
+                            if config["track_id_map"][a].type == TrackPartType.Bumper]
+                bumper_b = [config["track_id_map"][b].id
                             for b in track.bSide 
-                            if location.trackParts[b].type == TrackPartType.Bumper]
+                            if config["track_id_map"][b].type == TrackPartType.Bumper]
                 if len(bumper_a) == 0 and len(bumper_b) == 1:
-                    if location.trackParts[bumper_b[0]].aSide:
-                        gateway = location.trackParts[location.trackParts[bumper_b[0]].aSide[0]]
-                    elif location.trackParts[bumper_b[0]].bSide:
-                        gateway = location.trackParts[location.trackParts[bumper_b[0]].bSide[0]]
-                    if gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and gateway.parkingAllowed and gateway.length > 0:
-                        gateways.append((gateway, location.trackParts[bumper_b[0]]))
+                    if config["track_id_map"][bumper_b[0]].aSide:
+                        gateway = config["track_id_map"][config["track_id_map"][bumper_b[0]].aSide[0]]
+                    else:
+                        logging.error(f"Bumper {config['track_id_map'][bumper_b[0]].id} on the B-side of track {track.id} does not have this track on its own A-side.")
+                    if config["track_id_map"][bumper_b[0]].bSide:
+                        logging.error(f"Bumper {config['track_id_map'][bumper_b[0]].id} on the B-side of track {track.id} has a track part with id {config['track_id_map'][bumper_b[0]].bSide[0]} on its B-side.")
+                    if  gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and gateway.parkingAllowed and gateway.length > 0:
+                        gateways.append((gateway, config["track_id_map"][bumper_b[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
                 elif len(bumper_a) == 1 and len(bumper_b) == 0:
-                    if location.trackParts[bumper_a[0]].aSide:
-                        gateway = location.trackParts[location.trackParts[bumper_a[0]].aSide[0]]
-                    elif location.trackParts[bumper_a[0]].bSide:
-                        gateway = location.trackParts[location.trackParts[bumper_a[0]].bSide[0]]
-                    if gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and gateway.parkingAllowed  and gateway.length > 0:
-                        gateways.append((gateway, location.trackParts[bumper_a[0]]))
+                    if config["track_id_map"][bumper_a[0]].bSide:
+                        gateway = config["track_id_map"][config["track_id_map"][bumper_a[0]].bSide[0]]
+                    else:
+                        logging.error(f"Bumper {config['track_id_map'][bumper_a[0]].id} on the A-side of track {track.id} does not have this track on its own B-side.")
+                    if config["track_id_map"][bumper_a[0]].aSide:
+                        logging.error(f"Bumper {config['track_id_map'][bumper_a[0]].id} on the A-side of track {track.id} has a track part with id {config['track_id_map'][bumper_a[0]].aSide[0]} on the B-side.")
+                    if  gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and gateway.parkingAllowed  and gateway.length > 0:
+                        gateways.append((gateway, config["track_id_map"][bumper_a[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
         return gateways
 
@@ -132,7 +137,7 @@ class RandomGenerator:
             distribution_config.update({"unit_types_per_train": [(random.choice(self.train_unit_types), random.randrange(1, 4, 1)) for _ in range(config["number_of_trains"])]})
             number_train_units = sum([num for _, num in distribution_config["unit_types_per_train"]])
         self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config)
-        self.generate_trains(distribution_config)
+        self.generate_trains(config, distribution_config)
         
     def generate_train_unit_types(self, num: int):
         for i in range(num):
@@ -184,7 +189,7 @@ class RandomGenerator:
         if self.number_of_train_units != number_train_units:
             logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
 
-    def generate_trains(self, distribution_config):
+    def generate_trains(self, config, distribution_config):
         distribution_in, distribution_out = self.distribute_train_units(distribution_config)
         arrival_times, departure_times = self.assign_arrival_departure_times(distribution_config)
         # Check for instanding and outstanding trains
@@ -202,7 +207,7 @@ class RandomGenerator:
                     time=self.scenario_generator.scenario.startTime,
                     members=train_units,
                     standingIndex=1,
-                    sideTrackPart=standing_trains["instanding"][i].aSide[0] if len(self.scenario_generator.location.trackParts[standing_trains["instanding"][i].aSide[0]].aSide) == 0 else standing_trains["instanding"][i].bSide[0],
+                    sideTrackPart=standing_trains["instanding"][i].aSide[0] if len(config["track_id_map"][standing_trains["instanding"][i].aSide[0]].aSide) == 0 else standing_trains["instanding"][i].bSide[0],
                     trackPart=standing_trains["instanding"][i].id,
                     canDepartFromAnyTrack=True,
                     minimumDuration="60"
@@ -231,7 +236,7 @@ class RandomGenerator:
                     time=self.scenario_generator.scenario.endTime,
                     members=unmatched_train_units,
                     standingIndex=1,
-                    sideTrackPart=standing_trains["outstanding"][i+id_offset].aSide[0] if len(self.scenario_generator.location.trackParts[standing_trains["outstanding"][i+id_offset].aSide[0]].aSide) == 0 else standing_trains["outstanding"][i+id_offset].bSide[0],
+                    sideTrackPart=standing_trains["outstanding"][i+id_offset].aSide[0] if len(config["track_id_map"][standing_trains["outstanding"][i+id_offset].aSide[0]].aSide) == 0 else standing_trains["outstanding"][i+id_offset].bSide[0],
                     trackPart=standing_trains["outstanding"][i+id_offset].id,
                     canDepartFromAnyTrack=True,
                     minimumDuration="60"
