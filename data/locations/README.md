@@ -17,3 +17,6 @@ This is a shunting yard near The Hague Central station in the Netherlands, its l
 
 ### Details:
 The incoming (gateway) track is RailRoad 906a (left bottom corner) which connects to a bumper (`Stootblok906a`) and a switch (`Wissel963`, which is also indicated as 963 in Figure 1.). This switch connects to RailRoad 906b, but in our location it is not connected to track 51a, and instead ends with a bumper (`Sein70`).
+
+
+## Simple service location

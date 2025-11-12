@@ -37,6 +37,7 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
 
     scenario_generator = ScenarioGenerator()
     scenario_generator.load_location(config["location_file"], location_path)
+    config["track_id_map"] = {tr.id: tr for tr in scenario_generator.location.trackParts}
     scenario_generator.add_start_and_end_times(config["start_time"], config["end_time"])
     # Check the format of the trains
     if config['trains_given']:
@@ -48,11 +49,9 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
         gateways = check_gateways(config, scenario_generator.location, gateways)
 
     # Setup random generator with seed
-    if "seed" in config:
-        random_generator = RandomGenerator(scenario_generator, config["seed"], scenario_generator.location, gateways)
-    else:
+    if "seed" not in config:
         config["seed"] = 42
-        random_generator = RandomGenerator(scenario_generator, 42, scenario_generator.location, gateways)
+    random_generator = RandomGenerator(scenario_generator, config, scenario_generator.location, gateways)
 
     # Load the default train materials if specified
     if config["use_default_material"]:

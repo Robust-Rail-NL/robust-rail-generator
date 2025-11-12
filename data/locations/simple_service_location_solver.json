@@ -60,7 +60,7 @@
             "name": "rail_1",
             "parkingAllowed": true,
             "type": "RailRoad",
-            "sawMovementAllowed": false
+            "sawMovementAllowed": true
         },
         {
             "id": "2",
@@ -74,7 +74,7 @@
             "name": "rail_2",
             "parkingAllowed": true,
             "type": "RailRoad",
-            "sawMovementAllowed": false
+            "sawMovementAllowed": true
         },
         {
             "id": "3",
@@ -88,7 +88,7 @@
             "name": "rail_3",
             "parkingAllowed": true,
             "type": "RailRoad",
-            "sawMovementAllowed": false
+            "sawMovementAllowed": true
         },
         {
             "id": "4",
@@ -102,7 +102,7 @@
             "name": "rail_4",
             "parkingAllowed": true,
             "type": "RailRoad",
-            "sawMovementAllowed": false
+            "sawMovementAllowed": true
         },
         {
             "id": "5",
@@ -116,7 +116,7 @@
             "name": "rail_5",
             "parkingAllowed": true,
             "type": "RailRoad",
-            "sawMovementAllowed": false
+            "sawMovementAllowed": true
         },
         {
             "id": "20",

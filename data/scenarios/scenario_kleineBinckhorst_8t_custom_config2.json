@@ -23,9 +23,9 @@
                     ]
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "canDepartFromAnyTrack": true,
+            "standingIndex": 1.0,
+            "minimumDuration": "60"
         },
         {
             "time": "600",
@@ -50,9 +50,9 @@
                     ]
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "canDepartFromAnyTrack": true,
+            "standingIndex": 1.0,
+            "minimumDuration": "60"
         },
         {
             "time": "900",
@@ -71,9 +71,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "canDepartFromAnyTrack": true,
+            "standingIndex": 1.0,
+            "minimumDuration": "60"
         }
     ],
     "out": [
@@ -89,9 +89,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "3900",
@@ -105,9 +105,9 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         },
         {
             "time": "4200",
@@ -126,16 +126,16 @@
                     "tasks": []
                 }
             ],
-            "canDepartFromAnyTrack": false,
-            "standingIndex": 0.0,
-            "minimumDuration": ""
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
         }
     ],
     "endTime": "7200",
     "inStanding": [
         {
             "id": "2002",
-            "sideTrackPart": "58",
+            "sideTrackPart": "71",
             "parkingTrackPart": "1",
             "members": [
                 {
@@ -144,10 +144,10 @@
                     "tasks": []
                 }
             ],
+            "canDepartFromAnyTrack": true,
             "standingIndex": 1.0,
-            "time": "0",
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "time": "0"
         }
     ],
     "outStanding": [
@@ -162,10 +162,10 @@
                     "tasks": []
                 }
             ],
+            "canDepartFromAnyTrack": true,
             "standingIndex": 1.0,
-            "time": "0",
-            "canDepartFromAnyTrack": false,
-            "minimumDuration": ""
+            "minimumDuration": "60",
+            "time": "0"
         }
     ],
     "trainUnitTypes": [

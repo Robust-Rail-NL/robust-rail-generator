@@ -5,7 +5,7 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
     if not valid:
         return False
     train_units = [(train, unit, "incoming") for train in getattr(scenario_generator.scenario, "in") for unit in train.members] + [(train, unit, "instanding") for train in getattr(scenario_generator.scenario, "inStanding") for unit in train.members]
-    train_unit_requests = [(train, unit, "outgoing") for train in getattr(scenario_generator.   scenario, "out") for unit in train.members] + [(train, unit, "outstanding") for train in getattr(scenario_generator.scenario, "outStanding") for unit in train.members]
+    train_unit_requests = [(train, unit, "outgoing") for train in getattr(scenario_generator.scenario, "out") for unit in train.members] + [(train, unit, "outstanding") for train in getattr(scenario_generator.scenario, "outStanding") for unit in train.members]
     if len(train_units) != len(train_unit_requests):
         logging.warning(f"Number of incoming train units ({len(train_units)}) does not match number of outgoing train unit requests ({len(train_unit_requests)}).")
         return False
@@ -21,7 +21,9 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
         logging.warning("Types of incoming train units do not match types of outgoing train unit requests.")
         return False
     for in_train, unit, _ in train_units:
-        matching_departures = [(req_unit, out_train.time, typ) for out_train, req_unit, typ in train_unit_requests if req_unit.typeDisplayName == unit.typeDisplayName and out_train.time >= in_train.time + minimal_yard_time]
+        # TODO servicing time
+        # Primitive matching does not use minimum yard time, because trains can also be delayed
+        matching_departures = [(req_unit, out_train.time, typ) for out_train, req_unit, typ in train_unit_requests if req_unit.typeDisplayName == unit.typeDisplayName and (out_train.time > in_train.time or typ == "outstanding")]
         if not matching_departures:
             logging.warning(f"No matching departure found for incoming train unit {unit.id} of type {unit.typeDisplayName} arriving at {in_train.time} with train {in_train.id}.")
             return False
