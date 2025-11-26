@@ -49,9 +49,9 @@ protoc -I=. --python_out=../../src/py_protobuf Scenario_HIP.proto
 protoc -I=. --python_out=../../src/py_protobuf Location_HIP.proto
 ```
 
-# How to use ?
+# How to use?
 
-The scenario generation can be done by using configuration files. These files specify the details, which can be very elaborate or leave some choices to a random generator. For more information on how to structure such a file, see [How to write a configuration file?](./data/scenario_configurations/How%20to%20write%20a%20configuration%20file.md). 
+The scenario generation can be done by using configuration files. These files specify the details, which can be very elaborate or leave some choices to a random generator. For more information on how to structure such a file, see [How to write a configuration file?](./How%20to%20write%20a%20configuration%20file.md). 
 We have also included some examples, such as an [example with three trains](./data/scenario_configurations/example_config1.json) or an [example with ten randomly generated trains](./data/scenario_configurations/random_config.json).
 
 To create a scenario, run:
@@ -65,9 +65,65 @@ For example, (when the robust-rail scenario repository is also included in the p
 ```bash
 python src/main.py --config "scenario_config.json" --path "../scenario-planning-inputs/Scenario_settings/setting_A/"
 ```
-The generator creates two scenarios: `scenario.json` and `scenario_solver.json`, because the robust-rail-solver uses a different format of the scenario `scneario_solver.json` than the robust-rail-evaluator. The `location.json` file used by the generator for the location of the shunting yard, also has two formats.
+The generator creates two scenarios: `scenario.json` and `scenario_solver.json`, because the robust-rail-solver uses a different format of the scenario `scenario_solver.json` than the robust-rail-evaluator. The `location.json` file used by the generator for the location of the shunting yard, also has two formats.
 We also include a script to convert scenarios (and locations) of one format to the other. 
 ```bash
 python src/format_converter.py --location-path "./data/locations/simple_service_location.json"
 python src/format_converter.py --scenario-path ./data/scenarios/scenario_kleineBinckhorst_6t_custom_config1.json
+```
+
+# Repository Structure
+This gives an overview of the file structure in this repository. The `data` folder stores the `generated_scenarios` (which are not listed below), the `location` files (currently only the Kleine Binckhorst and a simple service location - see [locations](./data/locations/README.md)), and the `scenario_configurations`, which holds three examples using custom trains and three examples to randomly generate the trains; finally, the `data` folder also houses the default train unit types and default servicing tasks as recognized by the `robust-rail-evaluator`.
+
+The `protos` folder includes the format of a Location, a Scenario, a TrainUnitType and the Utilities of a scenario. There are also specific ProtoBuf formats for the `HIP` format, which is the solver format. The `src` folder contains the generated pyProtoBuf files, along with the main generation files: `main.py` is the main method to call, which uses the `check_config.py` to check the configuration and the `check_matching` to make sure that the generated files are feasible. `scenario.py` houses the main structure of the scenario along with the encoding into the ProtoBuf format. The `random_generator.py` contains all the code for randomly generating scenarios. Finally, `format_converter.py` can be used to convert the regular (evaluator) format into solver format, for both location and scenario files.
+```
+📦robust-rail-generator
+ ┣ 📂data
+ ┃ ┣ 📂generated_scenarios
+ ┃ ┣ 📂locations
+ ┃ ┃ ┣ 📂img
+ ┃ ┃ ┃ ┣ 📜kleine_binckhorst.png
+ ┃ ┃ ┃ ┗ 📜simple_service_location.png
+ ┃ ┃ ┣ 📜kleineBinckhorst.json
+ ┃ ┃ ┣ 📜kleineBinckhorst_solver.json
+ ┃ ┃ ┣ 📜simple_service_location.json
+ ┃ ┃ ┣ 📜simple_service_location_solver.json
+ ┃ ┣ 📂scenario_configurations
+ ┃ ┃ ┣ 📜config_train_cleaning_late.json
+ ┃ ┃ ┣ 📜example_config1.json
+ ┃ ┃ ┣ 📜example_config2.json
+ ┃ ┃ ┣ 📜example_config3.json
+ ┃ ┃ ┣ 📜random_config.json
+ ┃ ┃ ┣ 📜random_config_distribution1.json
+ ┃ ┃ ┗ 📜random_config_distribution2.json
+ ┃ ┣ 📜default_servicing_tasks.json
+ ┃ ┗ 📜default_train_unit_types.json
+ ┣ 📂protos
+ ┃ ┣ 📂HIP_protos
+ ┃ ┃ ┣ 📜Location_HIP.proto
+ ┃ ┃ ┗ 📜Scenario_HIP.proto
+ ┃ ┣ 📜Location.proto
+ ┃ ┣ 📜Scenario.proto
+ ┃ ┣ 📜TrainUnitTypes.proto
+ ┃ ┗ 📜Utilities.proto
+ ┣ 📂src
+ ┃ ┣ 📂py_protobuf
+ ┃ ┃ ┣ 📜Location_HIP_pb2.py
+ ┃ ┃ ┣ 📜Location_pb2.py
+ ┃ ┃ ┣ 📜Scenario_HIP_pb2.py
+ ┃ ┃ ┣ 📜Scenario_pb2.py
+ ┃ ┃ ┣ 📜TrainUnitTypes_pb2.py
+ ┃ ┃ ┣ 📜Utilities_pb2.py
+ ┃ ┃ ┗ 📜__init__.py
+ ┃ ┣ 📜__init__.py
+ ┃ ┣ 📜check_config.py
+ ┃ ┣ 📜check_matching.py
+ ┃ ┣ 📜format_converter.py
+ ┃ ┣ 📜main.py
+ ┃ ┣ 📜random_generator.py
+ ┃ ┗ 📜scenario.py
+ ┣ 📜.gitignore
+ ┣ 📜README.md
+ ┣ 📜How to write a configuration file.md
+ ┗ 📜env.yml
 ```

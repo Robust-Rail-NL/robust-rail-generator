@@ -20,3 +20,6 @@ The incoming (gateway) track is RailRoad 906a (left bottom corner) which connect
 
 
 ## Simple service location
+This is a manually created simple location.
+
+![Figure 2: Simple Service Location](img/simple_service_location.png)

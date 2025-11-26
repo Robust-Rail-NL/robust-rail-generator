@@ -34,9 +34,9 @@ def convert_scenario_from_solver(scenario_file_path):
     solver_scenario_generator.save_scenario_json(solver_filepath)
     print("Wrote scenario in solver format to:", solver_filepath)
 
-def exmaple():
+def example():
     location_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "locations", "simple_service_location.json")
-    scenario_filepath_evaluator_format = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", "scenario_kleineBinckhorst_6t_custom_config3.json")
+    scenario_filepath_evaluator_format = os.path.join(os.path.dirname(__file__), "..", "data", "generated_scenarios", "scenario_kleineBinckhorst_6t_custom_config3.json")
     convert_location_to_solver(location_file_path)
     convert_scenario_from_solver(scenario_filepath_evaluator_format)
     # TODO converters from solver to evaluator format

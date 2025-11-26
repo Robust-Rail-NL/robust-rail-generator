@@ -18,6 +18,8 @@ parser.add_argument("--log-level", default="ERROR", required=False, help="Config
 
 def create_scenario_from_config(config_file, path, scenario_file, location_path):
     # Use the path if specified, otherwise check at default location for configuration file
+    if ".json" not in config_file:
+        config_file += ".json"
     if path is None:
         filepath = os.path.join(os.path.dirname(__file__), "..", "data", "scenario_configurations", config_file)
     elif path == ".":
@@ -106,7 +108,7 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
         output_filepath = os.path.join(path, scenario_file if scenario_file.endswith(".json") else f"{scenario_file}.json")
     else:
         # Create a scenario file at the default location
-        output_filepath = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", f"{scenario_file}.json")
+        output_filepath = os.path.join(os.path.dirname(__file__), "..", "data", "generated_scenarios", scenario_file if scenario_file.endswith(".json") else f"{scenario_file}.json")
     output_solver_filepath = "/".join(output_filepath.split("/")[:-1] + [output_filepath.split("/")[-1].replace("scenario", "scenario_solver")])
     # Write TORS scenario file
     scenario_generator.save_scenario_json(output_filepath)
