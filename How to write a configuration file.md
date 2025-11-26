@@ -1,0 +1,60 @@
+The configuration file is a JSON file with the following parameters defined in this file.
+
+### Required parameters
+- `location` (string): name of location for which a JSON file exists: `/data/locations/{name}.json`.
+- `start_time` (int): start time of the scenario.
+- `end_time` (int): end time of the scenario (all actions should be executable within this time frame).
+- `trains_given` (bool): whether trains are given in this file (true) or should be generated randomly (false). Cannot be true if `use_default_material` is false.
+- `use_default_material` (bool): whether the train unit types to be used are the default (real-life) ones which can be loaded automatically (true) or should be generated randomly (false)
+- `track_ids_used` (bool): whether tracks are given with their ids (int, true) or names (strings, false).
+- `perform_servicing` (bool): whether servicing actions are part of the scenario (true) or no trains require servicing (false).
+
+### Optional parameters
+- `seed` (int): seed used for any random generation (defaults to 42).
+- `number_of_trains` (int): if `trains_given` is false, this is the number of trains to be generated: each gets a random number of units between 1 and 3.
+- `number_of_train_unit_types` (int): if `use_default_material` is false, this is the number of train unit types to be generated.
+- `mixed_traffic` (bool) (optional): if `trains_given` is false, this parameter can be used to say that if true all trains must arrive before the first can depart again. Assumed to be true.
+- `matching` (int) (optional): if `trains_given` is false, this parameter can be used to say that if `0` the same train compositions are required for departure as generated for arrival, if `1` the sequences and number of units per train are regenerated and allows for different number of trains (assumed value), if `2` the trains are treated as last in last out.
+- `min_gap_on_gateway` (int) (optional): if `trains_given` is false, this parameter can be used to give the minimal time between an arrival/departure action and another arrival/departure section on a gateway track. This time is used in generating the arrival/departure times. Set to 300 if not specified. 
+- `min_time_in_yard` (int) (optional): if `trains_given` is false, this parameter can be used to give the minimal time between arrival and departure of the same train (unit), the service time will also be checked to generate arrival/departure times. Set to 600 if not specified.
+- `gateway` (optional) (dict), if `trains_given` is false, this parameter can be used to specify the track(s) at which trains must arrive/depart. If not provided, they will be generated.
+  - `arrival` (list of int/string) (optional): tracks (id or name) at which trains must enter the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
+  - `departure` (list int/string) (optional): tracks (id or name) at which trains must enter the scenario. Each track must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
+- `train_unit_distribution` (dict) (optional): if `trains_given` is false, this parameter can be used to control the train generation, 
+  - `train_unit_types` (list): optional list of train unit type names that are included in this scenario (if `use_default_material` is true)
+  - `units_per_composition` (list): list with integers describing number of train units per composition, can be just one item in the list, then it's the same for all trains, or multiple to specify a distribution
+  - `type_ratio` (float): number between 0 and 1, where 1 means, each train has unique type and 0 means each train has the same type.
+  - `instanding_ratio` (float): number between, 0 and 1, where 1 means, all trains start as parked in the yard and 0 means all trains arrive in the yard
+  - `outstanding_ratio` (float): number between, 0 and 1, where 1 means, all trains stay parked in the yard and 0 means all trains depart from the year
+- `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
+  - `id` (int): unique train unit id
+  - `type` (string): type of the train unit, should be compatible with the default options if `use_default_material` is true (otherwise trains must also be generated randomly)
+  - `services` (list): list of service task names if `perform_servicing` is true, must be compatible with names defined in `custom_servicing_tasks`
+- `custom_trains` (list): if `trains_given` is true, this is a list of train objects. Each entering train must be specified, and separately, each leaving trains must be specified as follows. 
+  - The trains that 'enter' a scenario can be either incoming (arrive at some point) or instanding (already in the shunting yard). Each entering train must be specified separately.
+    - `id` (int): unique train id (known for trains that enter).
+    - `members` (list): list of train units - the ids of the train units that are defined in `custom_train_units`.
+    - Option 1: train arrives into scenario (called `in` train), you must specify:
+      - `arrival_time` (int): time at which train enters the scenario.
+      - `arrival_track` (int/string): track (id or name) at which train enters the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
+    - Option 2: train starts in the shunting yard (called `in_standing` train), you must specify:
+      - `start_at_track` (int/string): track (id or name) at which train is parked at the start of the scenario.
+      - `parking_index` (int) (optional): if multiple trains park at same track as in standing, define index for the other of the trains (lower index is Aside).
+      - `side_track_part` (int/string) (optional): track part (id or name) on which side the train is parked, can be a bumper or a different track/switch. If not specified, random one is chosen (the shortest length neighbor).
+  - The trains that 'leave' a scenario can be either outgoing (depart at some point) or outstanding (remain in the shunting yard). Each leaving train must be specified separately.
+    - `id` (int/string): for the leaving trains, this is not a unique id, but just a name used to refer to the train.
+    - `member_types` (list): list of train unit types (which must be present as specified in `member_types`).
+    - Option 1: train departs from scenario (called `out` train), you must specify:
+      - `departure_track` (int): track (id or name) from which train leaves the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
+      - `departure_time` (int/string): time at which train start moving toward departure track.
+      - `depart_any_track` (bool) (optional): whether train can depart from any track or only the departure track.
+    - Option 2: train remains in shunting yard (called `out_standing` train), you must specify:
+      - `end_at_track` (int/string): track (id or name) at which train is parked at the end of the scenario.
+      - `parking_index` (int) (optional): if multiple trains park at same track as outstanding, define index for the other of the trains (lower index is Aside).
+      - `side_track_part` (int/string) (optional): track part (id or name) on which side the train is parked, can be a bumper or a different track/switch. If not specified, random one is chosen (the shortest length neighbor).
+- `custom_servicing_tasks` (list): if `perform_servicing` is true and `trains_given` is true, this is a list of servicing task objects with the following parameters:
+  - `name` (string): name of servicing task specification (used in train unit's services).
+  - `type` (string): type of servicing task.
+  - `priority` (int): priority of the servicing task (lower is more important).
+  - `duration` (int): time to execute servicing task.
+  - `required_skills` (list): list of strings giving the required skills to perform a servicing task, must be compatible with `custom_worker_skills`.
