@@ -13,7 +13,7 @@
         "matching_complexity": 0
     },
     "gateway": {
-        "arrival": ["41"],
-        "departure": ["41"]
+        "arrival": ["15"],
+        "departure": ["15"]
     }
 }

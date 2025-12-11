@@ -54,7 +54,7 @@ class RandomGenerator:
                         logging.error(f"Bumper {config['track_id_map'][bumper_b[0]].id} on the B-side of track {track.id} does not have this track on its own A-side.")
                     if config["track_id_map"][bumper_b[0]].bSide:
                         logging.error(f"Bumper {config['track_id_map'][bumper_b[0]].id} on the B-side of track {track.id} has a track part with id {config['track_id_map'][bumper_b[0]].bSide[0]} on its B-side.")
-                    if  gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and gateway.parkingAllowed and gateway.length > 0:
+                    if gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and not gateway.parkingAllowed and gateway.length > 0:
                         gateways.append((gateway, config["track_id_map"][bumper_b[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
                 elif len(bumper_a) == 1 and len(bumper_b) == 0:
@@ -64,7 +64,7 @@ class RandomGenerator:
                         logging.error(f"Bumper {config['track_id_map'][bumper_a[0]].id} on the A-side of track {track.id} does not have this track on its own B-side.")
                     if config["track_id_map"][bumper_a[0]].aSide:
                         logging.error(f"Bumper {config['track_id_map'][bumper_a[0]].id} on the A-side of track {track.id} has a track part with id {config['track_id_map'][bumper_a[0]].aSide[0]} on the B-side.")
-                    if  gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and gateway.parkingAllowed  and gateway.length > 0:
+                    if gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and not gateway.parkingAllowed  and gateway.length > 0:
                         gateways.append((gateway, config["track_id_map"][bumper_a[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
         return gateways

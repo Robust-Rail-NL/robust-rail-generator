@@ -119,8 +119,9 @@ def check_location_file(config):
     location = json.load(open(config["location_filepath"]))
     try:
         ParseDict(location, Location_pb2.Location())
-    except:
+    except Exception as e:
         logging.error(f"Could not parse the location file {config['location_file']} to the correct Location format. Be careful not to use the `_solver` format, or use the converter.")
+        logging.error(e)
         return False, config
     config["track_id_map"] = {int(t["id"]): t for t in location["trackParts"]}
     if len(config["track_id_map"]) != max(config["track_id_map"].keys()):
@@ -288,8 +289,8 @@ def check_gateways(config, location, gateways):
             if arrive.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
                 return False, config
-            if not arrive.parkingAllowed:
-                print(f"ERROR: arrival gateway {arrive_id} does not allow parking")
+            if arrive.parkingAllowed:
+                print(f"ERROR: arrival gateway {arrive_id} does allow parking")
                 return False, config
             if not arrive.sawMovementAllowed:
                 print(f"ERROR: arrival gateway {arrive_id} does not allow saw movements")
@@ -319,8 +320,8 @@ def check_gateways(config, location, gateways):
             if depart.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: departure gateway {depart_id} is not a railroad")
                 return False, config        
-            if not depart.parkingAllowed:
-                print(f"ERROR: departure gateway {depart_id} does not allow parking")
+            if depart.parkingAllowed:
+                print(f"ERROR: departure gateway {depart_id} does allow parking")
                 return False, config
             if not depart.sawMovementAllowed:
                 print(f"ERROR: departure gateway {depart_id} does not allow saw movements")

@@ -35,8 +35,8 @@
         {
             "time": "3000",
             "id": "2",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "5",
@@ -87,8 +87,8 @@
         {
             "time": "2400",
             "id": "4",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "8",
@@ -129,8 +129,8 @@
         {
             "time": "1500",
             "id": "6",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "13",
@@ -154,8 +154,8 @@
         },
         {
             "id": "7",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "15",
@@ -171,8 +171,8 @@
         {
             "time": "3900",
             "id": "8",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "0",
@@ -197,8 +197,8 @@
         {
             "time": "1800",
             "id": "9",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "14",
@@ -220,8 +220,8 @@
         {
             "time": "5100",
             "id": "10",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -267,8 +267,8 @@
         {
             "time": "6300",
             "id": "12",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -283,8 +283,8 @@
         {
             "time": "6600",
             "id": "13",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -325,8 +325,8 @@
         {
             "time": "9300",
             "id": "15",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -383,8 +383,8 @@
         {
             "time": "7500",
             "id": "18",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -409,8 +409,8 @@
         {
             "time": "7200",
             "id": "19",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",

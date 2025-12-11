@@ -2,7 +2,7 @@
     "in": {
         "trains": [
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "42",
                 "arrival": "600",
                 "departure": "600",
                 "id": "2000",
@@ -32,10 +32,10 @@
                         ]
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "15"
             },
             {
-                "entryTrackPart": "47",
+                "entryTrackPart": "42",
                 "arrival": "900",
                 "departure": "900",
                 "id": "3000",
@@ -65,14 +65,14 @@
                         ]
                     }
                 ],
-                "firstParkingTrackPart": "41"
+                "firstParkingTrackPart": "15"
             }
         ]
     },
     "out": {
         "trainRequests": [
             {
-                "leaveTrackPart": "47",
+                "leaveTrackPart": "42",
                 "arrival": "1500",
                 "departure": "1500",
                 "displayName": "4000",
@@ -104,7 +104,7 @@
                         "id": ""
                     }
                 ],
-                "lastParkingTrackPart": "41",
+                "lastParkingTrackPart": "15",
                 "standingIndex": 0.0
             }
         ]
@@ -112,7 +112,7 @@
     "inStanding": {
         "trains": [
             {
-                "entryTrackPart": "54",
+                "entryTrackPart": "56",
                 "id": "4002",
                 "members": [
                     {
@@ -166,7 +166,7 @@
     "outStanding": {
         "trainRequests": [
             {
-                "leaveTrackPart": "68",
+                "leaveTrackPart": "61",
                 "displayName": "2001",
                 "trainUnits": [
                     {
@@ -189,7 +189,7 @@
                 "standingIndex": 0.0
             },
             {
-                "leaveTrackPart": "61",
+                "leaveTrackPart": "68",
                 "displayName": "3001",
                 "trainUnits": [
                     {

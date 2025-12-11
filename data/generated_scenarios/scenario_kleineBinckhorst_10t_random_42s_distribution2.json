@@ -35,8 +35,8 @@
         {
             "time": "2400",
             "id": "4",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "11",
@@ -56,8 +56,8 @@
         {
             "time": "6300",
             "id": "6",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "3",
@@ -72,8 +72,8 @@
         {
             "time": "5100",
             "id": "7",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "13",
@@ -88,8 +88,8 @@
         {
             "time": "5700",
             "id": "8",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "6",
@@ -127,8 +127,8 @@
         {
             "time": "4200",
             "id": "10",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -143,8 +143,8 @@
         {
             "time": "7200",
             "id": "11",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -201,8 +201,8 @@
         {
             "time": "8100",
             "id": "14",
-            "sideTrackPart": "47",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -243,8 +243,8 @@
         {
             "time": "9300",
             "id": "16",
-            "sideTrackPart": "46",
-            "parkingTrackPart": "14",
+            "sideTrackPart": "42",
+            "parkingTrackPart": "15",
             "members": [
                 {
                     "id": "****",
@@ -287,8 +287,8 @@
     "inStanding": [
         {
             "id": "0",
-            "sideTrackPart": "71",
-            "parkingTrackPart": "1",
+            "sideTrackPart": "70",
+            "parkingTrackPart": "6",
             "members": [
                 {
                     "id": "0",
@@ -308,8 +308,8 @@
         },
         {
             "id": "3",
-            "sideTrackPart": "70",
-            "parkingTrackPart": "6",
+            "sideTrackPart": "69",
+            "parkingTrackPart": "7",
             "members": [
                 {
                     "id": "4",
@@ -329,8 +329,8 @@
         },
         {
             "id": "5",
-            "sideTrackPart": "59",
-            "parkingTrackPart": "41",
+            "sideTrackPart": "71",
+            "parkingTrackPart": "1",
             "members": [
                 {
                     "id": "1",
