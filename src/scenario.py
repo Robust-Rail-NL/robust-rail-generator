@@ -504,13 +504,8 @@ class ScenarioGenerator:
             
         return trainUnitType
 
-    def load_location(self, file_name, location_path):
-        # Load json format location  
-        if not os.path.isfile(file_name):
-            if location_path is None:
-                file_name = os.path.join(os.path.dirname(__file__), "..", "data", "locations", f"{file_name}{'.json' if '.json' not in file_name else ''}")
-            else:
-                file_name = os.path.join(location_path, f"{file_name}{'.json' if '.json' not in file_name else ''}")
+    def load_location(self, file_name):
+        # Load json format location
         with open(file_name, "r") as f:
             json_location = json.load(f)
         logging.info(f"Loading location from {file_name}")

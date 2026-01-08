@@ -7,17 +7,11 @@ from google.protobuf.json_format import ParseDict
 
 def check_configuration_file(config, location_path):
     """Checks basic parts of the configuration file to be present"""
-    if "location" not in config:
-        logging.error("Not defined: 'location'.")
-        return False, config
-    if not os.path.isfile(os.path.join(location_path, f"{config['location']}.json")):
-        logging.error(f"Could not find location file '{config['location']}.json' at '{location_path}'.")
+    if not os.path.isfile(location_path):
+        logging.error(f"Could not find location file '{location_path}'.")
         return False, config
     else:
-        config["location_file"] = f"{config['location']}.json"
-        config["location_filepath"] = os.path.join(location_path, f"{config['location']}.json")
-        if not os.path.isfile(config["location_filepath"]):
-            logging.error(f"Could not find the location file {config['location_filepath']}")
+        config["location_file"] = location_path
         res, config = check_location_file(config)
         if not res:
             return False, config
@@ -116,7 +110,7 @@ def check_configuration_file(config, location_path):
     return True, config
     
 def check_location_file(config):
-    location = json.load(open(config["location_filepath"]))
+    location = json.load(open(config["location_file"]))
     try:
         ParseDict(location, Location_pb2.Location())
     except Exception as e:
