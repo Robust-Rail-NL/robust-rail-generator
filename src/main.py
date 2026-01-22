@@ -53,7 +53,10 @@ def create_scenario_from_config(config_file, path, scenario_file, location_path)
             exit()
     gateways = {"departure": [], "arrival": []}
     if "gateway" in config:
-        gateways = check_gateways(config, scenario_generator.location, gateways)
+        logging.info("Using specified gateways...")
+        result, gateways = check_gateways(config, scenario_generator.location, gateways)
+        if not result:
+            exit()
 
     # Setup random generator with seed
     if "seed" not in config:

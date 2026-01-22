@@ -274,12 +274,13 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
     return True, config
         
 def check_gateways(config, location, gateways):
+    track_per_ids = {int(t.id): t for t in location.trackParts}
     if "arrival" in config["gateway"]:
         for arrive_id in config["gateway"]["arrival"]:
-            if int(arrive_id) not in [t.id for t in location.trackParts]:
+            if int(arrive_id) not in track_per_ids:
                 print(f"ERROR: arrival gateway {arrive_id} not found in in location")
                 return False, config
-            arrive = location.trackParts[int(arrive_id)]
+            arrive = track_per_ids[int(arrive_id)]
             if arrive.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
                 return False, config
@@ -292,25 +293,25 @@ def check_gateways(config, location, gateways):
             if arrive.length == 0:
                 print(f"ERROR: arrival gateway {arrive_id} has length 0")
                 return False, config
-            bumper_a = [location.trackParts[a]
+            bumper_a = [track_per_ids[a]
                         for a in arrive.aSide 
-                        if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
-            bumper_b = [location.trackParts[a]
-                    for a in arrive.bSide 
-                    if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
+                        if track_per_ids[a].type == Location_pb2.TrackPartType.Bumper]
+            bumper_b = [track_per_ids[b]
+                    for b in arrive.bSide 
+                    if track_per_ids[b].type == Location_pb2.TrackPartType.Bumper]
             if len(bumper_a) == 1:
                 gateways["arrival"].append((arrive, bumper_a[0]))
             elif len(bumper_b) == 1:
                 gateways["arrival"].append((arrive, bumper_b[0]))
             else:
                 print(f"ERROR: arrival gateway {arrive_id} does not have a bumper side")
-                return False, config            
+                return False, config
     if "departure" in config["gateway"]:
         for depart_id in config["gateway"]["departure"]:
-            if int(depart_id) not in [t.id for t in location.trackParts]:
+            if int(depart_id) not in track_per_ids:
                 print(f"ERROR: departure gateway {depart_id} not found in in location")
                 return False, config
-            depart = location.trackParts[int(depart_id)]
+            depart = track_per_ids[int(depart_id)]
             if depart.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: departure gateway {depart_id} is not a railroad")
                 return False, config        
@@ -323,12 +324,12 @@ def check_gateways(config, location, gateways):
             if depart.length == 0:
                 print(f"ERROR: departure gateway {depart_id} has length 0")
                 return False, config
-            bumper_a = [location.trackParts[a]
+            bumper_a = [track_per_ids[a]
                         for a in depart.aSide 
-                        if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
-            bumper_b = [location.trackParts[b] 
+                        if track_per_ids[a].type == Location_pb2.TrackPartType.Bumper]
+            bumper_b = [track_per_ids[b] 
                     for b in depart.bSide 
-                    if location.trackParts[b].type == Location_pb2.TrackPartType.Bumper]
+                    if track_per_ids[b].type == Location_pb2.TrackPartType.Bumper]
             if len(bumper_a) == 1:
                 gateways["departure"].append((depart, bumper_a[0]))
             elif len(bumper_b) == 1:
@@ -336,4 +337,4 @@ def check_gateways(config, location, gateways):
             else:
                 print(f"ERROR: departure gateway {depart_id} does not have a bumper side")
                 return False, config
-    return gateways
+    return True, gateways
