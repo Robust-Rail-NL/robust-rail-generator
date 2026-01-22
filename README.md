@@ -52,19 +52,23 @@ protoc -I=. --python_out=../../src/py_protobuf Location_HIP.proto
 # How to use?
 
 The scenario generation can be done by using configuration files. These files specify the details, which can be very elaborate or leave some choices to a random generator. For more information on how to structure such a file, see [How to write a configuration file?](./How%20to%20write%20a%20configuration%20file.md). 
-We have also included some examples, such as an [example with three trains](./data/scenario_configurations/example_config1.json) or an [example with ten randomly generated trains](./data/scenario_configurations/random_config.json).
+We have also included one example in this repo in the `data` [folder](data/README.md), for more examples see the [scenario-planning-input repository](https://github.com/Robust-Rail-NL/scenario-planning-inputs). The example can be accessed through [example.py](src/example.py).
 
-To create a scenario, run:
+By default, the [Kleine Binckhorst location](../scenario-planning-inputs/Location_KleineBinckhorst/README.md) is used, which is a shunting yard in the Netherlands. By giving a configuration file name, the location is loaded automatically:
 ```bash
-python src/main.py --config "example_config1.json" --scenario-file "custom-named-scenario.json"
+python src/main.py --config "scenario_config_example1.json"
 ```
 
-Do not forget to specify the path to the configuration file `--config "path/to/config.json"`. Optionally, a custom name can be assigned to the generated scenario `--scenario-file "name_of_scenario"`. Moreover, a path can be given where the configuration file can be found, and the scenario can be written to.
-
-For example, (when the robust-rail scenario repository is also included in the project), run:
+Alternatively, a different `path` parameter can be given to load a configuration file from a different location folder in the scenario-planning-inputs.
 ```bash
-python src/main.py --config "scenario_config.json" --path "../scenario-planning-inputs/Scenario_settings/setting_A/"
+python src/main.py --config "scenario_config_train_cleaning_late.json" --path "../scenario-planning-inputs/Location_SimpleService"
 ```
+
+Finally, you can also specifically enter a different location filename and name of the scenario file to be created, the location filename will be retrieved from the `path`directory, and the scenario will be created in the `path/scenarios/` directory unless a complete path is specified.
+```bash
+python src/main.py --config "scenario_config_train_cleaning_late.json" --path "../scenario-planning-inputs/Location_SimpleService" --scenario-file "scenario_result_name.json" --location "location.json""
+```
+
 The generator creates two scenarios: `scenario.json` and `scenario_solver.json`, because the robust-rail-solver uses a different format of the scenario `scenario_solver.json` than the robust-rail-evaluator. The `location.json` file used by the generator for the location of the shunting yard, also has two formats.
 We also include a script to convert scenarios (and locations) of one format to the other. 
 ```bash
@@ -73,31 +77,18 @@ python src/format_converter.py --scenario-path ./data/scenarios/scenario_kleineB
 ```
 
 # Repository Structure
-This gives an overview of the file structure in this repository. The `data` folder stores the `generated_scenarios` (which are not listed below), the `location` files (currently only the Kleine Binckhorst and a simple service location - see [locations](./data/locations/README.md)), and the `scenario_configurations`, which holds three examples using custom trains and three examples to randomly generate the trains; finally, the `data` folder also houses the default train unit types and default servicing tasks as recognized by the `robust-rail-evaluator`.
+This gives an overview of the file structure in this repository. The `data` folder stores only a few example files and should not be used for file storage. It also contains two default information files.
 
-The `protos` folder includes the format of a Location, a Scenario, a TrainUnitType and the Utilities of a scenario. There are also specific ProtoBuf formats for the `HIP` format, which is the solver format. The `src` folder contains the generated pyProtoBuf files, along with the main generation files: `main.py` is the main method to call, which uses the `check_config.py` to check the configuration and the `check_matching` to make sure that the generated files are feasible. `scenario.py` houses the main structure of the scenario along with the encoding into the ProtoBuf format. The `random_generator.py` contains all the code for randomly generating scenarios. Finally, `format_converter.py` can be used to convert the regular (evaluator) format into solver format, for both location and scenario files.
+The `protos` folder includes the format of a Location, a Scenario, a TrainUnitType and the Utilities of a scenario. There are also specific ProtoBuf formats for the `HIP` format, which is the solver format. The `src` folder contains the generated pyProtoBuf files, along with the main generation files: `main.py` is the main method to call, which uses the `check_config.py` to check the configuration and the `check_matching` to make sure that the generated files are feasible. `scenario.py` houses the main structure of the scenario along with the encoding into the ProtoBuf format. The `random_generator.py` contains all the code for randomly generating scenarios. Finally, `format_converter.py` can be used to convert the regular (evaluator) format into solver format, for both location and scenario files. Finally, `example.py` gives an example for the possible parameters.
 ```
 📦robust-rail-generator
  ┣ 📂data
- ┃ ┣ 📂generated_scenarios
- ┃ ┣ 📂locations
- ┃ ┃ ┣ 📂img
- ┃ ┃ ┃ ┣ 📜kleine_binckhorst.png
- ┃ ┃ ┃ ┗ 📜simple_service_location.png
- ┃ ┃ ┣ 📜kleineBinckhorst.json
- ┃ ┃ ┣ 📜kleineBinckhorst_solver.json
- ┃ ┃ ┣ 📜simple_service_location.json
- ┃ ┃ ┣ 📜simple_service_location_solver.json
- ┃ ┣ 📂scenario_configurations
+ ┃ ┣ 📂scenarios
+ ┃ ┣ 📂configurations
  ┃ ┃ ┣ 📜config_train_cleaning_late.json
- ┃ ┃ ┣ 📜example_config1.json
- ┃ ┃ ┣ 📜example_config2.json
- ┃ ┃ ┣ 📜example_config3.json
- ┃ ┃ ┣ 📜random_config.json
- ┃ ┃ ┣ 📜random_config_distribution1.json
- ┃ ┃ ┗ 📜random_config_distribution2.json
  ┃ ┣ 📜default_servicing_tasks.json
- ┃ ┗ 📜default_train_unit_types.json
+ ┃ ┣ 📜default_train_unit_types.json
+ ┃ ┗ 📜location.json
  ┣ 📂protos
  ┃ ┣ 📂HIP_protos
  ┃ ┃ ┣ 📜Location_HIP.proto
@@ -118,6 +109,7 @@ The `protos` folder includes the format of a Location, a Scenario, a TrainUnitTy
  ┃ ┣ 📜__init__.py
  ┃ ┣ 📜check_config.py
  ┃ ┣ 📜check_matching.py
+ ┃ ┣ 📜example.py
  ┃ ┣ 📜format_converter.py
  ┃ ┣ 📜main.py
  ┃ ┣ 📜random_generator.py

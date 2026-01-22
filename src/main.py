@@ -11,12 +11,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config-file", help="Name of configuration file for the scenario generation.", required=True)
 parser.add_argument("-p", "--path", help="Path to the folder where the --config file can be found (default is /workspace/scenario-planning-inputs/Location_KleineBinckhorst/configurations/ otherwise specify the --path option).", required=False, default=None)
 parser.add_argument("-s", "--scenario-file", help="Optional custom name of created scenario file (will be written to the /scenarios/ folder of the same Location_Name folder in the scenario-planning-inputs, unless a different full path is specified here.", required=False, default=None)
-parser.add_argument("-l", "--location-path", help="Path to the folder where the location file mentioned in the config can be found (default location is /workspace/scenario-planning-inputs/Location_KleineBinckhorst/location.json), otherwise the location.json of the same Location_Name folder will be used if a path is specified.", required=False, default=None)
+parser.add_argument("-l", "--location-path", help="Path to the folder where the location file mentioned in the config can be found (default location is robust-rail-generator/../scenario-planning-inputs/Location_KleineBinckhorst/location.json), otherwise the location.json of the same Location_Name folder will be used if a path is specified.", required=False, default=None)
 
 ### Add logging to the arguments
 parser.add_argument("--log-level", default="ERROR", required=False, help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.")
 
-def create_scenario_from_config(config_file, path, scenario_file, location_path):
+def create_scenario_from_config(config_file, path=None, scenario_file=None, location_path=None):
     # Use the path if specified, otherwise check at default location for configuration file
     if ".json" not in config_file:
         config_file += ".json"
