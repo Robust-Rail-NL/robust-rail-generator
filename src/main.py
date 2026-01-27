@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import logging
 import argparse
@@ -9,9 +10,9 @@ from check_matching import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config-file", help="Name of configuration file for the scenario generation.", required=True)
-parser.add_argument("-p", "--path", help="Path to the folder where the --config file can be found (default is /workspace/scenario-planning-inputs/Location_KleineBinckhorst/configurations/ otherwise specify the --path option).", required=False, default=None)
-parser.add_argument("-s", "--scenario-file", help="Optional custom name of created scenario file (will be written to the /scenarios/ folder of the same Location_Name folder in the scenario-planning-inputs, unless a different full path is specified here.", required=False, default=None)
-parser.add_argument("-l", "--location-path", help="Path to the folder where the location file mentioned in the config can be found (default location is robust-rail-generator/../scenario-planning-inputs/Location_KleineBinckhorst/location.json), otherwise the location.json of the same Location_Name folder will be used if a path is specified.", required=False, default=None)
+parser.add_argument("-p", "--path", help="Path to the folder where the --config-file can be found; default is ../../scenario-planning-inputs/Location_KleineBinckhorst/configurations/", required=False, default=None)
+parser.add_argument("-s", "--scenario-file", help="Optional custom name of created scenario file (will be written to the /scenarios/ folder of the same Location_Name folder in the scenario-planning-inputs, unless a different full path is specified here).", required=False, default=None)
+parser.add_argument("-l", "--location-path", help="Path to the folder where the location file mentioned in the config can be found (default location is ../../scenario-planning-inputs/Location_KleineBinckhorst/location.json), otherwise the location.json of the same Location_Name folder will be used if a path is specified.", required=False, default=None)
 
 ### Add logging to the arguments
 parser.add_argument("--log-level", default="ERROR", required=False, help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.")
@@ -40,7 +41,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     # Check the configuration file
     correct_file, config = check_configuration_file(config, location_path)
     if not correct_file:
-        exit()
+        sys.exit(1)
 
     scenario_generator = ScenarioGenerator()
     scenario_generator.load_location(config["location_file"])
@@ -50,13 +51,13 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     if config['trains_given']:
         correct_file, config = check_train_details_file(config, scenario_generator.location)
         if not correct_file:
-            exit()
+            sys.exit(1)
     gateways = {"departure": [], "arrival": []}
     if "gateway" in config:
         logging.info("Using specified gateways...")
         result, gateways = check_gateways(config, scenario_generator.location, gateways)
         if not result:
-            exit()
+            sys.exit(1)
 
     # Setup random generator with seed
     if "seed" not in config:
@@ -86,7 +87,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
         if not matching_possible:
             logging.error("The specified incoming and outgoing trains do not match. Please check the configuration file.")
-            exit()
+            sys.exit(1)
     else:
         # Generate random trains if none are specified
         random_generator.generate_train_compositions(config, scenario_generator)
@@ -106,9 +107,9 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         # If no name is given, generate it
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
         custom = f"custom" if config["trains_given"] else f"random_{config['seed']}s"
-        scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_file.split('/')[-1].split('_')[-1].split('.')[0]}"
-    if "/" in scenario_file:
-        # Use the specified output path
+        scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_file.split(os.sep)[-1].split('_')[-1].split('.')[0]}"
+    if os.sep in scenario_file:
+        # `scenario_file` represents a path; use it directly
         output_filepath = scenario_file
     else:
         if path is None:
@@ -116,7 +117,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         if ".json" not in scenario_file:
             scenario_file += ".json"
         output_filepath = os.path.join(scenario_path,  scenario_file)
-    output_solver_filepath = "/".join(output_filepath.split("/")[:-1] + [output_filepath.split("/")[-1].replace("scenario", "scenario_solver")])
+    output_solver_filepath = os.path.join(os.path.dirname(output_filepath), os.path.basename(output_filepath).replace("scenario", "scenario_solver"))
     # Write TORS scenario file
     scenario_generator.save_scenario_json(output_filepath)
     # Write Solver format scenario file
