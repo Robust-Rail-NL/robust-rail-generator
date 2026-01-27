@@ -276,18 +276,18 @@ class RandomGenerator:
                         departure_times.append(random.sample([x for x in possible_departure_times if x > arrival_times[y]], 1)[0])
                     possible_departure_times.remove(departure_times[-1])
                 except:
-                    logging.error(f"Cannot sample departure time for train {y} from possible departure times after arrival time {arrival_times[y]} with min gap {distribution_config['min_gap_on_gateway']}. Possible departure times: {possible_departure_times}")
+                    logging.exception(f"Cannot sample departure time for train {y} from possible departure times after arrival time {arrival_times[y]} with min gap {distribution_config['min_gap_on_gateway']}. Possible departure times: {possible_departure_times}")
         else:
             # Arrive in first half of total time
             try:
                 arrival_times = random.sample(range(self.scenario_generator.scenario.startTime, math.floor(self.scenario_generator.scenario.endTime / 2), distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_in"])
             except:
-                logging.error(f"Cannot sample {distribution_config['number_trains_in']} arrival times from range {self.scenario_generator.scenario.startTime} to {math.floor(self.scenario_generator.scenario.endTime / 2)} (endtime/2) with min gap {distribution_config['min_gap_on_gateway']}")
+                logging.exception(f"Cannot sample {distribution_config['number_trains_in']} arrival times from range {self.scenario_generator.scenario.startTime} to {math.floor(self.scenario_generator.scenario.endTime / 2)} (endtime/2) with min gap {distribution_config['min_gap_on_gateway']}")
             # Depart in second half of total time
             try:
                 departure_times = random.sample(range(math.floor(self.scenario_generator.scenario.endTime / 2), self.scenario_generator.scenario.endTime, distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_out"])
             except:
-                logging.error(f"Cannot sample {distribution_config['number_trains_out']} departure times from range {math.floor(self.scenario_generator.scenario.endTime / 2)} (endtime/2) to {self.scenario_generator.scenario.endTime} with min gap {distribution_config['min_gap_on_gateway']}")
+                logging.exception(f"Cannot sample {distribution_config['number_trains_out']} departure times from range {math.floor(self.scenario_generator.scenario.endTime / 2)} (endtime/2) to {self.scenario_generator.scenario.endTime} with min gap {distribution_config['min_gap_on_gateway']}")
         return arrival_times, departure_times 
 
     def distribute_train_units(self, distribution_config):
