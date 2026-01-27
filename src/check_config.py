@@ -277,10 +277,10 @@ def check_gateways(config, location, gateways):
     track_per_ids = {int(t.id): t for t in location.trackParts}
     if "arrival" in config["gateway"]:
         for arrive_id in config["gateway"]["arrival"]:
-            if int(arrive_id) not in track_per_ids:
+            arrive = track_per_ids.get(int(arrive_id), None)
+            if arrive is None:
                 print(f"ERROR: arrival gateway {arrive_id} not found in in location")
                 return False, config
-            arrive = track_per_ids[int(arrive_id)]
             if arrive.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
                 return False, config
@@ -293,6 +293,9 @@ def check_gateways(config, location, gateways):
             if arrive.length == 0:
                 print(f"ERROR: arrival gateway {arrive_id} has length 0")
                 return False, config
+            # Assert that the JSON is well-formed
+            assert all(int(a) == a for a in arrive.aSide), "aSide must be represented as int, not string"
+            assert all(int(b) == b for b in arrive.bSide), "bSide must be represented as int, not string"
             bumper_a = [track_per_ids[a]
                         for a in arrive.aSide 
                         if track_per_ids[a].type == Location_pb2.TrackPartType.Bumper]
@@ -308,10 +311,10 @@ def check_gateways(config, location, gateways):
                 return False, config
     if "departure" in config["gateway"]:
         for depart_id in config["gateway"]["departure"]:
-            if int(depart_id) not in track_per_ids:
+            depart = track_per_ids.get(int(depart_id), None)
+            if depart is None:
                 print(f"ERROR: departure gateway {depart_id} not found in in location")
                 return False, config
-            depart = track_per_ids[int(depart_id)]
             if depart.type != Location_pb2.TrackPartType.RailRoad:
                 print(f"ERROR: departure gateway {depart_id} is not a railroad")
                 return False, config        
@@ -324,6 +327,9 @@ def check_gateways(config, location, gateways):
             if depart.length == 0:
                 print(f"ERROR: departure gateway {depart_id} has length 0")
                 return False, config
+            # Assert that the JSON is well-formed
+            assert all(int(a) == a for a in depart.aSide), "aSide must be represented as int, not string"
+            assert all(int(b) == b for b in depart.bSide), "bSide must be represented as int, not string"
             bumper_a = [track_per_ids[a]
                         for a in depart.aSide 
                         if track_per_ids[a].type == Location_pb2.TrackPartType.Bumper]
