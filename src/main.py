@@ -9,10 +9,11 @@ from check_config import *
 from check_matching import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config-file", help="Name of configuration file for the scenario generation.", required=True)
-parser.add_argument("-p", "--path", help="Path to the folder where the --config-file can be found; default is ../../scenario-planning-inputs/Location_KleineBinckhorst/configurations/", required=False, default=None)
-parser.add_argument("-s", "--scenario-file", help="Optional custom name of created scenario file (will be written to the /scenarios/ folder of the same Location_Name folder in the scenario-planning-inputs, unless a different full path is specified here).", required=False, default=None)
-parser.add_argument("-l", "--location-path", help="Path to the folder where the location file mentioned in the config can be found (default location is ../../scenario-planning-inputs/Location_KleineBinckhorst/location.json), otherwise the location.json of the same Location_Name folder will be used if a path is specified.", required=False, default=None)
+parser.add_argument("-p", "--path", help="Specifies the directory where all data relevant to a given location resides. Defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/ (relative to this Python script). Use . for the current working directory.", required=False, default=None)
+parser.add_argument("-c", "--config-file", help="(required) specifies the name of a configuration file, looked up in a /configurations/ folder below the --path above, but can also be a full path.", required=True)
+parser.add_argument("-l", "--location-path", help="specifies the name of the location file mentioned in the config. Defaults to location.json. Can be either a filename (relative to the --path above) or a full path.", required=False, default=None)
+parser.add_argument("-s", "--scenario-file", help="specifies the custom name of the created scenario file. Defaults to a standard format. Can be either a filename (written in a /scenarios/ folder below the --path mentioned above) or a full path.", required=False, default=None)
+
 
 ### Add logging to the arguments
 parser.add_argument("--log-level", default="ERROR", required=False, help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.")
@@ -21,22 +22,27 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     # Use the path if specified, otherwise check at default location for configuration file
     if ".json" not in config_file:
         config_file += ".json"
+    # Path defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/
     if path is None:
-        filepath = os.path.join(os.path.dirname(__file__), "..", "..", "scenario-planning-inputs", "Location_KleineBinckhorst", "configurations", config_file)
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "scenario-planning-inputs", "Location_KleineBinckhorst")
     elif path == ".":
-        filepath = os.path.join(os.getcwd(), config_file)
+        # Use current working directory as path
+        path = os.path.join(os.getcwd(), config_file)
+    
+    # If full config path is specified
+    if "/" in config_file:
+        config = json.load(open(config_file, "r"))
     else:
+        # Otherwise take config file from /configurations/ folder below --path
         filepath = os.path.join(path, "configurations", config_file)
-        location_path = os.path.join(path, "location.json")
-        scenario_path = os.path.join(path, "scenarios")
-    config = json.load(open(filepath, "r"))
+        config = json.load(open(filepath, "r"))
 
-    # Use the location path if specified, otherwise check default location for location file
+   # If location not specified use default
     if location_path is None:
-        location_path = os.path.join(os.path.dirname(__file__), "..", "..", "scenario-planning-inputs", "Location_KleineBinckhorst", "location.json")
-    print("location path:", location_path)
-    print("config file:", filepath)
-    print("scenario file:", scenario_file)
+        location_path = os.path.join(path, "location.json")
+    # If not full path is specified, take location file from --path
+    elif not "/" in location_path:
+        location_path = os.path.join(path, location_path)
 
     # Check the configuration file
     correct_file, config = check_configuration_file(config, location_path)
@@ -108,15 +114,13 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
         custom = f"custom" if config["trains_given"] else f"random_{config['seed']}s"
         scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_file.split(os.sep)[-1].split('_')[-1].split('.')[0]}"
+    if ".json" not in scenario_file:
+        scenario_file += ".json"
     if os.sep in scenario_file:
         # `scenario_file` represents a path; use it directly
         output_filepath = scenario_file
     else:
-        if path is None:
-            scenario_path = os.path.join(os.path.dirname(__file__), "..", "..", "scenario-planning-inputs", "Location_KleineBinckhorst", "scenarios")
-        if ".json" not in scenario_file:
-            scenario_file += ".json"
-        output_filepath = os.path.join(scenario_path,  scenario_file)
+        output_filepath = os.path.join(path, "scenarios", scenario_file)
     output_solver_filepath = os.path.join(os.path.dirname(output_filepath), os.path.basename(output_filepath).replace("scenario", "scenario_solver"))
     # Write TORS scenario file
     scenario_generator.save_scenario_json(output_filepath)
