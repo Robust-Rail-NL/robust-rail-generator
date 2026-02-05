@@ -137,7 +137,6 @@ def check_location_file(config):
             for j in range(len(location["trackParts"])):
                 if location["trackParts"][j]["id"] == old:
                     location["trackParts"][j]["id"] = new
-        print(location)
         json.dump(location, open(config["location_file"].replace(".json", "_fixedIDs.json"), "w"), indent=4)
     return True, config
 

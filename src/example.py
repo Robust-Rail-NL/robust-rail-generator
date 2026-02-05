@@ -27,7 +27,8 @@ def default_using_scenario_planning_otherLocation():
     print("\nCreating scenario using scenario planning inputs for other location")
     config_file = "scenario_config_train_cleaning_late.json"
     path = os.path.join(os.path.dirname(__file__), "..", "..", "scenario-planning-inputs", "Location_SimpleService")
-    create_scenario_from_config(config_file, path=path)
+    scenario_file = "scenario_train_cleaning_late"
+    create_scenario_from_config(config_file, path=path, scenario_file=scenario_file)
 
 if __name__ == "__main__":
     default_example_given_trains()

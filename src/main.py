@@ -185,4 +185,4 @@ def create_trains(scenario_generator, config, services):
 if __name__ == "__main__":
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level.upper())
-    create_scenario_from_config(args.config_file, args.path, args.scenario_file, args.location_path)
+    create_scenario_from_config(args.config_file, path=args.path, scenario_file=args.scenario_file, location_path=args.location_path)
