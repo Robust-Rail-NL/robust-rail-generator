@@ -16,7 +16,7 @@ def default_example_random_full_paths():
     config_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "configurations", "example_configuration_random.json")
     location_filename = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "example_location.json")
     scenario_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "scenarios", "scenario_trains_given.json")
-    create_scenario_from_config(config_file, scenario_file=scenario_file, location_path=location_filename)
+    create_scenario_from_config(config_file, scenario_file=scenario_file, location_file=location_filename)
 
 def default_using_scenario_planning_KleineBinckhorst():
     # Use the example from the scenario-planning-inputs rpo and the default paths there
@@ -38,7 +38,7 @@ def relative_path():
     config_file = "example_configuration.json"
     location_file = "example_location.json"
     scenario_file = "example_scenario.json"
-    create_scenario_from_config(config_file, path=".", location_path=location_file, scenario_file=scenario_file)
+    create_scenario_from_config(config_file, path=".", location_file=location_file, scenario_file=scenario_file)
 
 if __name__ == "__main__":
     default_example_given_trains()

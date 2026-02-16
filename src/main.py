@@ -11,14 +11,14 @@ from check_matching import *
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--path", help="Specifies the directory where all data relevant to a given location resides. Defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/ (relative to this Python script). Use . for the current working directory.", required=False, default=None)
 parser.add_argument("-c", "--config-file", help="(required) specifies the name of a configuration file, looked up in a /configurations/ folder below the --path above, but can also be a full path.", required=True)
-parser.add_argument("-l", "--location-path", help="specifies the name of the location file mentioned in the config. Defaults to location.json. Can be either a filename (relative to the --path above) or a full path.", required=False, default=None)
+parser.add_argument("-l", "--location-file", help="specifies the name of the location file mentioned in the config. Defaults to location.json. Can be either a filename (relative to the --path above) or a full path.", required=False, default=None)
 parser.add_argument("-s", "--scenario-file", help="specifies the custom name of the created scenario file. Defaults to a standard format. Can be either a filename (written in a /scenarios/ folder below the --path mentioned above) or a full path.", required=False, default=None)
 
 
 ### Add logging to the arguments
 parser.add_argument("--log-level", default="ERROR", required=False, help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.")
 
-def create_scenario_from_config(config_file, path=None, scenario_file=None, location_path=None):
+def create_scenario_from_config(config_file, path=None, scenario_file=None, location_file=None):
     # Use the path if specified, otherwise check at default location for configuration file
     if ".json" not in config_file:
         config_file += ".json"
@@ -39,14 +39,14 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         config = json.load(open(filepath, "r"))
 
    # If location not specified use default
-    if location_path is None:
-        location_path = os.path.join(path, "location.json")
+    if location_file is None:
+        location_file = os.path.join(path, "location.json")
     # If not full path is specified, take location file from --path
-    elif not os.sep in location_path:
-        location_path = os.path.join(path, location_path)
+    elif not os.sep in location_file:
+        location_file = os.path.join(path, location_file)
 
     # Check the configuration file
-    correct_file, config = check_configuration_file(config, location_path)
+    correct_file, config = check_configuration_file(config, location_file)
     if not correct_file:
         sys.exit(1)
 
@@ -189,4 +189,4 @@ def create_trains(scenario_generator, config, services):
 if __name__ == "__main__":
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level.upper())
-    create_scenario_from_config(args.config_file, path=args.path, scenario_file=args.scenario_file, location_path=args.location_path)
+    create_scenario_from_config(args.config_file, path=args.path, scenario_file=args.scenario_file, location_file=args.location_file)
