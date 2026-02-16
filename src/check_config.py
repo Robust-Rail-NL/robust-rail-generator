@@ -35,7 +35,7 @@ def check_configuration_file(config, location_path):
             logging.error("No 'number_of_train_unit_types' defined while train unit types should be generated ('use_default_material' is false)")
             return False, config
     else:
-        default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "default_train_unit_types.json")))]
+        default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "default_train_unit_types.json")))]
     if config["trains_given"] and ("custom_train_units" not in config or "custom_trains" not in config):
         logging.error("No 'custom_train_units' or 'custom_trains defined' while 'trains_given' is true.")
         return False, config
@@ -144,7 +144,7 @@ def check_train_details_file(config, location):
     if "track_ids_used" not in config:
         logging.warning("Not defined: 'track_ids_used', assuming ids are used")
         config["track_ids_used"] = True
-    default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "default_train_unit_types.json")))]        
+    default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "default_train_unit_types.json")))]        
     for i, t in enumerate(config["custom_train_units"]):
         if "id" not in t or "type" not in t or "services" not in t:
             logging.error(f"Incorrectly specified the {i}th custom train unit: missing id, type or service parameter")

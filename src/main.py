@@ -24,13 +24,14 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         config_file += ".json"
     # Path defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/
     if path is None:
-        path = os.path.join(os.path.dirname(__file__), "..", "..", "scenario-planning-inputs", "Location_KleineBinckhorst")
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "scenario-planning-inputs", "Location_KleineBinckhorst")
     elif path == ".":
         # Use current working directory as path
-        path = os.path.join(os.getcwd(), config_file)
+        path = os.getcwd()
+        config_file = os.path.join(path, config_file)
     
     # If full config path is specified
-    if "/" in config_file:
+    if os.sep in config_file:
         config = json.load(open(config_file, "r"))
     else:
         # Otherwise take config file from /configurations/ folder below --path
@@ -41,7 +42,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     if location_path is None:
         location_path = os.path.join(path, "location.json")
     # If not full path is specified, take location file from --path
-    elif not "/" in location_path:
+    elif not os.sep in location_path:
         location_path = os.path.join(path, location_path)
 
     # Check the configuration file
@@ -119,6 +120,9 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     if os.sep in scenario_file:
         # `scenario_file` represents a path; use it directly
         output_filepath = scenario_file
+    elif path == os.getcwd():
+        # If the path is specified as "." put the scenario in there directly.
+        output_filepath = os.path.join(path, scenario_file)
     else:
         output_filepath = os.path.join(path, "scenarios", scenario_file)
     output_solver_filepath = os.path.join(os.path.dirname(output_filepath), os.path.basename(output_filepath).replace("scenario", "scenario_solver"))
