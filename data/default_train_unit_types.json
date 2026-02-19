@@ -124,7 +124,8 @@
         "isLoco": false
     },
     {
-        "name": "SW7-25KV-2+7",
+        "name": "ICR-7",
+        "fullName": "SW7-25KV-2+7",
         "carriages": 7,
         "length": 22260,
         "combineDuration": 180,
@@ -132,13 +133,15 @@
         "reversalBaseTime": 0,
         "reversalCarriageTime": 0,
         "needsElectricity": true,
-        "typePrefix": "ICR-TRAXX",
+        "typePrefix": "ICR",
+        "fullTypePrefix": "ICR-TRAXX",
         "noDeparturePreparationLimit": 7200,
         "needsLoco": true,
         "isLoco": true
     },
     {
-        "name": "SW9-25KV-2+9",
+        "name": "ICR-9",
+        "fullName": "SW9-25KV-2+9",
         "carriages": 9,
         "length": 27540,
         "combineDuration": 180,
@@ -146,7 +149,8 @@
         "reversalBaseTime": 0,
         "reversalCarriageTime": 0,
         "needsElectricity": true,
-        "typePrefix": "ICR-TRAXX",
+        "typePrefix": "ICR",
+        "fullTypePrefix": "ICR-TRAXX",
         "noDeparturePreparationLimit": 7200,
         "needsLoco": true,
         "isLoco": true

@@ -49,6 +49,7 @@ class ScenarioGenerator:
         with open(file_name, "r") as f:
             json_scenario = json.load(f)
         self.scenario = ParseDict(json_scenario, Scenario_pb2.Scenario())
+        self.scenario_TrainUnitTypes = [ParseDict(t, TrainUnitTypes_pb2.TrainUnitType()) for t in json_scenario["trainUnitTypes"]]
         
     def create_solver_format_scenario(self, use_scenario=True):
         """Create the solver format of the scenario file. The default source to use is `self.scenario['<attr>']` (use_scenario=True), otherwise we use 'self.scenario_in' and 'self.scenario_out'."""

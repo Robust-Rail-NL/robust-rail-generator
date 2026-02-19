@@ -72,8 +72,8 @@ python src/main.py --config "scenario_config_train_cleaning_late.json" --path ".
 The generator creates two scenarios: `scenario.json` and `scenario_solver.json`, because the robust-rail-solver uses a different format of the scenario `scenario_solver.json` than the robust-rail-evaluator. The `location.json` file used by the generator for the location of the shunting yard, also has two formats.
 We also include a script to convert scenarios (and locations) of one format to the other. 
 ```bash
-python src/format_converter.py --location-path "./data/locations/simple_service_location.json"
-python src/format_converter.py --scenario-path ./data/scenarios/scenario_kleineBinckhorst_6t_custom_config1.json
+python src/format_converter.py --location-path "./data/example_location.json"
+python src/format_converter.py --scenario-path ./data/example_scenario.json
 ```
 
 # Repository Structure

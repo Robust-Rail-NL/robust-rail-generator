@@ -21,8 +21,9 @@ def convert_location_to_solver(location_file_path):
     with open(location_file_path, "r") as f:
         json_location = json.load(f)
     scenario_generator.location = ParseDict(json_location, Location_pb2.Location())
-    scenario_generator.convert_location_to_solver_format(location_file_path.replace(".json", "_solver.json"))
-    print("Wrote location in solver format to:", location_file_path)
+    new_location = location_file_path.replace(".json", "_solver.json")
+    scenario_generator.convert_location_to_solver_format(new_location)
+    print("[SUCCESS] Wrote location in solver format to:", new_location)
 
 def convert_scenario_from_solver(scenario_file_path):
     """Helper program to convert scenario files to robust-rail-solver format scenario."""
@@ -32,11 +33,11 @@ def convert_scenario_from_solver(scenario_file_path):
     solver_scenario_generator = SolverScenarioGenerator(scenario_generator)
     solver_filepath = os.sep.join(scenario_file_path.split(os.sep)[:-1] + [scenario_file_path.split(os.sep)[-1].replace("scenario", "scenario_solver")])
     solver_scenario_generator.save_scenario_json(solver_filepath)
-    print("Wrote scenario in solver format to:", solver_filepath)
+    print("[SUCCESS] Wrote scenario in solver format to:", solver_filepath)
 
 def example():
-    location_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "locations", "simple_service_location.json")
-    scenario_filepath_evaluator_format = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "generated_scenarios", "scenario_kleineBinckhorst_6t_custom_config3.json")
+    location_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "example_location.json")
+    scenario_filepath_evaluator_format = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "example_scenario.json")
     convert_location_to_solver(location_file_path)
     convert_scenario_from_solver(scenario_filepath_evaluator_format)
     # TODO converters from solver to evaluator format
@@ -49,5 +50,3 @@ if __name__ == "__main__":
         convert_location_to_solver(args.location_path)
     if args.scenario_path:
         convert_scenario_from_solver(args.scenario_path)
-    
-    
