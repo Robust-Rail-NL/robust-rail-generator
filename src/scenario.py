@@ -1,5 +1,4 @@
 from __future__ import annotations
-import sys
 import os
 import json
 import logging
@@ -8,17 +7,13 @@ from google.protobuf.json_format import MessageToJson, MessageToDict
 from google.protobuf.json_format import ParseDict
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "py_protobuf"))
+from __init__ import DATA_DIR
 
 # Import standard protos (Scenario, Location, TrainUnitTypes, Utilities)
-import Scenario_pb2
-import TrainUnitTypes_pb2
-import Location_pb2
-import Utilities_pb2
+from py_protobuf import Scenario_pb2, Location_pb2, TrainUnitTypes_pb2, Utilities_pb2
 
 # Import HIP required protos - HIP is name of the solver
-import Scenario_HIP_pb2
-import Location_HIP_pb2
+from py_protobuf import Scenario_HIP_pb2, Location_HIP_pb2
 
 
 # To better understand the structure and the parameters/arguments please refer to the Scenario.proto 
@@ -567,7 +562,7 @@ class ScenarioGenerator:
 
     def add_DefaultTrainUnitTypes(self):
         """Creates the default train unit types from the `data/default_train_unit_types.json` data."""
-        train_unit_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "default_train_unit_types.json")
+        train_unit_file = os.path.join(DATA_DIR, "default_train_unit_types.json")
         train_unit_data = json.load(open(train_unit_file, "r"))
         for unit_type in train_unit_data:
             self.add_TrainUnitType(

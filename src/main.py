@@ -3,10 +3,13 @@ import sys
 import json
 import logging
 import argparse
+
+from __init__ import BASE_DIR
 from scenario import ScenarioGenerator, SolverScenarioGenerator
 from random_generator import RandomGenerator
 from check_config import *
 from check_matching import *
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--path", help="Specifies the directory where all data relevant to a given location resides. Defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/ (relative to this Python script). Use . for the current working directory.", required=False, default=None)
@@ -24,7 +27,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         config_file += ".json"
     # Path defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/
     if path is None:
-        path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "scenario-planning-inputs", "Location_KleineBinckhorst")
+        path = os.path.join(BASE_DIR, "..", "scenario-planning-inputs", "Location_KleineBinckhorst")
     elif path == ".":
         # Use current working directory as path
         path = os.getcwd()

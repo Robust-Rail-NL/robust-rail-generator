@@ -3,10 +3,11 @@ import os
 import json
 import argparse
 import logging
+
 from google.protobuf.json_format import ParseDict
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "py_protobuf")))
-import Location_pb2
+from __init__ import DATA_DIR
+from py_protobuf import Location_pb2
 from scenario import ScenarioGenerator, SolverScenarioGenerator
 
 
@@ -36,8 +37,8 @@ def convert_scenario_from_solver(scenario_file_path):
     print("[SUCCESS] Wrote scenario in solver format to:", solver_filepath)
 
 def example():
-    location_file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "example_location.json")
-    scenario_filepath_evaluator_format = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "example_scenario.json")
+    location_file_path = os.path.join(DATA_DIR, "example_location.json")
+    scenario_filepath_evaluator_format = os.path.join(DATA_DIR, "example_scenario.json")
     convert_location_to_solver(location_file_path)
     convert_scenario_from_solver(scenario_filepath_evaluator_format)
     # TODO converters from solver to evaluator format
