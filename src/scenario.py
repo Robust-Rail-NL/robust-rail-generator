@@ -13,7 +13,7 @@ from __init__ import DATA_DIR
 from py_protobuf import Scenario_pb2, Location_pb2, TrainUnitTypes_pb2, Utilities_pb2
 
 # Import HIP required protos - HIP is name of the solver
-from py_protobuf import Scenario_HIP_pb2, Location_HIP_pb2
+from py_protobuf.HIP_protos import Scenario_HIP_pb2, Location_HIP_pb2
 
 
 # To better understand the structure and the parameters/arguments please refer to the Scenario.proto 

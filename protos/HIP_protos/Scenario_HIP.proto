@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package mypackage_hip;
 
-import "Location_HIP.proto";
+import "HIP_protos/Location_HIP.proto";
 
 // A Scenario contains the part of the problem specification which varies daily,
 // that is the trains which come in and go out of the shunting area.
