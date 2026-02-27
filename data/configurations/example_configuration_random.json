@@ -5,7 +5,7 @@
     "use_default_material": true,
     "trains_given": false,
     "perform_servicing": false,
-    "number_of_trains": 10,
+    "number_of_trains": 5,
     "train_unit_distribution": {
         "train_unit_types": ["SLT-6", "SLT-4", "VIRM-4", "VIRM-6"],
         "super_type_ratio": 0,
@@ -13,7 +13,7 @@
         "matching_complexity": 0
     },
     "gateway": {
-        "arrival": ["15"],
-        "departure": ["15"]
+        "arrival": [5],
+        "departure": [5]
     }
 }

@@ -1,5 +1,4 @@
 from __future__ import annotations
-import sys
 import os
 import json
 import logging
@@ -8,17 +7,13 @@ from google.protobuf.json_format import MessageToJson, MessageToDict
 from google.protobuf.json_format import ParseDict
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "py_protobuf"))
+from __init__ import DATA_DIR
 
 # Import standard protos (Scenario, Location, TrainUnitTypes, Utilities)
-import Scenario_pb2
-import TrainUnitTypes_pb2
-import Location_pb2
-import Utilities_pb2
+from py_protobuf import Scenario_pb2, Location_pb2, TrainUnitTypes_pb2, Utilities_pb2
 
 # Import HIP required protos - HIP is name of the solver
-import Scenario_HIP_pb2
-import Location_HIP_pb2
+from py_protobuf.HIP_protos import Scenario_HIP_pb2, Location_HIP_pb2
 
 
 # To better understand the structure and the parameters/arguments please refer to the Scenario.proto 
@@ -49,6 +44,7 @@ class ScenarioGenerator:
         with open(file_name, "r") as f:
             json_scenario = json.load(f)
         self.scenario = ParseDict(json_scenario, Scenario_pb2.Scenario())
+        self.scenario_TrainUnitTypes = [ParseDict(t, TrainUnitTypes_pb2.TrainUnitType()) for t in json_scenario["trainUnitTypes"]]
         
     def create_solver_format_scenario(self, use_scenario=True):
         """Create the solver format of the scenario file. The default source to use is `self.scenario['<attr>']` (use_scenario=True), otherwise we use 'self.scenario_in' and 'self.scenario_out'."""
@@ -504,13 +500,8 @@ class ScenarioGenerator:
             
         return trainUnitType
 
-    def load_location(self, file_name, location_path):
-        # Load json format location  
-        if not os.path.isfile(file_name):
-            if location_path is None:
-                file_name = os.path.join(os.path.dirname(__file__), "..", "data", "locations", f"{file_name}{'.json' if '.json' not in file_name else ''}")
-            else:
-                file_name = os.path.join(location_path, f"{file_name}{'.json' if '.json' not in file_name else ''}")
+    def load_location(self, file_name):
+        # Load json format location
         with open(file_name, "r") as f:
             json_location = json.load(f)
         logging.info(f"Loading location from {file_name}")
@@ -571,7 +562,7 @@ class ScenarioGenerator:
 
     def add_DefaultTrainUnitTypes(self):
         """Creates the default train unit types from the `data/default_train_unit_types.json` data."""
-        train_unit_file = os.path.join(os.path.dirname(__file__), "..", "data", "default_train_unit_types.json")
+        train_unit_file = os.path.join(DATA_DIR, "default_train_unit_types.json")
         train_unit_data = json.load(open(train_unit_file, "r"))
         for unit_type in train_unit_data:
             self.add_TrainUnitType(

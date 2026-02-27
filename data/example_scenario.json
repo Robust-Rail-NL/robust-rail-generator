@@ -1,64 +1,16 @@
 {
     "in": [
         {
-            "time": "3300",
-            "id": "1",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "time": "5100",
+            "id": "0",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
-                    "id": "2",
+                    "id": "13",
                     "typeDisplayName": "VIRM-4",
                     "tasks": []
-                }
-            ],
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "canDepartFromAnyTrack": false
-        },
-        {
-            "time": "6000",
-            "id": "2",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
-            "members": [
-                {
-                    "id": "9",
-                    "typeDisplayName": "VIRM-6",
-                    "tasks": []
-                }
-            ],
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "canDepartFromAnyTrack": false
-        },
-        {
-            "time": "2400",
-            "id": "4",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
-            "members": [
-                {
-                    "id": "11",
-                    "typeDisplayName": "SLT-4",
-                    "tasks": []
                 },
-                {
-                    "id": "7",
-                    "typeDisplayName": "SLT-6",
-                    "tasks": []
-                }
-            ],
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "canDepartFromAnyTrack": false
-        },
-        {
-            "time": "6300",
-            "id": "6",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
-            "members": [
                 {
                     "id": "3",
                     "typeDisplayName": "VIRM-6",
@@ -70,13 +22,39 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "5100",
-            "id": "7",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "time": "2100",
+            "id": "1",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
-                    "id": "13",
+                    "id": "0",
+                    "typeDisplayName": "VIRM-4",
+                    "tasks": []
+                },
+                {
+                    "id": "7",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
+        },
+        {
+            "time": "1500",
+            "id": "2",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
+            "members": [
+                {
+                    "id": "4",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                },
+                {
+                    "id": "10",
                     "typeDisplayName": "VIRM-4",
                     "tasks": []
                 }
@@ -86,35 +64,103 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "5700",
-            "id": "8",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "time": "4200",
+            "id": "3",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
+                    "id": "5",
+                    "typeDisplayName": "VIRM-4",
+                    "tasks": []
+                },
+                {
+                    "id": "12",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
+        },
+        {
+            "time": "3600",
+            "id": "4",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
+            "members": [
+                {
+                    "id": "9",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                },
+                {
+                    "id": "1",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
+        },
+        {
+            "time": "2400",
+            "id": "5",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
+            "members": [
+                {
+                    "id": "11",
+                    "typeDisplayName": "VIRM-4",
+                    "tasks": []
+                },
+                {
                     "id": "6",
-                    "typeDisplayName": "SLT-4",
+                    "typeDisplayName": "VIRM-4",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
+        },
+        {
+            "time": "6000",
+            "id": "6",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
+            "members": [
+                {
+                    "id": "15",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                },
+                {
+                    "id": "14",
+                    "typeDisplayName": "VIRM-4",
+                    "tasks": []
+                }
+            ],
+            "standingIndex": 1.0,
+            "minimumDuration": "60",
+            "canDepartFromAnyTrack": false
+        },
+        {
+            "time": "3000",
+            "id": "7",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
+            "members": [
+                {
+                    "id": "2",
+                    "typeDisplayName": "VIRM-4",
                     "tasks": []
                 },
                 {
                     "id": "8",
-                    "typeDisplayName": "SLT-6",
-                    "tasks": []
-                }
-            ],
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "canDepartFromAnyTrack": false
-        },
-        {
-            "time": "900",
-            "id": "9",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
-            "members": [
-                {
-                    "id": "10",
-                    "typeDisplayName": "VIRM-4",
+                    "typeDisplayName": "VIRM-6",
                     "tasks": []
                 }
             ],
@@ -125,11 +171,16 @@
     ],
     "out": [
         {
-            "time": "4200",
-            "id": "10",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "time": "7200",
+            "id": "8",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
+                {
+                    "id": "****",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                },
                 {
                     "id": "****",
                     "typeDisplayName": "VIRM-4",
@@ -141,32 +192,16 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "7200",
-            "id": "11",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "time": "3300",
+            "id": "9",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
                     "id": "****",
                     "typeDisplayName": "VIRM-4",
                     "tasks": []
                 },
-                {
-                    "id": "****",
-                    "typeDisplayName": "VIRM-6",
-                    "tasks": []
-                }
-            ],
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "canDepartFromAnyTrack": false
-        },
-        {
-            "time": "8700",
-            "id": "12",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
-            "members": [
                 {
                     "id": "****",
                     "typeDisplayName": "VIRM-6",
@@ -184,13 +219,23 @@
         },
         {
             "time": "6600",
-            "id": "13",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "id": "10",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
                     "id": "****",
-                    "typeDisplayName": "SLT-6",
+                    "typeDisplayName": "VIRM-4",
+                    "tasks": []
+                },
+                {
+                    "id": "****",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                },
+                {
+                    "id": "****",
+                    "typeDisplayName": "VIRM-6",
                     "tasks": []
                 }
             ],
@@ -199,40 +244,24 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "8100",
-            "id": "14",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "time": "4500",
+            "id": "11",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
                     "id": "****",
-                    "typeDisplayName": "SLT-4",
+                    "typeDisplayName": "VIRM-6",
                     "tasks": []
                 },
                 {
                     "id": "****",
-                    "typeDisplayName": "SLT-6",
-                    "tasks": []
-                }
-            ],
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "canDepartFromAnyTrack": false
-        },
-        {
-            "time": "7800",
-            "id": "15",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
-            "members": [
-                {
-                    "id": "****",
-                    "typeDisplayName": "SLT-6",
+                    "typeDisplayName": "VIRM-4",
                     "tasks": []
                 },
                 {
                     "id": "****",
-                    "typeDisplayName": "SLT-4",
+                    "typeDisplayName": "VIRM-4",
                     "tasks": []
                 }
             ],
@@ -242,23 +271,18 @@
         },
         {
             "time": "9300",
-            "id": "16",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "id": "12",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
                     "id": "****",
-                    "typeDisplayName": "SLT-4",
+                    "typeDisplayName": "VIRM-6",
                     "tasks": []
                 },
                 {
                     "id": "****",
-                    "typeDisplayName": "SLT-6",
-                    "tasks": []
-                },
-                {
-                    "id": "****",
-                    "typeDisplayName": "SLT-6",
+                    "typeDisplayName": "VIRM-6",
                     "tasks": []
                 }
             ],
@@ -267,14 +291,24 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "6900",
-            "id": "17",
-            "sideTrackPart": "42",
-            "parkingTrackPart": "15",
+            "time": "6300",
+            "id": "13",
+            "sideTrackPart": "10",
+            "parkingTrackPart": "5",
             "members": [
                 {
                     "id": "****",
-                    "typeDisplayName": "SLT-4",
+                    "typeDisplayName": "VIRM-4",
+                    "tasks": []
+                },
+                {
+                    "id": "****",
+                    "typeDisplayName": "VIRM-6",
+                    "tasks": []
+                },
+                {
+                    "id": "****",
+                    "typeDisplayName": "VIRM-4",
                     "tasks": []
                 }
             ],
@@ -284,66 +318,6 @@
         }
     ],
     "endTime": "9600",
-    "inStanding": [
-        {
-            "id": "0",
-            "sideTrackPart": "70",
-            "parkingTrackPart": "6",
-            "members": [
-                {
-                    "id": "0",
-                    "typeDisplayName": "SLT-4",
-                    "tasks": []
-                },
-                {
-                    "id": "12",
-                    "typeDisplayName": "SLT-6",
-                    "tasks": []
-                }
-            ],
-            "canDepartFromAnyTrack": true,
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "time": "0"
-        },
-        {
-            "id": "3",
-            "sideTrackPart": "69",
-            "parkingTrackPart": "7",
-            "members": [
-                {
-                    "id": "4",
-                    "typeDisplayName": "SLT-6",
-                    "tasks": []
-                },
-                {
-                    "id": "5",
-                    "typeDisplayName": "SLT-4",
-                    "tasks": []
-                }
-            ],
-            "canDepartFromAnyTrack": true,
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "time": "0"
-        },
-        {
-            "id": "5",
-            "sideTrackPart": "71",
-            "parkingTrackPart": "1",
-            "members": [
-                {
-                    "id": "1",
-                    "typeDisplayName": "SLT-6",
-                    "tasks": []
-                }
-            ],
-            "canDepartFromAnyTrack": true,
-            "standingIndex": 1.0,
-            "minimumDuration": "60",
-            "time": "0"
-        }
-    ],
     "trainUnitTypes": [
         {
             "displayName": "VIRM-4",
@@ -474,13 +448,13 @@
             "idPrefix": 0
         },
         {
-            "displayName": "SW7-25KV-2+7",
+            "displayName": "ICR-7",
             "carriages": 7,
             "length": 222.6,
             "combineDuration": "180",
             "splitDuration": "120",
             "travelSpeed": "10",
-            "typePrefix": "ICR-TRAXX",
+            "typePrefix": "ICR",
             "needsLoco": true,
             "isLoco": true,
             "needsElectricity": true,
@@ -490,13 +464,13 @@
             "idPrefix": 0
         },
         {
-            "displayName": "SW9-25KV-2+9",
+            "displayName": "ICR-9",
             "carriages": 9,
             "length": 275.4,
             "combineDuration": "180",
             "splitDuration": "120",
             "travelSpeed": "10",
-            "typePrefix": "ICR-TRAXX",
+            "typePrefix": "ICR",
             "needsLoco": true,
             "isLoco": true,
             "needsElectricity": true,
@@ -634,6 +608,7 @@
             "idPrefix": 0
         }
     ],
+    "inStanding": [],
     "outStanding": [],
     "nonServiceTraffic": [],
     "disabledTrackPart": [],
