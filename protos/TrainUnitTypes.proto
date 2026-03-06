@@ -6,7 +6,7 @@ package mypackage;
 message TrainUnitType {
     // Name of the train unit type
     // For example, "SGM" or "SLT".
-	// Currently, this is "SLT4" or "SLT6", see 'typeprefix' later on. #warning
+	// Currently, this is "SLT4-" or "SLT-6", see 'typeprefix' later on. #warning
     string displayName = 1;
 
     // Number of carriages. This is the total number of carriages,

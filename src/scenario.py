@@ -3,7 +3,7 @@ import os
 import json
 import logging
 from typing import List
-from google.protobuf.json_format import MessageToJson, MessageToDict
+from google.protobuf.json_format import MessageToDict
 from google.protobuf.json_format import ParseDict
 
 
@@ -589,6 +589,7 @@ class SolverScenarioGenerator(ScenarioGenerator):
     def __init__(self, standardScenarioGenerator: ScenarioGenerator):
         super().__init__()
         self.scenario_solver = standardScenarioGenerator.scenario_solver
+        self.scenario_evaluator = Scenario_pb2.Scenario()
     
     # Converts protobuf object into json representation and saves it into json file 
     def save_scenario_json(self, file_name: str):
@@ -599,3 +600,144 @@ class SolverScenarioGenerator(ScenarioGenerator):
             json_data["outStanding"] = {}
         with open(file_name, "w") as f:
             json.dump(json_data, f, indent=4)      
+
+    # Converts protobuf object into json representation and saves it into json file 
+    def save_converted_scenario_json(self, file_name: str):
+        json_data = MessageToDict(self.scenario_evaluator, including_default_value_fields=True)
+        if "inStanding" not in json_data:
+            json_data["inStanding"] = {}
+        if "outStanding" not in json_data:
+            json_data["outStanding"] = {}
+        with open(file_name, "w") as f:
+            json.dump(json_data, f, indent=4)  
+
+    def load_scenario(self, file_name):
+        """Load a scenario in the solver format"""
+        with open(file_name, "r") as f:
+            json_scenario = json.load(f)
+        self.scenario_solver = ParseDict(json_scenario, Scenario_HIP_pb2.Scenario())
+        
+    def create_evaluator_format_scenario(self):
+        """Create the evaluator format of the scenario file that is currently loaded into self.scenario_solver."""
+        incoming_trains_scenario = getattr(self.scenario_solver, "in")
+        outgoing_trains_scenario = getattr(self.scenario_solver, "out")
+
+        self.scenario_evaluator.startTime = self.scenario_solver.startTime
+        self.scenario_evaluator.endTime = self.scenario_solver.endTime
+        logging.info("Copy the start and end time from self.scenario_solver")
+        
+        allTrainUnitTypes = getattr(self.scenario_evaluator, "trainUnitTypes")
+        # Create the incoming train objects
+        incomingTrainsEvaluator = getattr(self.scenario_evaluator, "in")
+        for solver_train in incoming_trains_scenario:
+            train = incomingTrainsEvaluator.trains.add()
+            train.sideTrackPart = solver_train.entryTrackPart
+            train.parkingTrackPart = solver_train.firstParkingTrackPart
+            train.time = solver_train.arrival
+            train.id = solver_train.id
+            train.canDepartFromAnyTrack = True
+            train.standingIndex = solver_train.standingIndex
+            train.minimumDuration = 0 #TODO what should this be?
+
+            # Collect information of the train unit members of the current train
+            for member in solver_train.members:
+                train_member = train.members.add()
+                train_member.id = member.trainUnit.id
+                train_member.typeDisplayName = member.trainUnit.type.displayName + "-" + str(member.trainUnit.type.carriages)
+                
+                # Add the information about service tasks for the individual train units
+                for solver_task in member.tasks:
+                    task = train_member.tasks.add()
+                    if solver_task.type.predefined:
+                        task.type.predefined = solver_task.type.predefined
+                    elif solver_task.type.other:
+                        task.type.other = solver_task.type.other
+                    
+                    task.priority = solver_task.priority
+                    task.duration = solver_task.duration
+                # TODO does not include workers and requiredSkills
+
+                trainUnitType = allTrainUnitTypes.add()
+                trainUnitType.displayName = train_member.typeDisplayName
+                trainUnitType.typePrefix = member.trainUnit.type.displayName
+                trainUnitType.carriages = member.trainUnit.type.carriages
+                trainUnitType.length = member.trainUnit.type.length
+                trainUnitType.combineDuration = member.trainUnit.type.combineDuration
+                trainUnitType.splitDuration = member.trainUnit.type.splitDuration
+                trainUnitType.backNormTime = member.trainUnit.type.backNormTime
+                trainUnitType.backAdditionTime = member.trainUnit.type.backAdditionTime
+                # TODO travelspeed, needsLoco, isLoco, needsElectricity, idPrefix
+
+        # Create the outgoing train objects
+        outgoingTrainRequests = getattr(self.scenario_evaluator, "out")
+        for solver_train in outgoing_trains_scenario:
+            train = outgoingTrainRequests.trainRequests.add()
+            train.sideTrackPart = solver_train.leaveTrackPart
+            train.parkingTrackPart = solver_train.lastParkingTrackPart
+            train.time = solver_train.departure
+            train.id = solver_train.displayName
+            train.canDepartFromAnyTrack = True
+            train.standingIndex = solver_train.standingIndex
+            train.minimumDuration = 0 #TODO what should this be?
+
+            for member in solver_train.trainUnits:
+                # The Solver format does not use id of the outgoing train units (simply '****')
+                train_unit = train.members.add()
+                train_unit.id = "****"
+                train_unit.typeDisplayName = member.type.displayName + "-" + str(member.type.carriages)
+                train_unit.tasks = []
+        
+        # Create the in-standing train objects (train that are already in the yard at the start of the scenario)
+        inStandingTrains = getattr(self.scenario_evaluator, "inStanding")
+        _inStandingTrains = getattr(self.scenario_solver, "inStanding")
+        for solver_train in _inStandingTrains:
+            train = inStandingTrains.trains.add()
+            train.sideTrackPart = solver_train.entryTrackPart
+            train.parkingTrackPart = solver_train.firstParkingTrackPart
+            train.time = solver_train.arrival
+            train.id = solver_train.id
+            
+            # Collect information of the train unit members of the current train
+            for member in solver_train.members:
+                train_member = train.members.add()
+                train_member.id = member.trainUnit.id
+                train_unit.typeDisplayName = member.type.displayName + "-" + str(member.type.carriages)
+
+                # Add the information about service tasks for the individual train units
+                for solver_task in member.tasks:
+                    task = train_member.tasks.add()
+                    if solver_task.type.predefined:
+                        task.type.predefined = solver_task.type.predefined
+                    elif solver_task.type.other:
+                        task.type.other = solver_task.type.other
+                   
+                    task.priority = solver_task.priority
+                    task.duration = solver_task.duration
+                    # TODO does not include workers and requiredSkills   
+                
+                # Add the train unit type to the global train unit types
+                trainUnitType = allTrainUnitTypes.add()
+                trainUnitType.displayName = train_member.typeDisplayName
+                trainUnitType.typePrefix = member.trainUnit.type.displayName
+                trainUnitType.carriages = member.trainUnit.type.carriages
+                trainUnitType.length = member.trainUnit.type.length
+                trainUnitType.combineDuration = member.trainUnit.type.combineDuration
+                trainUnitType.splitDuration = member.trainUnit.type.splitDuration
+                trainUnitType.backNormTime = member.trainUnit.type.backNormTime
+                trainUnitType.backAdditionTime = member.trainUnit.type.backAdditionTime
+                # TODO travelspeed, needsLoco, isLoco, needsElectricity, idPrefix
+                        
+        # Create the outstanding train requests: trains that remain in the yard at the end of the scenario
+        outStandingTrainRequests = getattr(self.scenario_evaluator, "outStanding")
+        _outStandingTrains = getattr(self.scenario_solver, "outStanding")
+        for solver_train in _outStandingTrains:
+            train = outStandingTrainRequests.trainRequests.add()
+            train.sideTrackPart = solver_train.leaveTrackPart
+            train.parkingTrackPart = solver_train.lastParkingTrackPart
+            train.time = solver_train.departure
+            train.id = solver_train.displayName
+
+            for member in solver_train.members:                
+                train_unit = train.trainUnits.add()
+                train_unit.id = "****"
+                train_unit.typeDisplayName = member.type.displayName + "-" + str(member.type.carriages)
