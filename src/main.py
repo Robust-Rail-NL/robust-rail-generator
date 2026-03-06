@@ -128,7 +128,11 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         output_filepath = os.path.join(path, scenario_file)
     else:
         output_filepath = os.path.join(path, "scenarios", scenario_file)
-    output_solver_filepath = os.path.join(os.path.dirname(output_filepath), os.path.basename(output_filepath).replace("scenario", "scenario_solver"))
+    if "scenario" in os.path.basename(output_filepath):
+        output_solver_filepath = os.path.join(os.path.dirname(output_filepath), os.path.basename(output_filepath).replace("scenario", "scenario_solver"))
+    else:
+        output_solver_filepath = os.path.join(os.path.dirname(output_filepath), os.path.basename(output_filepath).replace(".json", "_solver.json"))
+
     # Write TORS scenario file
     scenario_generator.save_scenario_json(output_filepath)
     # Write Solver format scenario file
