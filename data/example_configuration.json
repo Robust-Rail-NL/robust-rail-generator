@@ -4,13 +4,15 @@
     "end_time": 9600,
     "use_default_material": true,
     "trains_given": false,
-    "perform_servicing": false,
+    "perform_servicing": true,
     "number_of_trains": 8,
     "train_unit_distribution": {
         "train_unit_types": ["SLT-6", "SLT-4", "VIRM-4", "VIRM-6"],
         "super_type_ratio": 0,
-        "units_per_composition": [2, 3],
-        "matching_complexity": 0
+        "units_per_composition": [2],
+        "matching_complexity": 0,
+        "servicing_ratio": 0.25,
+        "tasks_per_train_unit": 1
     },
     "gateway": {
         "arrival": [5],

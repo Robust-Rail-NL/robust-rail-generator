@@ -1,6 +1,6 @@
 import os
 
-from __init__ import BASE_DIR, DATA_DIR
+from __init__ import DATA_DIR, REPO_DIR
 from main import create_scenario_from_config
 
 def default_example_given_trains():
@@ -17,7 +17,7 @@ def default_example_random_full_paths():
     print("\nCreating scenario with random trains")
     config_file = os.path.join(DATA_DIR, "configurations", "example_configuration_random.json")
     location_filename = os.path.join(DATA_DIR, "example_location.json")
-    scenario_file = os.path.join(DATA_DIR, "scenarios", "scenario_trains_given.json")
+    scenario_file = os.path.join(DATA_DIR, "scenarios", "scenario_trains_random.json")
     create_scenario_from_config(config_file, scenario_file=scenario_file, location_file=location_filename)
 
 def default_using_scenario_planning_KleineBinckhorst():
@@ -30,7 +30,7 @@ def default_using_scenario_planning_otherLocation():
     # Use the example from scenario-planning-inputs with custom path and scenario file name
     print("\nCreating scenario using scenario planning inputs for other location.\n>>>Requires scenario-planning-inputs repo at same level as robust-rail-generator<<<")
     config_file = "scenario_config_train_cleaning_late.json"
-    path = os.path.join(BASE_DIR, "..", "scenario-planning-inputs", "Location_SimpleService")
+    path = os.path.join(REPO_DIR, "scenario-planning-inputs", "Location_SimpleService")
     scenario_file = "scenario_train_cleaning_late"
     create_scenario_from_config(config_file, path=path, scenario_file=scenario_file)
 

@@ -64,6 +64,12 @@ def check_configuration_file(config, location_path):
                 if t not in default_train_unit_names:
                     logging.error(f"Defined 'train_unit_distribution' and 'train_unit_types' with an unknown train unit type {t}.")
                     return False, config
+        if config["perform_servicing"]:
+            if "servicing_ratio" not in config["train_unit_distribution"]:
+                logging.warning(f"Servicing actions enabled but no ratio on number of tasks specified, assuming 0.5.")
+                config["train_unit_distribution"]["servicing_ratio"] = 0.5
+            if "tasks_per_train_unit" not in config["train_unit_distribution"]:
+                config["train_unit_distribution"]["tasks_per_train_unit"] = 1
     if not config["trains_given"]:
         if "mixed_traffic" in config:
             if not isinstance(config["mixed_traffic"], bool):
@@ -96,7 +102,7 @@ def check_configuration_file(config, location_path):
     if "perform_servicing" not in config:
         logging.error("Not defined: 'perform_servicing'.")
         return False, config
-    if config["perform_servicing"] and "custom_servicing_tasks" not in config:
+    if config["perform_servicing"] and config["trains_given"] and "custom_servicing_tasks" not in config:
         logging.warning("No 'custom_servicing_tasks' found")
     if "partial_matching_given" not in config:
         config["partial_matching_given"] = False

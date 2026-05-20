@@ -4,7 +4,7 @@ import json
 import logging
 import argparse
 
-from __init__ import BASE_DIR
+from __init__ import REPO_DIR, DATA_DIR
 from scenario import ScenarioGenerator, SolverScenarioGenerator
 from random_generator import RandomGenerator
 from check_config import *
@@ -27,7 +27,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         config_file += ".json"
     # Path defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/
     if path is None:
-        path = os.path.join(BASE_DIR, "..", "scenario-planning-inputs", "Location_KleineBinckhorst")
+        path = os.path.join(REPO_DIR,"scenario-planning-inputs", "Location_KleineBinckhorst")
     elif path == ".":
         # Use current working directory as path
         path = os.getcwd()
@@ -84,23 +84,33 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
 
     # Add the servicing tasks tasks if specified
-    services = {}
+    service_tasks = {}
     if config["perform_servicing"]:
-        for service in config["custom_servicing_tasks"]:
-            task_type = scenario_generator.create_TaskType(None, service["type"])
-            service_obj = scenario_generator.create_TaskSpec(task_type, service["priority"], service["duration"], service["required_skills"])
-            services[service["name"]] = service_obj
+        if "custom_servicing_tasks" in config:
+            for service in config["custom_servicing_tasks"]:
+                task_type = scenario_generator.create_TaskType(None, service["type"])
+                service_obj = scenario_generator.create_TaskSpec(task_type, service["priority"], service["duration"], service["required_skills"])
+                service_tasks[service["name"]] = service_obj
+        else:
+            # Add default servicing tasks that match the location facilities.
+            default_service_tasks = json.load(open(os.path.join(DATA_DIR, "default_servicing_tasks.json"), "r"))
+            location_facilities = [f.type for f in scenario_generator.location.facilities]
+            for service, task_info in default_service_tasks.items():
+                if task_info["requiredFacility"] in location_facilities:
+                    task_type = scenario_generator.create_TaskType(None, service)
+                    service_obj = scenario_generator.create_TaskSpec(task_type, int(task_info["priority"]), int(task_info["duration"]), task_info["requiredSkills"])
+                    service_tasks[service] = service_obj
 
     # Add the trains when specified
     if config["trains_given"]:
-        create_trains(scenario_generator, config, services)
+        create_trains(scenario_generator, config, service_tasks)
         matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
         if not matching_possible:
             logging.error("The specified incoming and outgoing trains do not match. Please check the configuration file.")
             sys.exit(1)
     else:
         # Generate random trains if none are specified
-        random_generator.generate_train_compositions(config, scenario_generator)
+        random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
         # Check matching of incoming and outgoing trains
         matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
         while not matching_possible:

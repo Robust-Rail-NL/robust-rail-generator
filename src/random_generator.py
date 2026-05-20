@@ -69,7 +69,7 @@ class RandomGenerator:
                         logging.info(f"Found gateway track {gateway.name}")
         return gateways
 
-    def generate_train_compositions(self, config, scenario_generator):
+    def generate_train_compositions(self, config, scenario_generator, service_tasks):
         distribution_config = {"number_trains_in": config["number_of_trains"], "number_trains_out": config["number_of_trains"], "min_time_in_yard": config["min_time_in_yard"], "min_gap_on_gateway": config["min_gap_on_gateway"], "mixed_traffic": config["mixed_traffic"], "matching": config["matching"]}
         number_train_units = 0
         if "train_unit_distribution" in config:
@@ -136,10 +136,10 @@ class RandomGenerator:
             # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange)
             distribution_config.update({"unit_types_per_train": [(random.choice(self.train_unit_types), random.randrange(1, 4, 1)) for _ in range(config["number_of_trains"])]})
             number_train_units = sum([num for _, num in distribution_config["unit_types_per_train"]])
-        self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config)
+        self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config, service_tasks)
         self.generate_trains(config, distribution_config)
         
-    def generate_train_unit_types(self, num: int):
+    def generate_train_unit_types(self, num, service_tasks):
         for i in range(num):
             unit_type = self.scenario_generator.create_TrainUnitType(
                 displayName=f"unitType{i}",
@@ -159,10 +159,12 @@ class RandomGenerator:
             self.train_unit_types.append(unit_type)
             self.scenario_generator.add_TrainUnitType(unit_type)
 
-    def generate_train_units(self, number_train_units, servicing, distribution_config):
+    def generate_train_units(self, number_train_units, servicing, distribution_config, service_tasks):
         random.shuffle(self.train_unit_types)
+        number_of_serviced_units = 0
+        if servicing:
+            number_of_serviced_units = math.floor(distribution_config["servicing_ratio"] * number_train_units)
         for i in range(number_train_units):
-            # TODO servicing tasks
             if not distribution_config:
                 logging.warning("No distribution config provided, number of train units cannot be simply distributed over number of trains")
             else:
@@ -176,16 +178,19 @@ class RandomGenerator:
                         if i < idx:
                             unit_type = typ.displayName
                             break
-            if not servicing:
-                unit = self.scenario_generator.create_TrainUnit(
-                    id=str(i),
-                    typeDisplayName=unit_type,
-                    tasks=[]
-                )
-                if unit_type not in self.train_units:
-                    self.train_units[unit_type] = []
-                self.train_units[unit_type].append(unit)
-                self.number_of_train_units += 1
+            if i < number_of_serviced_units:
+                current_tasks = random.choices(list(service_tasks.values()), k=random.randint(1, distribution_config["tasks_per_train_unit"]))
+            else:
+                current_tasks = []
+            unit = self.scenario_generator.create_TrainUnit(
+                id=str(i),
+                typeDisplayName=unit_type,
+                tasks=current_tasks
+            )
+            if unit_type not in self.train_units:
+                self.train_units[unit_type] = []
+            self.train_units[unit_type].append(unit)
+            self.number_of_train_units += 1
         if self.number_of_train_units != number_train_units:
             logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
 
