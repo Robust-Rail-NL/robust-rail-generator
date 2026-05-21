@@ -70,6 +70,7 @@ def check_configuration_file(config, location_path):
                 config["train_unit_distribution"]["servicing_ratio"] = 0.5
             if "tasks_per_train_unit" not in config["train_unit_distribution"]:
                 config["train_unit_distribution"]["tasks_per_train_unit"] = 1
+        config["train_unit_distribution"]["average_servicing_time"] = 0
     if not config["trains_given"]:
         if "mixed_traffic" in config:
             if not isinstance(config["mixed_traffic"], bool):
@@ -95,10 +96,6 @@ def check_configuration_file(config, location_path):
             return False, config
     else:
         config["min_gap_on_gateway"] = 300
-    # TODO Consider the servicing time
-    if config["end_time"] - config["start_time"] // config["min_gap_on_gateway"] < config["number_of_trains"] * 2.1:
-        logging.warning(f"Not enough time to shunt all {config['number_of_trains']} trains within {config['end_time'] - config['start_time']} allowing a gap of {config['min_gap_on_gateway']}, results in {config['end_time'] - config['start_time'] // config['min_gap_on_gateway']} slots")
-        return False, config
     if "perform_servicing" not in config:
         logging.error("Not defined: 'perform_servicing'.")
         return False, config
@@ -162,6 +159,15 @@ def check_train_details_file(config, location):
         if t["type"] not in default_train_unit_names:
             logging.error(f"Custom train unit with id {t['id']} has unknown type {t['type']}")
             return False, config
+        defined_servicing_tasks = {t["name"]: t for t in config["custom_servicing_tasks"]}
+        for service_task in t["services"]:
+            if service_task not in defined_servicing_tasks:
+                logging.error(f"Service task {service_task} of train unit {t['id']} not specified in 'custom_servicing_tasks'")
+                return False, config
+            if "name" not in defined_servicing_tasks[service_task] or "type" not in defined_servicing_tasks[service_task] or "priority" not in defined_servicing_tasks[service_task] or "duration" not in defined_servicing_tasks[service_task] or "required_skills" not in defined_servicing_tasks[service_task]:
+                logging.error(f"Incorrectly specified service {service_task} of train unit {t['id']}: missing name, type, priority, duration or required_skills parameter")
+            if defined_servicing_tasks[service_task]["type"] not in [f.type for f in location.facilities]:
+                logging.error(f"Service task {service_task} has type {defined_servicing_tasks[service_task]['type']} which is not present in the location's facilities")
     train_units_check_arrival = {u["id"]: u["type"] for u in config["custom_train_units"]}
     train_units_check_departure = [u["type"] for u in config["custom_train_units"]]
     track_names_to_ids = {track.name: int(track.id) for track in location.trackParts}

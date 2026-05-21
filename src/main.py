@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import math
 import logging
 import argparse
 
@@ -85,12 +86,14 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
 
     # Add the servicing tasks tasks if specified
     service_tasks = {}
+    estimated_servicing_time = 0
     if config["perform_servicing"]:
         if "custom_servicing_tasks" in config:
             for service in config["custom_servicing_tasks"]:
                 task_type = scenario_generator.create_TaskType(None, service["type"])
                 service_obj = scenario_generator.create_TaskSpec(task_type, service["priority"], service["duration"], service["required_skills"])
                 service_tasks[service["name"]] = service_obj
+            estimated_servicing_time = sum([service_tasks[service_type].duration for train_unit in config["custom_train_units"] for service_type in train_unit["services"]])
         else:
             # Add default servicing tasks that match the location facilities.
             default_service_tasks = json.load(open(os.path.join(DATA_DIR, "default_servicing_tasks.json"), "r"))
@@ -100,6 +103,15 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
                     task_type = scenario_generator.create_TaskType(None, service)
                     service_obj = scenario_generator.create_TaskSpec(task_type, int(task_info["priority"]), int(task_info["duration"]), task_info["requiredSkills"])
                     service_tasks[service] = service_obj
+            avg_duration = math.ceil(max([task.duration for _, task in service_tasks.items()]) / len(service_tasks))
+            estimated_number_servicing_units = math.ceil(config["train_unit_distribution"]["servicing_ratio"] * config["number_of_trains"] * max(config["train_unit_distribution"]["units_per_composition"]) / len(config["train_unit_distribution"]["units_per_composition"]))
+            estimated_servicing_time = sum([avg_duration for _ in range(estimated_number_servicing_units)])
+            config["train_unit_distribution"]["average_servicing_time"] = avg_duration
+
+    # Check if the time window is sufficient for servicing and parking all trains
+    if (config["end_time"] - config["start_time"] - estimated_servicing_time) // config["min_gap_on_gateway"] < config["number_of_trains"] * 2.1:
+        logging.error(f"The specified time window from {config['start_time']} to {config['end_time']} with an estimated servicing time of {estimated_servicing_time} and `min_gap_on_gateway` {config['min_gap_on_gateway']} does not provide enough time for {config['number_of_trains']} trains to be parked and serviced.")
+        sys.exit(1)
 
     # Add the trains when specified
     if config["trains_given"]:
@@ -163,7 +175,6 @@ def create_trains(scenario_generator, config, services):
                 )
             )
         if "departure_track" in train:
-            # TODO does this work? double train units created
             unmatched_train_units = [scenario_generator.create_TrainUnitUnmatchedMembers(train_unit) for train_unit in train["member_types"]]
             scenario_generator.add_outgoingTrain(
                 scenario_generator.create_Train(

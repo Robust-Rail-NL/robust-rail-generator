@@ -215,7 +215,7 @@
     ],
     "out": [
         {
-            "time": "8400",
+            "time": "9000",
             "id": "8",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",
@@ -236,7 +236,7 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "3300",
+            "time": "3900",
             "id": "9",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",
@@ -257,7 +257,7 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "6600",
+            "time": "6000",
             "id": "10",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",
@@ -278,7 +278,7 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "6900",
+            "time": "7200",
             "id": "11",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",
@@ -299,7 +299,7 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "5100",
+            "time": "6600",
             "id": "12",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",
@@ -320,7 +320,7 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "9300",
+            "time": "8700",
             "id": "13",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",
@@ -341,7 +341,7 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "7800",
+            "time": "8100",
             "id": "14",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",
@@ -362,7 +362,7 @@
             "canDepartFromAnyTrack": false
         },
         {
-            "time": "8700",
+            "time": "8400",
             "id": "15",
             "sideTrackPart": "10",
             "parkingTrackPart": "5",

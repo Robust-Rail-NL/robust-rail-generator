@@ -139,7 +139,7 @@ class RandomGenerator:
         self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config, service_tasks)
         self.generate_trains(config, distribution_config)
         
-    def generate_train_unit_types(self, num, service_tasks):
+    def generate_train_unit_types(self, num):
         for i in range(num):
             unit_type = self.scenario_generator.create_TrainUnitType(
                 displayName=f"unitType{i}",
@@ -270,7 +270,6 @@ class RandomGenerator:
             # Arrive in 2/3 of total time - generate 
             arrival_times = random.sample(range(self.scenario_generator.scenario.startTime, math.floor(self.scenario_generator.scenario.endTime * 2 / 3), distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_in"])
             possible_departure_times = [t for t in range(min(arrival_times) + distribution_config["min_time_in_yard"], self.scenario_generator.scenario.endTime, distribution_config["min_gap_on_gateway"]) if t not in arrival_times]
-            # TODO allow extra minimum servicing time
             for y in range(distribution_config["number_trains_out"]):
                 # Possible that there are more departing trains then arriving
                 try:
@@ -278,7 +277,7 @@ class RandomGenerator:
                         departure_times.append(random.sample(possible_departure_times, 1)[0])
                     else:
                         # Make sure that the departure time is after the arrival time for at least one train
-                        departure_times.append(random.sample([x for x in possible_departure_times if x > arrival_times[y]], 1)[0])
+                        departure_times.append(random.sample([x for x in possible_departure_times if x > arrival_times[y] + distribution_config["average_servicing_time"]], 1)[0])
                     possible_departure_times.remove(departure_times[-1])
                 except:
                     logging.exception(f"Cannot sample departure time for train {y} from possible departure times after arrival time {arrival_times[y]} with min gap {distribution_config['min_gap_on_gateway']}. Possible departure times: {possible_departure_times}")

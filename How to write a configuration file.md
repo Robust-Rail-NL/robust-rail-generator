@@ -26,7 +26,7 @@ The configuration file is a JSON file with the following parameters defined in t
   - `type_ratio` (float): number between 0 and 1, where 1 means, each train has unique type and 0 means each train has the same type.
   - `instanding_ratio` (float): number between, 0 and 1, where 1 means all trains start as parked in the yard and 0 means all trains arrive in the yard
   - `outstanding_ratio` (float): number between 0 and 1, where 1 means all trains stay parked in the yard and 0 means all trains depart from the yard
-  - `servicing_ratio` (float): number between 0 and 1, where 1 means all train units must be serviced, and 0 means no trains have to be serviced. Requires `perform_servicing` to be `true`. The servicing task types can be found in `data/default_servicing_tasks.json` which are cross-references with the facilities defined in the location.
+  - `servicing_ratio` (float): number between 0 and 1, where 1 means all train units must be serviced, and 0 means no train units have to be serviced. Requires `perform_servicing` to be `true`. The servicing task types can be found in `data/default_servicing_tasks.json` which are cross-references with the facilities defined in the location.
   - `tasks_per_train_unit` (int): maximum number of servicing tasks assigned to a train unit that requires servicing (always 1, but cna be more).
 - `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
   - `id` (int): unique train unit id
