@@ -38,8 +38,13 @@ def check_configuration_file(config, location_path):
         if "number_of_train_unit_types" not in config:
             logging.error("No 'number_of_train_unit_types' defined while train unit types should be generated ('use_default_material' is false)")
             return False, config
+        if "custom_train_unit_types" not in config:
+            logging.error("No default material used and no `custom_train_unit_types` defined.")
+            return False, config
+        else:
+            train_unit_names = [unit["name"] for unit in config["custom_train_unit_types"]]
     else:
-        default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json")))]
+        train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json")))]
     if config["trains_given"] and ("custom_train_units" not in config or "custom_trains" not in config):
         logging.error("No 'custom_train_units' or 'custom_trains defined' while 'trains_given' is true.")
         return False, config
@@ -57,11 +62,11 @@ def check_configuration_file(config, location_path):
             logging.error("No 'super_type_ratio' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
             return False, config
         if "train_unit_types" in config["train_unit_distribution"]:
-            if not config["use_default_material"]:
+            if not config["use_default_material"] and not config["custom_train_unit_types"]:
                 logging.error("Defined 'train_unit_types' in the 'train_unit_distribution' while 'use_default_material' was false, cannot specify specify unit types for randomly generated unit types.")
                 return False, config
             for t in config["train_unit_distribution"]["train_unit_types"]:
-                if t not in default_train_unit_names:
+                if t not in train_unit_names:
                     logging.error(f"Defined 'train_unit_distribution' and 'train_unit_types' with an unknown train unit type {t}.")
                     return False, config
         if config["perform_servicing"]:
@@ -151,12 +156,15 @@ def check_train_details_file(config, location):
     if "track_ids_used" not in config:
         logging.warning("Not defined: 'track_ids_used', assuming ids are used")
         config["track_ids_used"] = True
-    default_train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json")))]
+    if config["use_default_material"]:
+        train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json")))]
+    else:
+        train_unit_names = [unit["name"] for unit in config["custom_train_unit_types"]]
     for i, t in enumerate(config["custom_train_units"]):
         if "id" not in t or "type" not in t or "services" not in t:
             logging.error(f"Incorrectly specified the {i}th custom train unit: missing id, type or service parameter")
             return False, config
-        if t["type"] not in default_train_unit_names:
+        if t["type"] not in train_unit_names:
             logging.error(f"Custom train unit with id {t['id']} has unknown type {t['type']}")
             return False, config
         defined_servicing_tasks = {t["name"]: t for t in config["custom_servicing_tasks"]}

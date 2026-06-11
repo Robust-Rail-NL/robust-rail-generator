@@ -80,6 +80,10 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         scenario_generator.add_DefaultTrainUnitTypes()
         random_generator.train_unit_types = scenario_generator.scenario_TrainUnitTypes.copy()
         random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
+    elif config["custom_train_unit_types"]:
+        scenario_generator.add_CustomTrainUnitTypes(config)
+        random_generator.train_unit_types = scenario_generator.scenario_TrainUnitTypes.copy()
+        random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
     else:
         random_generator.generate_train_unit_types(config["number_of_train_unit_types"])
         random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}

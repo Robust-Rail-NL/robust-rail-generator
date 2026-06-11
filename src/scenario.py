@@ -585,6 +585,30 @@ class ScenarioGenerator:
                 )
             )
 
+    def add_CustomTrainUnitTypes(self, config):
+        """Creates the train unit types from the custom data object in the configuration."""
+        train_unit_data = config["custom_train_unit_types"]
+        for unit_type in train_unit_data:
+            self.add_TrainUnitType(
+                self.create_TrainUnitType(
+                    displayName=unit_type["name"],
+                    carriages=unit_type["carriages"],
+                    length=unit_type["length"] / 100, # length in meters
+                    combineDuration=unit_type["combineDuration"],
+                    splitDuration=unit_type["splitDuration"],
+                    typePrefix=unit_type["typePrefix"],
+                    needsLoco=unit_type["needsLoco"],
+                    isLoco=unit_type["isLoco"],
+                    needsElectricity=unit_type["needsElectricity"],
+                    # TODO backNormTime, backAdditionTime, travelSpeed, startUpTime
+                    idPrefix=None,
+                    backNormTime=unit_type["backNormTime"] if "backNormTime" in unit_type else 0,
+                    backAdditionTime=unit_type["backAdditionTime"] if "backAdditionTime" in unit_type else 0,
+                    travelSpeed=10,
+                    startUpTime=0
+                )
+            )
+
 class SolverScenarioGenerator(ScenarioGenerator):
     def __init__(self, standardScenarioGenerator: ScenarioGenerator):
         super().__init__()

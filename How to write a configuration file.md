@@ -5,7 +5,7 @@ The configuration file is a JSON file with the following parameters defined in t
 - `start_time` (int): start time of the scenario.
 - `end_time` (int): end time of the scenario (all actions should be executable within this time frame).
 - `trains_given` (bool): whether trains are given in this file (true) or should be generated randomly (false). Cannot be true if `use_default_material` is false.
-- `use_default_material` (bool): whether the train unit types to be used are the default (real-life) ones which can be loaded automatically (true) or should be generated randomly (false)
+- `use_default_material` (bool): whether the train unit types to be used are the default (real-life) ones which can be loaded automatically (true) or should be generated randomly (false) or can be given in `custom_train_unit_types` (false).
 - `track_ids_used` (bool): whether tracks are given with their ids (int, true) or names (strings, false).
 - `perform_servicing` (bool): whether servicing actions are part of the scenario (true) or no trains require servicing (false).
 
