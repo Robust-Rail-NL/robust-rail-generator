@@ -49,6 +49,10 @@ protol --create-package --in-place \
        protos/*.proto protos/HIP_protos/*.proto
 ```
 
+**Note:** we intend to move away from protobuf to Pydantic.
+See the [unified schema design document](./unified-schema-design.md) for a
+discussion and roadmap.
+
 # How to use?
 
 The scenario generation can be done by using configuration files. These files specify the details, which can be very elaborate or leave some choices to a random generator. For more information on how to structure such a file, see [How to write a configuration file?](./How%20to%20write%20a%20configuration%20file.md). 
