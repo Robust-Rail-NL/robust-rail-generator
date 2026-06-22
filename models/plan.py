@@ -1,0 +1,46 @@
+from __future__ import annotations
+
+from typing import Optional
+
+from pydantic import Field
+
+from .location import Resource, TaskType, TrackPart
+from .scenario import ShuntingUnit
+from .utilities import RailModel
+
+
+class Action(RailModel):
+    """A single action in a shunting plan.
+
+    For Move actions, location is the destination TrackPart ID and resources
+    contains the path. For other actions, location is where the action occurs.
+
+    train_unit_ids, if present, identifies the subset of the ShuntingUnit's
+    members involved. If absent, all members are involved.
+
+    TODO: ShuntingUnit is currently embedded in full. Consider switching to
+    an ID reference once the evaluator has access to a ShuntingUnit registry
+    derived from the Scenario input.
+    """
+
+    start_time: Optional[int] = Field(None, alias="startTime")
+    end_time: Optional[int] = Field(None, alias="endTime")
+    task_type: Optional[TaskType] = Field(None, alias="taskType")
+    shunting_unit: Optional[ShuntingUnit] = Field(None, alias="shuntingUnit")
+    location: Optional[int] = None
+    resources: list[Resource] = Field(default_factory=list)
+    train_unit_ids: list[str] = Field(default_factory=list, alias="trainUnitIds")
+
+
+class Plan(RailModel):
+    """The output of a shunting algorithm: an ordered list of actions.
+
+    track_parts is acknowledged technical debt: the evaluator currently needs
+    it because it cannot reliably access the original Location input through
+    other channels. Once the evaluator receives both Location and Plan as
+    inputs, this field should be removed.
+    """
+
+    actions: list[Action] = Field(default_factory=list)
+    # TODO: remove once the evaluator receives Location as a separate input.
+    track_parts: list[TrackPart] = Field(default_factory=list, alias="trackParts")

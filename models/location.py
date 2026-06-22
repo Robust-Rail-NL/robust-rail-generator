@@ -1,0 +1,147 @@
+from __future__ import annotations
+
+from enum import Enum
+from typing import Annotated, Optional
+
+from pydantic import Field, model_validator
+
+from .utilities import RailModel, TimeInterval
+
+
+class TrackPartType(str, Enum):
+    RAILROAD = "RailRoad"
+    SWITCH = "Switch"
+    ENGLISH_SWITCH = "EnglishSwitch"
+    # Deprecated: present in both proto models, keep for backwards compatibility.
+    HALF_ENGLISH_SWITCH = "HalfEnglishSwitch"
+    INTERSECTION = "Intersection"
+    BUMPER = "Bumper"
+    # Only meaningful to the generator and evaluator; the solver will not
+    # encounter this value but should tolerate it.
+    BUILDING = "Building"
+
+
+class PredefinedTaskType(str, Enum):
+    # Movement
+    MOVE = "Move"
+    SPLIT = "Split"
+    COMBINE = "Combine"
+    # Waiting / lifecycle
+    WAIT = "Wait"
+    ARRIVE = "Arrive"
+    EXIT = "Exit"
+    # Standing-train equivalents of Arrive/Exit, used in Plan actions.
+    STAND_IN = "StandIn"
+    STAND_OUT = "StandOut"
+    # Staff / facility
+    WALKING = "Walking"
+    BREAK = "Break"
+    # Infrastructure
+    NON_SERVICE = "NonService"
+    # NOTE: BeginMove and EndMove are evaluator-internal concepts and are
+    # intentionally absent from the interchange schema.
+
+
+class TaskType(RailModel):
+    """A task type, either one of the well-known predefined values or a
+    custom string for facility-specific tasks."""
+
+    predefined: Optional[PredefinedTaskType] = None
+    other: Optional[str] = None
+
+    @model_validator(mode="after")
+    def exactly_one_set(self) -> TaskType:
+        set_fields = sum([self.predefined is not None, self.other is not None])
+        if set_fields != 1:
+            raise ValueError("Exactly one of 'predefined' or 'other' must be set.")
+        return self
+
+
+class TrackPart(RailModel):
+    """A single node in the rail graph."""
+
+    id: int
+    type: Optional[TrackPartType] = None
+    a_side: list[int] = Field(default_factory=list, alias="aSide")
+    b_side: list[int] = Field(default_factory=list, alias="bSide")
+    length: Optional[float] = None
+    name: Optional[str] = None
+    saw_movement_allowed: bool = Field(False, alias="sawMovementAllowed")
+    parking_allowed: bool = Field(False, alias="parkingAllowed")
+    # Optional: evaluator/generator only.
+    is_electrified: Optional[bool] = Field(None, alias="isElectrified")
+    station_platform: Optional[bool] = Field(None, alias="stationPlatform")
+
+
+class Facility(RailModel):
+    """An object at the location that is not part of the rails (e.g. a
+    cleaning platform or a washing installation)."""
+
+    id: Optional[int] = None
+    type: Optional[str] = None
+    related_track_parts: list[int] = Field(default_factory=list, alias="relatedTrackParts")
+    task_types: list[TaskType] = Field(default_factory=list, alias="taskTypes")
+    simultaneous_usage_count: Optional[int] = Field(None, alias="simultaneousUsageCount")
+    # Optional: evaluator/generator only.
+    time_window: Optional[TimeInterval] = Field(None, alias="timeWindow")
+
+
+class Resource(RailModel):
+    """A resource involved in an action: either a TrackPart, a Facility,
+    or a member of staff.
+
+    Exactly one of track_part_id, facility_id, or staff_id must be set.
+
+    TODO: consider introducing an explicit discriminator field (e.g.
+    kind: "trackPart" | "facility" | "staff") to make this a proper tagged
+    union. For now we keep the current wire format and enforce the constraint
+    via a validator.
+    """
+
+    name: Optional[str] = None
+    track_part_id: Optional[int] = Field(None, alias="trackPartId")
+    facility_id: Optional[int] = Field(None, alias="facilityId")
+    # staff_id is only present in generator/evaluator output; the solver
+    # will not encounter it but the unified schema includes it.
+    staff_id: Optional[int] = Field(None, alias="staffId")
+
+    @model_validator(mode="after")
+    def exactly_one_id_set(self) -> Resource:
+        set_fields = sum([
+            self.track_part_id is not None,
+            self.facility_id is not None,
+            self.staff_id is not None,
+        ])
+        if set_fields != 1:
+            raise ValueError(
+                "Exactly one of 'trackPartId', 'facilityId', or 'staffId' must be set."
+            )
+        return self
+
+
+class WalkingDistanceEntry(RailModel):
+    """An entry in the walking distance matrix between track parts."""
+
+    from_track_part_id: int = Field(alias="fromTrackPartId")
+    to_track_part_id: int = Field(alias="toTrackPartId")
+    distance_in_seconds: float = Field(alias="distanceInSeconds")
+
+
+class Location(RailModel):
+    """The fixed part of the problem specification: track layout and
+    facilities. Does not change on a daily basis."""
+
+    track_parts: list[TrackPart] = Field(default_factory=list, alias="trackParts")
+    facilities: list[Facility] = Field(default_factory=list, alias="facilities")
+    task_types: list[TaskType] = Field(default_factory=list, alias="taskTypes")
+
+    # Optional: evaluator/generator only. Used for shunting time calculations.
+    # TODO: confirm whether these are truly per-location or global constants
+    # that happen to be transported via this message.
+    movement_constant: Optional[int] = Field(None, alias="movementConstant")
+    movement_track_coefficient: Optional[int] = Field(None, alias="movementTrackCoefficient")
+    movement_switch_coefficient: Optional[int] = Field(None, alias="movementSwitchCoefficient")
+    # Optional: evaluator/generator only. Walking distance matrix.
+    distance_entries: list[WalkingDistanceEntry] = Field(
+        default_factory=list, alias="distanceEntries"
+    )
