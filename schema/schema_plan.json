@@ -1,0 +1,360 @@
+{
+  "$defs": {
+    "Action": {
+      "additionalProperties": false,
+      "description": "A single action in a shunting plan.\n\nFor Move actions, location is the destination TrackPart ID and resources\ncontains the path. For other actions, location is where the action occurs.\n\ntrain_unit_ids, if present, identifies the subset of the ShuntingUnit's\nmembers involved. If absent, all members are involved.\n\nTODO: ShuntingUnit is currently embedded in full. Consider switching to\nan ID reference once the evaluator has access to a ShuntingUnit registry\nderived from the Scenario input.",
+      "properties": {
+        "startTime": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Starttime"
+        },
+        "endTime": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endtime"
+        },
+        "taskType": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TaskType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "shuntingUnit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShuntingUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location"
+        },
+        "resources": {
+          "items": {
+            "$ref": "#/$defs/Resource"
+          },
+          "title": "Resources",
+          "type": "array"
+        },
+        "trainUnitIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Trainunitids",
+          "type": "array"
+        }
+      },
+      "title": "Action",
+      "type": "object"
+    },
+    "PredefinedTaskType": {
+      "enum": [
+        "Move",
+        "Split",
+        "Combine",
+        "Wait",
+        "Arrive",
+        "Exit",
+        "StandIn",
+        "StandOut",
+        "Walking",
+        "Break",
+        "NonService"
+      ],
+      "title": "PredefinedTaskType",
+      "type": "string"
+    },
+    "Resource": {
+      "additionalProperties": false,
+      "description": "A resource involved in an action: either a TrackPart, a Facility,\nor a member of staff.\n\nExactly one of track_part_id, facility_id, or staff_id must be set.\n\nTODO: consider introducing an explicit discriminator field (e.g.\nkind: \"trackPart\" | \"facility\" | \"staff\") to make this a proper tagged\nunion. For now we keep the current wire format and enforce the constraint\nvia a validator.",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "trackPartId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trackpartid"
+        },
+        "facilityId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Facilityid"
+        },
+        "staffId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Staffid"
+        }
+      },
+      "title": "Resource",
+      "type": "object"
+    },
+    "ShuntingUnit": {
+      "additionalProperties": false,
+      "description": "A combination of TrainUnits that moves as a single unit at some point\nin time.\n\nmembers is a list of TrainUnit IDs (not embedded objects). Consumers that\nneed the full TrainUnit look it up via the scenario.\n\nNote: standingType has been dropped from the unified schema. StandIn and\nStandOut task types in Plan actions carry this information explicitly.",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "members": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Members",
+          "type": "array"
+        },
+        "parentIDs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Parentids",
+          "type": "array"
+        },
+        "childIDs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Childids",
+          "type": "array"
+        }
+      },
+      "title": "ShuntingUnit",
+      "type": "object"
+    },
+    "TaskType": {
+      "additionalProperties": false,
+      "description": "A task type, either one of the well-known predefined values or a\ncustom string for facility-specific tasks.",
+      "properties": {
+        "predefined": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PredefinedTaskType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "other": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Other"
+        }
+      },
+      "title": "TaskType",
+      "type": "object"
+    },
+    "TrackPart": {
+      "additionalProperties": false,
+      "description": "A single node in the rail graph.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrackPartType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "aSide": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Aside",
+          "type": "array"
+        },
+        "bSide": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Bside",
+          "type": "array"
+        },
+        "length": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Length"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "sawMovementAllowed": {
+          "default": false,
+          "title": "Sawmovementallowed",
+          "type": "boolean"
+        },
+        "parkingAllowed": {
+          "default": false,
+          "title": "Parkingallowed",
+          "type": "boolean"
+        },
+        "isElectrified": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Iselectrified"
+        },
+        "stationPlatform": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stationplatform"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "TrackPart",
+      "type": "object"
+    },
+    "TrackPartType": {
+      "enum": [
+        "RailRoad",
+        "Switch",
+        "EnglishSwitch",
+        "HalfEnglishSwitch",
+        "Intersection",
+        "Bumper",
+        "Building"
+      ],
+      "title": "TrackPartType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The output of a shunting algorithm: an ordered list of actions.\n\ntrack_parts is acknowledged technical debt: the evaluator currently needs\nit because it cannot reliably access the original Location input through\nother channels. Once the evaluator receives both Location and Plan as\ninputs, this field should be removed.",
+  "properties": {
+    "actions": {
+      "items": {
+        "$ref": "#/$defs/Action"
+      },
+      "title": "Actions",
+      "type": "array"
+    },
+    "trackParts": {
+      "items": {
+        "$ref": "#/$defs/TrackPart"
+      },
+      "title": "Trackparts",
+      "type": "array"
+    }
+  },
+  "title": "Plan",
+  "type": "object"
+}
