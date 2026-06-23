@@ -76,6 +76,13 @@ class TrainUnit(RailModel):
 
     id: Optional[str] = None
     type_display_name: Optional[str] = Field(None, alias="typeDisplayName")
+    # Added back in for as long as we require the transitional models
+    # EvaluatorScenario and Train.  The new model structure uses
+    # IncomingTrainUnit.tasks instead.
+    tasks: Optional[list[TaskSpec]] = Field(
+        default_factory=list,
+        deprecated=True,
+    )
 
 
 class IncomingTrainUnit(RailModel):
@@ -122,6 +129,27 @@ class TrainRequest(RailModel):
     # TODO: confirm whether can_depart_from_any_track (non-HIP only) should
     # be added here for outstanding trains.
     can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
+
+
+class Train(RailModel):
+    """TEMPORARY: A train arriving at or already present in the shunting
+    yard, or a request for a train to depart from or remain in the shunting
+    yard.
+
+    Used for all of in (arriving), inStanding (already present), out
+    (departing) and outStanding (remaining) trains.
+    """
+
+    side_track_part: int = Field(alias="sideTrackPart")
+    parking_track_part: int = Field(alias="parkingTrackPart")
+    # None for standing trains (already present at scenario start / remaining
+    # at scenario end).
+    time: Optional[int] = None
+    id: Optional[str] = None
+    members: list[TrainUnit] = Field(default_factory=list)
+    standing_index: Optional[float] = Field(None, alias="standingIndex")
+    can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
+    minimum_duration: Optional[str] =  Field(None, alias="minimumDuration")
 
 
 class ShuntingUnit(RailModel):
@@ -202,6 +230,34 @@ class Scenario(RailModel):
     in_standing: list[IncomingTrain] = Field(default_factory=list, alias="inStanding")
     out: list[TrainRequest] = Field(default_factory=list)
     out_standing: list[TrainRequest] = Field(default_factory=list, alias="outStanding")
+
+    start_time: int = Field(alias="startTime")
+    end_time: int = Field(alias="endTime")
+
+    # Optional: generator/evaluator only.
+    non_service_traffic: list[NonServiceTraffic] = Field(
+        default_factory=list, alias="nonServiceTraffic"
+    )
+    disabled_track_parts: list[DisabledTrackPart] = Field(
+        default_factory=list, alias="disabledTrackPart"
+    )
+    workers: list[MemberOfStaff] = Field(default_factory=list)
+
+
+class EvaluatorScenario(RailModel):
+    """TEMPORARY: The daily-varying part of the problem specification: which
+    trains arrive, depart, or remain in the shunting yard.  Deprecated, flat
+    version of `Scenario`.
+    """
+
+    train_unit_types: list[TrainUnitType] = Field(
+        default_factory=list, alias="trainUnitTypes"
+    )
+
+    in_: list[Train] = Field(default_factory=list, alias="in")
+    in_standing: list[Train] = Field(default_factory=list, alias="inStanding")
+    out: list[Train] = Field(default_factory=list)
+    out_standing: list[Train] = Field(default_factory=list, alias="outStanding")
 
     start_time: int = Field(alias="startTime")
     end_time: int = Field(alias="endTime")
