@@ -219,6 +219,12 @@ class Scenario(RailModel):
     here.
     """
 
+    def to_dict(self) -> dict:
+        return self.model_dump(by_alias=True, exclude_unset=False)
+
+    def to_json(self, **kwargs) -> str:
+        return self.model_dump_json(by_alias=True, exclude_unset=False, **kwargs)
+
     train_unit_types: list[TrainUnitType] = Field(
         default_factory=list, alias="trainUnitTypes"
     )
@@ -249,6 +255,12 @@ class EvaluatorScenario(RailModel):
     trains arrive, depart, or remain in the shunting yard.  Deprecated, flat
     version of `Scenario`.
     """
+
+    def to_dict(self) -> dict:
+        return self.model_dump(by_alias=True, exclude_unset=False)
+
+    def to_json(self, **kwargs) -> str:
+        return self.model_dump_json(by_alias=True, exclude_unset=False, **kwargs)
 
     train_unit_types: list[TrainUnitType] = Field(
         default_factory=list, alias="trainUnitTypes"
