@@ -2,8 +2,7 @@
 Generator for scenarios of the Train Unit Shunting and Servicing (TUSS) Problem. The scenarios can be solved by [robust-rail-solver](https://github.com/Robust-Rail-NL/robust-rail-solver). The plans produced by the **robust-rail-solver** can be evaluated by [robust-rail-evaluator](https://github.com/Robust-Rail-NL/robust-rail-evaluator), which also requires the scenarios issued by [**TUSS-Instance-Generator**](https://github.com/Robust-Rail-NL/robust-rail-generator) 
 
 ## Getting started
-Removed description of conda, which is no longer in use.
-
+**TODO** Removed description of conda, which is no longer in use.
 This section should now describe how to install dependencies and setting up the environment, probably using `uv` and after we've added a `pyproject.toml`.
 
 # How to use?
