@@ -4,11 +4,9 @@ import json
 import argparse
 import logging
 
-from google.protobuf.json_format import ParseDict
-
 from __init__ import DATA_DIR
-from py_protobuf import Location_pb2
 from scenario import ScenarioGenerator, SolverScenarioGenerator
+from models.location import Location
 
 
 parser = argparse.ArgumentParser()
@@ -21,7 +19,7 @@ def convert_location_to_solver(location_file_path):
     scenario_generator = ScenarioGenerator()
     with open(location_file_path, "r") as f:
         json_location = json.load(f)
-    scenario_generator.location = ParseDict(json_location, Location_pb2.Location())
+    scenario_generator.location = Location.model_validate(json_location)
     new_location = location_file_path.replace(".json", "_solver.json")
     scenario_generator.convert_location_to_solver_format(new_location)
     print("[SUCCESS] Wrote location in solver format to:", new_location)

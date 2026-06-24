@@ -3,10 +3,9 @@ import json
 import logging
 import random
 
-from google.protobuf.json_format import ParseDict
-
 from __init__ import DATA_DIR
-from py_protobuf import Location_pb2
+
+from models.location import Location, TrackPartType
 
 
 def check_configuration_file(config, location_path):
@@ -124,7 +123,7 @@ def check_configuration_file(config, location_path):
 def check_location_file(config):
     location = json.load(open(config["location_file"]))
     try:
-        ParseDict(location, Location_pb2.Location())
+        Location.model_validate(location)
     except Exception as e:
         logging.error(f"Could not parse the location file {config['location_file']} to the correct Location format. Be careful not to use the `_solver` format, or use the converter.")
         logging.error(e)
@@ -152,7 +151,7 @@ def check_location_file(config):
         json.dump(location, open(config["location_file"].replace(".json", "_fixedIDs.json"), "w"), indent=4)
     return True, config
 
-def check_train_details_file(config, location):
+def check_train_details_file(config, location: Location):
     if "track_ids_used" not in config:
         logging.warning("Not defined: 'track_ids_used', assuming ids are used")
         config["track_ids_used"] = True
@@ -172,13 +171,13 @@ def check_train_details_file(config, location):
             if service_task not in defined_servicing_tasks:
                 logging.error(f"Service task {service_task} of train unit {t['id']} not specified in 'custom_servicing_tasks'")
                 return False, config
-            if "name" not in defined_servicing_tasks[service_task] or "type" not in defined_servicing_tasks[service_task] or "priority" not in defined_servicing_tasks[service_task] or "duration" not in defined_servicing_tasks[service_task] or "required_skills" not in defined_servicing_tasks[service_task]:
-                logging.error(f"Incorrectly specified service {service_task} of train unit {t['id']}: missing name, type, priority, duration or required_skills parameter")
+            if "name" not in defined_servicing_tasks[service_task] or "type" not in defined_servicing_tasks[service_task] or "duration" not in defined_servicing_tasks[service_task] or "required_skills" not in defined_servicing_tasks[service_task]:
+                logging.error(f"Incorrectly specified service {service_task} of train unit {t['id']}: missing name, type, duration or required_skills parameter")
             if defined_servicing_tasks[service_task]["type"] not in [f.type for f in location.facilities]:
                 logging.error(f"Service task {service_task} has type {defined_servicing_tasks[service_task]['type']} which is not present in the location's facilities")
     train_units_check_arrival = {u["id"]: u["type"] for u in config["custom_train_units"]}
     train_units_check_departure = [u["type"] for u in config["custom_train_units"]]
-    track_names_to_ids = {track.name: int(track.id) for track in location.trackParts}
+    track_names_to_ids = {track.name: int(track.id) for track in location.track_parts}
     if config["trains_given"]:
         for i, train in enumerate(config["custom_trains"]):
             if "id" not in train:
@@ -276,15 +275,15 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
                     return False, config
         else:
             try:
-                bumper_a = [location.trackParts[a].id 
-                            for a in location.trackParts[track_id].aSide 
-                            if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
-                bumper_b = [location.trackParts[a].id 
-                            for a in location.trackParts[track_id].bSide 
-                            if location.trackParts[a].type == Location_pb2.TrackPartType.Bumper]
+                bumper_a = [location.track_parts[a].id
+                            for a in location.track_parts[track_id].a_side
+                            if location.track_parts[a].type == TrackPartType.BUMPER]
+                bumper_b = [location.track_parts[a].id
+                            for a in location.track_parts[track_id].b_side
+                            if location.track_parts[a].type == TrackPartType.BUMPER]
                 if len(bumper_a + bumper_b) != 1:
                     logging.warning(f"No bumper found for '{track_name}' for train {train['id']}, picking random 'side_track_part' to determine direction of standing train")
-                    sides = [location.trackParts[a].id for a in location.trackParts[track_id].aSide] + [location.trackParts[a].id for a in location.trackParts[track_id].bSide]
+                    sides = [location.track_parts[a].id for a in location.track_parts[track_id].a_side] + [location.track_parts[a].id for a in location.track_parts[track_id].b_side]
                     side_id = random.choice(sides)
                 else:
                     side_id = (bumper_a + bumper_b)[0]
@@ -295,34 +294,34 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
     return True, config
         
 def check_gateways(config, location, gateways):
-    track_per_ids = {int(t.id): t for t in location.trackParts}
+    track_per_ids = {int(t.id): t for t in location.track_parts}
     if "arrival" in config["gateway"]:
         for arrive_id in config["gateway"]["arrival"]:
             arrive = track_per_ids.get(int(arrive_id), None)
             if arrive is None:
                 print(f"ERROR: arrival gateway {arrive_id} not found in in location")
                 return False, config
-            if arrive.type != Location_pb2.TrackPartType.RailRoad:
+            if arrive.type != TrackPartType.RAILROAD:
                 print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
                 return False, config
-            if arrive.parkingAllowed:
+            if arrive.parking_allowed:
                 print(f"ERROR: arrival gateway {arrive_id} does allow parking")
                 return False, config
-            if not arrive.sawMovementAllowed:
+            if not arrive.saw_movement_allowed:
                 print(f"ERROR: arrival gateway {arrive_id} does not allow saw movements")
                 return False, config
             if arrive.length == 0:
                 print(f"ERROR: arrival gateway {arrive_id} has length 0")
                 return False, config
             # Assert that the JSON is well-formed
-            assert all(int(a) == a for a in arrive.aSide), "aSide must be represented as int, not string"
-            assert all(int(b) == b for b in arrive.bSide), "bSide must be represented as int, not string"
+            assert all(int(a) == a for a in arrive.a_side), "aSide must be represented as int, not string"
+            assert all(int(b) == b for b in arrive.b_side), "bSide must be represented as int, not string"
             bumper_a = [track_per_ids[a]
-                        for a in arrive.aSide 
-                        if track_per_ids[a].type == Location_pb2.TrackPartType.Bumper]
+                        for a in arrive.a_side 
+                        if track_per_ids[a].type == TrackPartType.BUMPER]
             bumper_b = [track_per_ids[b]
-                    for b in arrive.bSide 
-                    if track_per_ids[b].type == Location_pb2.TrackPartType.Bumper]
+                    for b in arrive.b_side 
+                    if track_per_ids[b].type == TrackPartType.BUMPER]
             if len(bumper_a) == 1:
                 gateways["arrival"].append((arrive, bumper_a[0]))
             elif len(bumper_b) == 1:
@@ -336,27 +335,27 @@ def check_gateways(config, location, gateways):
             if depart is None:
                 print(f"ERROR: departure gateway {depart_id} not found in in location")
                 return False, config
-            if depart.type != Location_pb2.TrackPartType.RailRoad:
+            if depart.type != TrackPartType.RAILROAD:
                 print(f"ERROR: departure gateway {depart_id} is not a railroad")
                 return False, config        
-            if depart.parkingAllowed:
+            if depart.parking_allowed:
                 print(f"ERROR: departure gateway {depart_id} does allow parking")
                 return False, config
-            if not depart.sawMovementAllowed:
+            if not depart.saw_movement_allowed:
                 print(f"ERROR: departure gateway {depart_id} does not allow saw movements")
                 return False, config
             if depart.length == 0:
                 print(f"ERROR: departure gateway {depart_id} has length 0")
                 return False, config
             # Assert that the JSON is well-formed
-            assert all(int(a) == a for a in depart.aSide), "aSide must be represented as int, not string"
-            assert all(int(b) == b for b in depart.bSide), "bSide must be represented as int, not string"
+            assert all(int(a) == a for a in depart.a_side), "aSide must be represented as int, not string"
+            assert all(int(b) == b for b in depart.b_side), "bSide must be represented as int, not string"
             bumper_a = [track_per_ids[a]
-                        for a in depart.aSide 
-                        if track_per_ids[a].type == Location_pb2.TrackPartType.Bumper]
+                        for a in depart.a_side 
+                        if track_per_ids[a].type == TrackPartType.BUMPER]
             bumper_b = [track_per_ids[b] 
-                    for b in depart.bSide 
-                    if track_per_ids[b].type == Location_pb2.TrackPartType.Bumper]
+                    for b in depart.b_side 
+                    if track_per_ids[b].type == TrackPartType.BUMPER]
             if len(bumper_a) == 1:
                 gateways["departure"].append((depart, bumper_a[0]))
             elif len(bumper_b) == 1:

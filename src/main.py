@@ -1,8 +1,5 @@
-import os
 import sys
-import json
 import math
-import logging
 import argparse
 
 from __init__ import REPO_DIR, DATA_DIR
@@ -54,10 +51,9 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     if not correct_file:
         sys.exit(1)
 
-    scenario_generator = ScenarioGenerator()
+    scenario_generator = ScenarioGenerator(config["start_time"], config["end_time"])
     scenario_generator.load_location(config["location_file"])
-    config["track_id_map"] = {tr.id: tr for tr in scenario_generator.location.trackParts}
-    scenario_generator.add_start_and_end_times(config["start_time"], config["end_time"])
+    config["track_id_map"] = {tr.id: tr for tr in scenario_generator.location.track_parts}
     # Check the format of the trains
     if config['trains_given']:
         correct_file, config = check_train_details_file(config, scenario_generator.location)
@@ -77,16 +73,16 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
 
     # Load the default train materials if specified
     if config["use_default_material"]:
-        scenario_generator.add_DefaultTrainUnitTypes()
-        random_generator.train_unit_types = scenario_generator.scenario_TrainUnitTypes.copy()
-        random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
+        scenario_generator.add_default_train_unit_types()
+        random_generator.train_unit_types = scenario_generator.scenario_train_unit_types.copy()
+        random_generator.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in random_generator.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in random_generator.train_unit_types}
     elif config["custom_train_unit_types"]:
-        scenario_generator.add_CustomTrainUnitTypes(config)
-        random_generator.train_unit_types = scenario_generator.scenario_TrainUnitTypes.copy()
-        random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
+        scenario_generator.add_custom_train_unit_types(config)
+        random_generator.train_unit_types = scenario_generator.scenario_train_unit_types.copy()
+        random_generator.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in random_generator.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in random_generator.train_unit_types}
     else:
         random_generator.generate_train_unit_types(config["number_of_train_unit_types"])
-        random_generator.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in random_generator.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in random_generator.train_unit_types}
+        random_generator.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in random_generator.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in random_generator.train_unit_types}
 
     # Add the servicing tasks tasks if specified
     service_tasks = {}
@@ -94,8 +90,8 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     if config["perform_servicing"]:
         if "custom_servicing_tasks" in config:
             for service in config["custom_servicing_tasks"]:
-                task_type = scenario_generator.create_TaskType(None, service["type"])
-                service_obj = scenario_generator.create_TaskSpec(task_type, service["priority"], service["duration"], service["required_skills"])
+                task_type = scenario_generator.create_task_type(None, service["type"])
+                service_obj = scenario_generator.create_task_spec(task_type, service["duration"], service["required_skills"])
                 service_tasks[service["name"]] = service_obj
             estimated_servicing_time = sum([service_tasks[service_type].duration for train_unit in config["custom_train_units"] for service_type in train_unit["services"]])
         else:
@@ -104,8 +100,8 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
             location_facilities = [f.type for f in scenario_generator.location.facilities]
             for service, task_info in default_service_tasks.items():
                 if task_info["requiredFacility"] in location_facilities:
-                    task_type = scenario_generator.create_TaskType(None, service)
-                    service_obj = scenario_generator.create_TaskSpec(task_type, int(task_info["priority"]), int(task_info["duration"]), task_info["requiredSkills"])
+                    task_type = scenario_generator.create_task_type(None, service)
+                    service_obj = scenario_generator.create_task_spec(task_type, int(task_info["duration"]), task_info["requiredSkills"])
                     service_tasks[service] = service_obj
             avg_duration = math.ceil(max([task.duration for _, task in service_tasks.items()]) / len(service_tasks))
             estimated_number_servicing_units = math.ceil(config["train_unit_distribution"]["servicing_ratio"] * config["number_of_trains"] * max(config["train_unit_distribution"]["units_per_composition"]) / len(config["train_unit_distribution"]["units_per_composition"]))
@@ -162,55 +158,55 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     print(f"Scenario file created: {output_filepath}")
     print(f"Solver format scenario file created: {output_solver_filepath}")
 
-def create_trains(scenario_generator, config, services):
+def create_trains(scenario_generator: ScenarioGenerator, config, services):
     created_train_units = {}
     for train_unit in config["custom_train_units"]:
-        unit = scenario_generator.create_TrainUnit(train_unit["id"], train_unit["type"], [services[s] for s in train_unit["services"]])
+        unit = scenario_generator.create_train_unit(train_unit["id"], train_unit["type"], [services[s] for s in train_unit["services"]])
         created_train_units[train_unit["id"]] = unit
     for train in config["custom_trains"]:
         if "arrival_track" in train:
-            scenario_generator.add_incomingTrain(
-                scenario_generator.create_Train(
+            scenario_generator.add_incoming_train(
+                scenario_generator.create_train(
                     id=train["id"], 
                     members=[created_train_units[i] for i in train["members"]], 
                     time=train["arrival_time"], 
-                    trackPart=train["arrival_track"],
-                    sideTrackPart=train["arrival_track_side"]
+                    track_part=train["arrival_track"],
+                    side_track_part=train["arrival_track_side"]
                 )
             )
         if "departure_track" in train:
-            unmatched_train_units = [scenario_generator.create_TrainUnitUnmatchedMembers(train_unit) for train_unit in train["member_types"]]
-            scenario_generator.add_outgoingTrain(
-                scenario_generator.create_Train(
+            unmatched_train_units = [scenario_generator.create_train_unit_unmatched_members(train_unit) for train_unit in train["member_types"]]
+            scenario_generator.add_outgoing_train(
+                scenario_generator.create_train(
                     id=train["id"], 
                     members=unmatched_train_units,
                     time=train["departure_time"], 
-                    trackPart=train["departure_track"],
-                    sideTrackPart=train["departure_track_side"],
-                    canDepartFromAnyTrack=train["depart_any_track"] if "depart_any_track" in train else False
+                    track_part=train["departure_track"],
+                    side_track_part=train["departure_track_side"],
+                    can_depart_from_any_track=train["depart_any_track"] if "depart_any_track" in train else False
                 )
             )
         if "start_at_track" in train:
-            scenario_generator.add_inStandingTrain(
-                scenario_generator.create_Train(
+            scenario_generator.add_in_standing_train(
+                scenario_generator.create_train(
                     id=train["id"], 
                     time=0,
                     members=[created_train_units[i] for i in train["members"]], 
-                    trackPart=train["start_at_track"],
-                    sideTrackPart=train["start_at_track_side"],
-                    standingIndex=train["parking_index"] if "parking_index" in train else 1
+                    track_part=train["start_at_track"],
+                    side_track_part=train["start_at_track_side"],
+                    standing_index=train["parking_index"] if "parking_index" in train else 1
                 )
             )                
         if "end_at_track" in train:
-            unmatched_train_units = [scenario_generator.create_TrainUnitUnmatchedMembers(train_unit) for train_unit in train["member_types"]]
-            scenario_generator.add_outStandingTrain(
-                scenario_generator.create_Train(
+            unmatched_train_units = [scenario_generator.create_train_unit_unmatched_members(train_unit) for train_unit in train["member_types"]]
+            scenario_generator.add_out_standing_train(
+                scenario_generator.create_train(
                     id=train["id"], 
                     time=0,
                     members=unmatched_train_units, 
-                    trackPart=train["end_at_track"],
-                    sideTrackPart=train["end_at_track_side"],
-                    standingIndex=train["parking_index"] if "parking_index" in train else 1
+                    track_part=train["end_at_track"],
+                    side_track_part=train["end_at_track_side"],
+                    standing_index=train["parking_index"] if "parking_index" in train else 1
                 )
             )     
 

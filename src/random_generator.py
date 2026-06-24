@@ -3,12 +3,14 @@ import random
 import logging
 from copy import deepcopy
 
-from py_protobuf.Location_pb2 import TrackPartType
+from models.location import TrackPartType
+from src.scenario import ScenarioGenerator
+
 
 class RandomGenerator:
-    def __init__(self, gen, config, location, gateways):
+    def __init__(self, gen: ScenarioGenerator, config, location, gateways):
         """Initialize the random generator for a specific scenario generator."""
-        self.scenario_generator = gen
+        self.scenario_generator: ScenarioGenerator = gen
         self.seed = config["seed"]
         random.seed(self.seed)
         self.train_unit_types = []
@@ -31,40 +33,40 @@ class RandomGenerator:
         self.train_units_subtypes = {}
         self.number_of_train_units = 0
         self.trains = []
-        self.scenario_generator.scenario.ClearField("in")
-        self.scenario_generator.scenario.ClearField("out")
-        self.scenario_generator.scenario.ClearField("inStanding")
-        self.scenario_generator.scenario.ClearField("outStanding")
+        self.scenario_generator.scenario.in_ = []
+        self.scenario_generator.scenario.out = []
+        self.scenario_generator.scenario.in_standing = []
+        self.scenario_generator.scenario.out_standing = []
 
     def get_gateway_tracks(self, config, location):
         gateways = []
-        facilities = [t for f in location.facilities for t in f.relatedTrackParts]
-        for track in location.trackParts:
-            if track.type == TrackPartType.RailRoad:
+        facilities = [t for f in location.facilities for t in f.related_track_parts]
+        for track in location.track_parts:
+            if track.type == TrackPartType.RAILROAD:
                 bumper_a = [config["track_id_map"][a].id
-                            for a in track.aSide 
-                            if config["track_id_map"][a].type == TrackPartType.Bumper]
+                            for a in track.a_side 
+                            if config["track_id_map"][a].type == TrackPartType.BUMPER]
                 bumper_b = [config["track_id_map"][b].id
-                            for b in track.bSide 
-                            if config["track_id_map"][b].type == TrackPartType.Bumper]
+                            for b in track.b_side 
+                            if config["track_id_map"][b].type == TrackPartType.BUMPER]
                 if len(bumper_a) == 0 and len(bumper_b) == 1:
-                    if config["track_id_map"][bumper_b[0]].aSide:
-                        gateway = config["track_id_map"][config["track_id_map"][bumper_b[0]].aSide[0]]
+                    if config["track_id_map"][bumper_b[0]].a_side:
+                        gateway = config["track_id_map"][config["track_id_map"][bumper_b[0]].a_side[0]]
                     else:
                         logging.error(f"Bumper {config['track_id_map'][bumper_b[0]].id} on the B-side of track {track.id} does not have this track on its own A-side.")
-                    if config["track_id_map"][bumper_b[0]].bSide:
-                        logging.error(f"Bumper {config['track_id_map'][bumper_b[0]].id} on the B-side of track {track.id} has a track part with id {config['track_id_map'][bumper_b[0]].bSide[0]} on its B-side.")
-                    if gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and not gateway.parkingAllowed and gateway.length > 0:
+                    if config["track_id_map"][bumper_b[0]].b_side:
+                        logging.error(f"Bumper {config['track_id_map'][bumper_b[0]].id} on the B-side of track {track.id} has a track part with id {config['track_id_map'][bumper_b[0]].b_side[0]} on its B-side.")
+                    if gateway not in gateways and gateway.type == TrackPartType.RAILROAD and not gateway.station_platform and gateway.id not in facilities and gateway.saw_movement_allowed and not gateway.parking_allowed and gateway.length > 0:
                         gateways.append((gateway, config["track_id_map"][bumper_b[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
                 elif len(bumper_a) == 1 and len(bumper_b) == 0:
-                    if config["track_id_map"][bumper_a[0]].bSide:
-                        gateway = config["track_id_map"][config["track_id_map"][bumper_a[0]].bSide[0]]
+                    if config["track_id_map"][bumper_a[0]].b_side:
+                        gateway = config["track_id_map"][config["track_id_map"][bumper_a[0]].b_side[0]]
                     else:
                         logging.error(f"Bumper {config['track_id_map'][bumper_a[0]].id} on the A-side of track {track.id} does not have this track on its own B-side.")
-                    if config["track_id_map"][bumper_a[0]].aSide:
-                        logging.error(f"Bumper {config['track_id_map'][bumper_a[0]].id} on the A-side of track {track.id} has a track part with id {config['track_id_map'][bumper_a[0]].aSide[0]} on the B-side.")
-                    if gateway not in gateways and gateway.type == TrackPartType.RailRoad and not gateway.stationPlatform and gateway.id not in facilities and gateway.sawMovementAllowed and not gateway.parkingAllowed  and gateway.length > 0:
+                    if config["track_id_map"][bumper_a[0]].a_side:
+                        logging.error(f"Bumper {config['track_id_map'][bumper_a[0]].id} on the A-side of track {track.id} has a track part with id {config['track_id_map'][bumper_a[0]].a_side[0]} on the B-side.")
+                    if gateway not in gateways and gateway.type == TrackPartType.RAILROAD and not gateway.station_platform and gateway.id not in facilities and gateway.saw_movement_allowed and not gateway.parking_allowed  and gateway.length > 0:
                         gateways.append((gateway, config["track_id_map"][bumper_a[0]]))
                         logging.info(f"Found gateway track {gateway.name}")
         return gateways
@@ -75,9 +77,9 @@ class RandomGenerator:
         if "train_unit_distribution" in config:
             # If a specific sublist of train unit types was provided, update the possible train unit types
             if "train_unit_types" in config["train_unit_distribution"]:
-                scenario_generator.scenario_TrainUnitTypes = [u for u in scenario_generator.scenario_TrainUnitTypes if u.displayName in config["train_unit_distribution"]["train_unit_types"]]
+                scenario_generator.scenario_TrainUnitTypes = [u for u in scenario_generator.scenario_TrainUnitTypes if u.display_name in config["train_unit_distribution"]["train_unit_types"]]
                 self.train_unit_types = scenario_generator.scenario_TrainUnitTypes.copy()
-                self.train_units_subtypes = {u.displayName.split("-")[0]: [sub.displayName for sub in self.train_unit_types if u.displayName.split("-")[0] in sub.displayName] for u in self.train_unit_types}
+                self.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in self.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in self.train_unit_types}
             # If a distribution of train units over the trains was given, use this for the train creation
             distribution_config.update(config["train_unit_distribution"])
             # Decide the number of units per train
@@ -141,23 +143,23 @@ class RandomGenerator:
         
     def generate_train_unit_types(self, num):
         for i in range(num):
-            unit_type = self.scenario_generator.create_TrainUnitType(
-                displayName=f"unitType{i}",
+            unit_type = self.scenario_generator.create_train_unit_type(
+                display_name=f"unitType{i}",
                 carriages=random.randrange(3, 8),
                 length=random.randrange(40, 160, 5),
-                combineDuration=random.randrange(0, 600, 10),
-                splitDuration=random.randrange(0, 600, 10),
-                backNormTime=random.randrange(0, 600, 10),
-                backAdditionTime=random.randrange(0, 600, 10),
-                travelSpeed=random.randrange(50, 300, 10), # assumed km/h
-                startUpTime=random.randrange(0, 600, 10),
-                needsLoco=False, # assumed
-                isLoco=False, # assumed
-                needsElectricity=True, # assumed
-                typePrefix="random",
+                combine_duration=random.randrange(0, 600, 10),
+                split_duration=random.randrange(0, 600, 10),
+                back_norm_time=random.randrange(0, 600, 10),
+                back_addition_time=random.randrange(0, 600, 10),
+                travel_speed=random.randrange(50, 300, 10), # assumed km/h
+                start_up_time=random.randrange(0, 600, 10),
+                needs_loco=False, # assumed
+                is_loco=False, # assumed
+                needs_electricity=True, # assumed
+                type_prefix="random",
             )
             self.train_unit_types.append(unit_type)
-            self.scenario_generator.add_TrainUnitType(unit_type)
+            self.scenario_generator.add_train_unit_type(unit_type)
 
     def generate_train_units(self, number_train_units, servicing, distribution_config, service_tasks):
         random.shuffle(self.train_unit_types)
@@ -176,15 +178,15 @@ class RandomGenerator:
                     for typ, num in distribution_config["unit_types_per_train"]:
                         idx += num
                         if i < idx:
-                            unit_type = typ.displayName
+                            unit_type = typ.display_name
                             break
             if i < number_of_serviced_units:
                 current_tasks = random.choices(list(service_tasks.values()), k=random.randint(1, distribution_config["tasks_per_train_unit"]))
             else:
                 current_tasks = []
-            unit = self.scenario_generator.create_TrainUnit(
+            unit = self.scenario_generator.create_train_unit(
                 id=str(i),
-                typeDisplayName=unit_type,
+                type_display_name=unit_type,
                 tasks=current_tasks
             )
             if unit_type not in self.train_units:
@@ -200,66 +202,66 @@ class RandomGenerator:
         # Check for instanding and outstanding trains
         instanding_train_ids = random.sample(range(distribution_config["number_trains_in"]), math.floor(distribution_config["number_trains_in"] * distribution_config.get("instanding_ratio"))) if distribution_config and "instanding_ratio" in distribution_config else []
         outstanding_train_ids = random.sample(range(distribution_config["number_trains_in"], distribution_config["number_trains_in"]+distribution_config["number_trains_out"]), math.floor(distribution_config["number_trains_out"] * distribution_config.get("outstanding_ratio"))) if distribution_config and "outstanding_ratio" in distribution_config else []
-        parking_tracks_instanding = random.sample([tr for tr in self.scenario_generator.location.trackParts if tr.parkingAllowed and tr.id not in self.gateways["arrival"]], len(instanding_train_ids))
-        parking_tracks_outstanding = random.sample([tr for tr in self.scenario_generator.location.trackParts if tr.parkingAllowed and tr.id not in self.gateways["departure"]], len(outstanding_train_ids))
+        parking_tracks_instanding = random.sample([tr for tr in self.scenario_generator.location.track_parts if tr.parking_allowed and tr.id not in self.gateways["arrival"]], len(instanding_train_ids))
+        parking_tracks_outstanding = random.sample([tr for tr in self.scenario_generator.location.track_parts if tr.parking_allowed and tr.id not in self.gateways["departure"]], len(outstanding_train_ids))
         standing_trains = {"instanding": {id: parking_tracks_instanding[j] for j, id in enumerate(instanding_train_ids)}, "outstanding": {id: parking_tracks_outstanding[j] for j, id in enumerate(outstanding_train_ids)}}
         ### Create train objects
         for (i, train_units) in enumerate(distribution_in):
             ### Incoming train
             if i in standing_trains["instanding"]:
-                train_in = self.scenario_generator.create_Train(
+                train_in = self.scenario_generator.create_train(
                     id=str(i),
-                    time=self.scenario_generator.scenario.startTime,
+                    time=self.scenario_generator.scenario.start_time,
                     members=train_units,
-                    standingIndex=1,
-                    sideTrackPart=standing_trains["instanding"][i].aSide[0] if len(config["track_id_map"][standing_trains["instanding"][i].aSide[0]].aSide) == 0 else standing_trains["instanding"][i].bSide[0],
-                    trackPart=standing_trains["instanding"][i].id,
-                    canDepartFromAnyTrack=True,
-                    minimumDuration="60"
+                    standing_index=1,
+                    side_track_part=standing_trains["instanding"][i].a_side[0] if len(config["track_id_map"][standing_trains["instanding"][i].a_side[0]].a_side) == 0 else standing_trains["instanding"][i].b_side[0],
+                    track_part=standing_trains["instanding"][i].id,
+                    can_depart_from_any_track=True,
+                    minimum_duration="60"
                 )
-                self.scenario_generator.add_inStandingTrain(train_in)
+                self.scenario_generator.add_in_standing_train(train_in)
             else:
                 gateway, side = random.choice(self.gateways["arrival"])
-                train_in = self.scenario_generator.create_Train(
+                train_in = self.scenario_generator.create_train(
                     id=str(i),
                     time=arrival_times[i],
                     members=train_units,
-                    sideTrackPart=side.id,
-                    trackPart=gateway.id,
-                    canDepartFromAnyTrack=False,
-                    minimumDuration="60"
+                    side_track_part=side.id,
+                    track_part=gateway.id,
+                    can_depart_from_any_track=False,
+                    minimum_duration="60"
                 )
-                self.scenario_generator.add_incomingTrain(train_in)
+                self.scenario_generator.add_incoming_train(train_in)
             self.trains.append(train_in)
         id_offset = distribution_config["number_trains_in"]
         for (i, train_units) in enumerate(distribution_out):
             ### Outgoing train
-            unmatched_train_units = [self.scenario_generator.create_TrainUnitUnmatchedMembers(train_unit.typeDisplayName) for train_unit in train_units]
+            unmatched_train_units = [self.scenario_generator.create_train_unit_unmatched_members(train_unit.type_display_name) for train_unit in train_units]
             if i+id_offset in standing_trains["outstanding"]:
-                train_out = self.scenario_generator.create_Train(
+                train_out = self.scenario_generator.create_train(
                     id=f"{i+id_offset}",
-                    time=self.scenario_generator.scenario.endTime,
+                    time=self.scenario_generator.scenario.end_time,
                     members=unmatched_train_units,
-                    standingIndex=1,
-                    sideTrackPart=standing_trains["outstanding"][i+id_offset].aSide[0] if len(config["track_id_map"][standing_trains["outstanding"][i+id_offset].aSide[0]].aSide) == 0 else standing_trains["outstanding"][i+id_offset].bSide[0],
-                    trackPart=standing_trains["outstanding"][i+id_offset].id,
-                    canDepartFromAnyTrack=True,
-                    minimumDuration="60"
+                    standing_index=1,
+                    side_track_part=standing_trains["outstanding"][i+id_offset].a_side[0] if len(config["track_id_map"][standing_trains["outstanding"][i+id_offset].a_side[0]].a_side) == 0 else standing_trains["outstanding"][i+id_offset].b_side[0],
+                    track_part=standing_trains["outstanding"][i+id_offset].id,
+                    can_depart_from_any_track=True,
+                    minimum_duration="60"
                 )
-                self.scenario_generator.add_outStandingTrain(train_out)
+                self.scenario_generator.add_out_standing_train(train_out)
             else:
                 gateway, side = random.choice(self.gateways["departure"])
-                train_out = self.scenario_generator.create_Train(
+                train_out = self.scenario_generator.create_train(
                     id=f"{i+id_offset}",
                     time=departure_times[i],
                     members=unmatched_train_units,
-                    standingIndex=1, # assume
-                    sideTrackPart=side.id,
-                    trackPart=gateway.id,
-                    canDepartFromAnyTrack=False,
-                    minimumDuration="60"
+                    standing_index=1, # assume
+                    side_track_part=side.id,
+                    track_part=gateway.id,
+                    can_depart_from_any_track=False,
+                    minimum_duration="60"
                 )
-                self.scenario_generator.add_outgoingTrain(train_out)
+                self.scenario_generator.add_outgoing_train(train_out)
             self.trains.append(train_out)
 
     def assign_arrival_departure_times(self, distribution_config):
@@ -268,8 +270,8 @@ class RandomGenerator:
         # Mixed traffic allows trains to depart before all trains have arrived
         if distribution_config["mixed_traffic"]:
             # Arrive in 2/3 of total time - generate 
-            arrival_times = random.sample(range(self.scenario_generator.scenario.startTime, math.floor(self.scenario_generator.scenario.endTime * 2 / 3), distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_in"])
-            possible_departure_times = [t for t in range(min(arrival_times) + distribution_config["min_time_in_yard"], self.scenario_generator.scenario.endTime, distribution_config["min_gap_on_gateway"]) if t not in arrival_times]
+            arrival_times = random.sample(range(self.scenario_generator.scenario.start_time, math.floor(self.scenario_generator.scenario.end_time * 2 / 3), distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_in"])
+            possible_departure_times = [t for t in range(min(arrival_times) + distribution_config["min_time_in_yard"], self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]) if t not in arrival_times]
             for y in range(distribution_config["number_trains_out"]):
                 # Possible that there are more departing trains then arriving
                 try:
@@ -283,17 +285,17 @@ class RandomGenerator:
                     logging.exception(f"Cannot sample departure time for train {y} from possible departure times after arrival time {arrival_times[y]} with min gap {distribution_config['min_gap_on_gateway']}. Possible departure times: {possible_departure_times}")
         else:
             # Arrive in first half of total time
-            halfway = math.floor(self.scenario_generator.scenario.endTime / 2)
+            halfway = math.floor(self.scenario_generator.scenario.end_time / 2)
             try:
-                arrival_times = random.sample(range(self.scenario_generator.scenario.startTime, halfway, distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_in"])
+                arrival_times = random.sample(range(self.scenario_generator.scenario.start_time, halfway, distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_in"])
             except:
-                logging.exception(f"Cannot sample {distribution_config['number_trains_in']} arrival times from range {self.scenario_generator.scenario.startTime} to {halfway} (endtime/2) with min gap {distribution_config['min_gap_on_gateway']}")
+                logging.exception(f"Cannot sample {distribution_config['number_trains_in']} arrival times from range {self.scenario_generator.scenario.start_time} to {halfway} (end_time/2) with min gap {distribution_config['min_gap_on_gateway']}")
             # Depart in second half of total time
             start = max(halfway, max(arrival_times) + distribution_config["min_gap_on_gateway"])
             try:
-                departure_times = random.sample(range(start, self.scenario_generator.scenario.endTime, distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_out"])
+                departure_times = random.sample(range(start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]), distribution_config["number_trains_out"])
             except:
-                logging.exception(f"Cannot sample {distribution_config['number_trains_out']} departure times from range {start} (endtime/2) to {self.scenario_generator.scenario.endTime} with min gap {distribution_config['min_gap_on_gateway']}")
+                logging.exception(f"Cannot sample {distribution_config['number_trains_out']} departure times from range {start} (end_time/2) to {self.scenario_generator.scenario.end_time} with min gap {distribution_config['min_gap_on_gateway']}")
         return arrival_times, departure_times 
 
     def distribute_train_units(self, distribution_config):
@@ -314,7 +316,7 @@ class RandomGenerator:
             logging.info(f"Number of units per train is assigned, assigning the actual units to trains.")
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
-                    in_trains[i].append(in_units[t.displayName].pop())
+                    in_trains[i].append(in_units[t.display_name].pop())
             # Matching: 0 same order, 1: random order, 2: reverse order
             if distribution_config["matching"] == 1:
                 random.shuffle(distribution_config["unit_types_per_train"])
@@ -322,7 +324,7 @@ class RandomGenerator:
                 distribution_config["unit_types_per_train"].reverse()
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
-                    out_trains[i].append(out_units[t.displayName].pop())
+                    out_trains[i].append(out_units[t.display_name].pop())
         elif "subtypes_per_in_train" in distribution_config:
             # The number of units per train and its train type were already generated, so allocate the units.
             # This is the only method that allows train units of same supertype in one composition
@@ -343,7 +345,7 @@ class RandomGenerator:
                     in_trains.append([in_units[typ].pop()])
 
             for unit_type in in_units:
-                trains_of_type = {i: t for i, t in enumerate(in_trains) if t[0].typeDisplayName == unit_type}
+                trains_of_type = {i: t for i, t in enumerate(in_trains) if t[0].type_display_name == unit_type}
                 while in_units[unit_type]:
                     idx = random.randint(0, len(trains_of_type) - 1)
                     if len(trains_of_type[idx]) < 3 :
@@ -355,7 +357,7 @@ class RandomGenerator:
                 for _ in range(number_trains_of_type):
                     out_trains.append([out_units[typ].pop()])
             for unit_type in out_units:
-                trains_of_type = {i: t for i, t in enumerate(out_trains) if t[0].typeDisplayName == unit_type}
+                trains_of_type = {i: t for i, t in enumerate(out_trains) if t[0].type_display_name == unit_type}
                 while out_units[unit_type]:
                     idx = random.randint(0, len(trains_of_type) - 1)
                     if len(trains_of_type[idx]) < 3 :
