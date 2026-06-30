@@ -105,7 +105,6 @@ class ScenarioGenerator:
 
             # Collect information of the train unit members of the current train
             for member in train_standard.members:
-                # The Solver format does not use id of the outgoing train units (simply '****')
                 train_unit = TrainUnit(type_display_name=member.type_display_name)
                 train.train_units.append(train_unit)
 
@@ -152,7 +151,6 @@ class ScenarioGenerator:
 
             # Collect information of the train unit members of the current train            
             for member in train_standard.members:                
-                # The Solver format does not use id of the outgoing train units (simply '****')
                 train_unit = TrainUnit(type_display_name=member.type_display_name)
                 train.train_units.append(train_unit)
 
@@ -160,8 +158,6 @@ class ScenarioGenerator:
     def add_outgoing_train(self, out_train: Train):
         # Add outgoing train to the scenario        
         train_units = out_train.members
-        for train_unit in train_units:
-            train_unit.id = "****"
         self.scenario.out.append(out_train)
         self.scenario_out.append(out_train)
     
@@ -177,8 +173,6 @@ class ScenarioGenerator:
     def add_out_standing_train(self, out_standing_train: Train):
         # Add out_standing Train to the scenario
         train_units = out_standing_train.members
-        for train_unit in train_units:
-            train_unit.id = "****"
         self.scenario.out_standing.append(out_standing_train)
 
     def add_non_service_traffic(self, non_service_traffic: NonServiceTraffic):
@@ -256,7 +250,7 @@ class ScenarioGenerator:
         return task_spec
 
     @staticmethod
-    def create_train_unit(id: str, type_display_name: str, tasks: List[TaskSpec]):
+    def create_incoming_train_unit(id: str, type_display_name: str, tasks: List[TaskSpec]) -> IncomingTrainUnit:
         """_summary_
         Creates a train unit object with specific member id.
 
@@ -268,11 +262,7 @@ class ScenarioGenerator:
         Returns:
             _type_: represents a combination of carriages which can move independently
         """
-        train_unit = TrainUnit()
-        train_unit.id = id
-        train_unit.type_display_name = type_display_name
-        train_unit.tasks = tasks
-        return train_unit
+        return IncomingTrainUnit(id=id, type_display_name=type_display_name, tasks=tasks)
 
     @staticmethod
     def create_train_unit_unmatched_members(type_display_name: str):
@@ -286,7 +276,6 @@ class ScenarioGenerator:
             _type_: represents a combination of carriages which can move independently
         """
         train_unit = TrainUnit()
-        train_unit.id = "****"
         train_unit.type_display_name = type_display_name
         return train_unit
 

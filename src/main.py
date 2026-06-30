@@ -161,7 +161,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
 def create_trains(scenario_generator: ScenarioGenerator, config, services):
     created_train_units = {}
     for train_unit in config["custom_train_units"]:
-        unit = scenario_generator.create_train_unit(train_unit["id"], train_unit["type"], [services[s] for s in train_unit["services"]])
+        unit = scenario_generator.create_incoming_train_unit(train_unit["id"], train_unit["type"], [services[s] for s in train_unit["services"]])
         created_train_units[train_unit["id"]] = unit
     for train in config["custom_trains"]:
         if "arrival_track" in train:

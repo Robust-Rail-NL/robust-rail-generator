@@ -14,7 +14,7 @@ class RandomGenerator:
         self.seed = config["seed"]
         random.seed(self.seed)
         self.train_unit_types = []
-        self.train_units = {}
+        self.incoming_train_units = {}
         self.train_units_subtypes = {}
         self.number_of_train_units = 0
         self.trains = []
@@ -29,7 +29,7 @@ class RandomGenerator:
         """Reset the random generator to its initial state."""
         logging.info("Resetting the random generator to its initial state. Keeping the gateways the same.")
         self.train_unit_types = []
-        self.train_units = {}
+        self.incoming_train_units = {}
         self.train_units_subtypes = {}
         self.number_of_train_units = 0
         self.trains = []
@@ -184,14 +184,14 @@ class RandomGenerator:
                 current_tasks = random.choices(list(service_tasks.values()), k=random.randint(1, distribution_config["tasks_per_train_unit"]))
             else:
                 current_tasks = []
-            unit = self.scenario_generator.create_train_unit(
+            unit = self.scenario_generator.create_incoming_train_unit(
                 id=str(i),
                 type_display_name=unit_type,
                 tasks=current_tasks
             )
-            if unit_type not in self.train_units:
-                self.train_units[unit_type] = []
-            self.train_units[unit_type].append(unit)
+            if unit_type not in self.incoming_train_units:
+                self.incoming_train_units[unit_type] = []
+            self.incoming_train_units[unit_type].append(unit)
             self.number_of_train_units += 1
         if self.number_of_train_units != number_train_units:
             logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
@@ -300,13 +300,13 @@ class RandomGenerator:
 
     def distribute_train_units(self, distribution_config):
         if self.number_of_train_units < distribution_config["number_trains_in"] or self.number_of_train_units > 3 * distribution_config["number_trains_in"]:
-            raise ValueError(f"Cannot make sure that all {distribution_config['number_trains_in']} trains get between 1 and 3 train units from {len(self.train_units)} units.")
+            raise ValueError(f"Cannot make sure that all {distribution_config['number_trains_in']} trains get between 1 and 3 train units from {len(self.incoming_train_units)} units.")
 
         in_trains = [[] for _ in range(distribution_config["number_trains_in"])]
         out_trains = [[] for _ in range(distribution_config["number_trains_out"])]
 
-        in_units = deepcopy(self.train_units)
-        out_units = deepcopy(self.train_units)
+        in_units = deepcopy(self.incoming_train_units)
+        out_units = deepcopy(self.incoming_train_units)
         for typ in in_units:
             random.shuffle(in_units[typ])
             random.shuffle(out_units[typ])

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Type
 
 from pydantic import Field
 
@@ -74,21 +74,21 @@ class TrainUnit(RailModel):
     avoided to prevent redundancy and inconsistency.
     """
 
-    id: Optional[str] = None
     type_display_name: Optional[str] = Field(None, alias="typeDisplayName")
-    # Added back in for as long as we require the transitional models
-    # EvaluatorScenario and Train.  The new model structure uses
-    # IncomingTrainUnit.tasks instead.
-    tasks: Optional[list[TaskSpec]] = Field(
-        default_factory=list,
-        deprecated=True,
-    )
 
 
-class IncomingTrainUnit(RailModel):
-    """A TrainUnit as part of an incoming train, with its associated tasks."""
+class IncomingTrainUnit(TrainUnit):
+    """A TrainUnit as part of an incoming train, with an id and associated tasks."""
 
-    train_unit: TrainUnit = Field(alias="trainUnit")
+    @classmethod
+    def from_train_unit(cls,
+                        other: TrainUnit,
+                        id: str,
+                        tasks: list[TaskSpec]) -> IncomingTrainUnit:
+       # noinspection PyArgumentList
+       return cls(type_display_name=other.type_display_name, id=id, tasks=tasks)
+
+    id: Optional[str] = None
     tasks: list[TaskSpec] = Field(default_factory=list)
 
 
