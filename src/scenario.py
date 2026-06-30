@@ -263,7 +263,7 @@ class ScenarioGenerator:
         train.id = id
         
         # Merge all the members a.k.a TrainUnit(s) with the existing members if there are
-        train.members.MergeFrom(members)
+        train.members.extend(members)
         if canDepartFromAnyTrack:
             train.canDepartFromAnyTrack = canDepartFromAnyTrack
         if standingIndex:
@@ -290,7 +290,7 @@ class ScenarioGenerator:
         task_spec.type.CopyFrom(taskType)
         task_spec.priority = priority
         task_spec.duration = duration
-        task_spec.requiredSkills.MergeFrom(requiredSkills)
+        task_spec.requiredSkills.extend(requiredSkills)
         return task_spec
         
     def create_TrainUnit(self, id: str, typeDisplayName: str, tasks: List[Scenario_pb2.TaskSpec]):
@@ -308,7 +308,7 @@ class ScenarioGenerator:
         trainUnit = Scenario_pb2.TrainUnit()
         trainUnit.id = id
         trainUnit.typeDisplayName = typeDisplayName
-        trainUnit.tasks.MergeFrom(tasks)
+        trainUnit.tasks.extend(tasks)
         return trainUnit
 
     def create_TrainUnitUnmatchedMembers(self, typeDisplayName: str):
@@ -439,9 +439,9 @@ class ScenarioGenerator:
         if skills:
             memberOfStaff.skills.extend(skills)
         if shifts:
-            memberOfStaff.shifts.MergeFrom(shifts)
-        if  breakWindows:
-            memberOfStaff.breakWindows.MergeFrom(breakWindows)   
+            memberOfStaff.shifts.extend(shifts)
+        if breakWindows:
+            memberOfStaff.breakWindows.extend(breakWindows)
         if breakDuration:
             memberOfStaff.breakDuration = breakDuration
         if startLocationId:
