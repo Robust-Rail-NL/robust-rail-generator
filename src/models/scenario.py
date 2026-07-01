@@ -75,6 +75,8 @@ class TrainUnit(RailModel):
     """
 
     type_display_name: Optional[str] = Field(None, alias="typeDisplayName")
+    id: Optional[str] = None
+    tasks: Optional[list[TaskSpec]] = None
 
 
 class IncomingTrainUnit(TrainUnit):
@@ -88,7 +90,7 @@ class IncomingTrainUnit(TrainUnit):
        # noinspection PyArgumentList
        return cls(type_display_name=other.type_display_name, id=id, tasks=tasks)
 
-    id: Optional[str] = None
+    id: str = None
     tasks: list[TaskSpec] = Field(default_factory=list)
 
 

@@ -80,8 +80,7 @@ class ScenarioGenerator:
 
             # Collect information of the train unit members of the current train
             for member in train_standard.members:
-                train_member = IncomingTrainUnit(train_unit=member.model_copy())
-                train_member.train_unit.tasks = None
+                train_member = IncomingTrainUnit.from_train_unit(member, id=None, tasks=[])
                 train.members.append(train_member)
 
                 # Add the information about service tasks for the individual train units
@@ -123,7 +122,7 @@ class ScenarioGenerator:
 
             # Collect information of the train unit members of the current train
             for member in train_standard.members:
-                train_member = IncomingTrainUnit(train_unit=member)
+                train_member = IncomingTrainUnit.from_train_unit(member, id=None, tasks=[])
                 train.members.append(train_member)
 
                 # Add the information about service tasks for the individual train units
@@ -134,7 +133,7 @@ class ScenarioGenerator:
                     )
                     train_member.tasks.append(task)
 
-                train_member.train_unit.type_display_name = member.type_display_name
+                train_member.type_display_name = member.type_display_name
 
         # Create the outstanding train requests: trains that remain in the yard at the end of the scenario
         out_standing_train_requests = self.scenario_solver.out_standing
@@ -517,7 +516,7 @@ class ScenarioGenerator:
                     length=unit_type["length"] / 100, # length in meters
                     combine_duration=unit_type["combineDuration"],
                     split_duration=unit_type["splitDuration"],
-                    type_prefix=unit_type["type_prefix"],
+                    type_prefix=unit_type.get("type_prefix", None),
                     needs_loco=unit_type["needsLoco"],
                     is_loco=unit_type["isLoco"],
                     needs_electricity=unit_type["needsElectricity"],

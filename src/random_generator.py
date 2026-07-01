@@ -77,8 +77,8 @@ class RandomGenerator:
         if "train_unit_distribution" in config:
             # If a specific sublist of train unit types was provided, update the possible train unit types
             if "train_unit_types" in config["train_unit_distribution"]:
-                scenario_generator.scenario_TrainUnitTypes = [u for u in scenario_generator.scenario_TrainUnitTypes if u.display_name in config["train_unit_distribution"]["train_unit_types"]]
-                self.train_unit_types = scenario_generator.scenario_TrainUnitTypes.copy()
+                scenario_generator.scenario_train_unit_types = [u for u in scenario_generator.scenario_train_unit_types if u.display_name in config["train_unit_distribution"]["train_unit_types"]]
+                self.train_unit_types = (scenario_generator.scenario_train_unit_types.copy())
                 self.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in self.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in self.train_unit_types}
             # If a distribution of train units over the trains was given, use this for the train creation
             distribution_config.update(config["train_unit_distribution"])
