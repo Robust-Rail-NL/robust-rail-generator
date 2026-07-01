@@ -75,14 +75,21 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     if config["use_default_material"]:
         scenario_generator.add_default_train_unit_types()
         random_generator.train_unit_types = scenario_generator.scenario_train_unit_types.copy()
-        random_generator.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in random_generator.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in random_generator.train_unit_types}
     elif config["custom_train_unit_types"]:
         scenario_generator.add_custom_train_unit_types(config)
         random_generator.train_unit_types = scenario_generator.scenario_train_unit_types.copy()
-        random_generator.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in random_generator.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in random_generator.train_unit_types}
     else:
         random_generator.generate_train_unit_types(config["number_of_train_unit_types"])
-        random_generator.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in random_generator.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in random_generator.train_unit_types}
+
+    random_generator.train_units_subtypes = {
+        u.display_name.split("-")[0]:
+        [
+            sub.display_name
+            for sub in random_generator.train_unit_types
+            if u.display_name.split("-")[0] in sub.display_name
+        ]
+        for u in random_generator.train_unit_types
+    }
 
     # Add the servicing tasks tasks if specified
     service_tasks = {}
