@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Optional, Type
 
 from pydantic import Field
@@ -84,9 +85,13 @@ class IncomingTrainUnit(TrainUnit):
 
     @classmethod
     def from_train_unit(cls,
-                        other: TrainUnit,
-                        id: str,
-                        tasks: list[TaskSpec]) -> IncomingTrainUnit:
+                        other: TrainUnit) -> IncomingTrainUnit:
+       id = other.id
+       tasks = other.tasks or []
+       if id is None:
+           logging.warning("Creating IncomingTrainUnit from TrainUnit "
+                           "without id. Using '****'.")
+           id = "****"
        # noinspection PyArgumentList
        return cls(type_display_name=other.type_display_name, id=id, tasks=tasks)
 

@@ -80,7 +80,7 @@ class ScenarioGenerator:
 
             # Collect information of the train unit members of the current train
             for member in train_standard.members:
-                train_member = IncomingTrainUnit.from_train_unit(member, id=None, tasks=[])
+                train_member = IncomingTrainUnit.from_train_unit(member)
                 train.members.append(train_member)
 
                 # Add the information about service tasks for the individual train units
@@ -122,7 +122,7 @@ class ScenarioGenerator:
 
             # Collect information of the train unit members of the current train
             for member in train_standard.members:
-                train_member = IncomingTrainUnit.from_train_unit(member, id=None, tasks=[])
+                train_member = IncomingTrainUnit.from_train_unit(member)
                 train.members.append(train_member)
 
                 # Add the information about service tasks for the individual train units
