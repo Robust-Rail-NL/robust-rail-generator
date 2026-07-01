@@ -14,7 +14,7 @@ from models.scenario import (
 )
 from models.utilities import TimeInterval
 from models import IncomingTrainUnit, TrainRequest
-from src.models import PredefinedTaskType
+from models import PredefinedTaskType
 
 
 # To better understand the structure and the parameters/arguments please refer to the Scenario.proto 

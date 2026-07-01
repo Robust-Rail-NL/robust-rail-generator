@@ -4,7 +4,7 @@ import logging
 from copy import deepcopy
 
 from models.location import TrackPartType
-from src.scenario import ScenarioGenerator
+from scenario import ScenarioGenerator
 
 
 class RandomGenerator:
