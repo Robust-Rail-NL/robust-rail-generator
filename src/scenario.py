@@ -220,7 +220,7 @@ class ScenarioGenerator:
         train.id = id
 
         # Merge all the members a.k.a TrainUnit(s) with the existing members if there are
-        train.members = members
+        train.members.extend(members)
         if can_depart_from_any_track:
             train.can_depart_from_any_track = can_depart_from_any_track
         if standing_index:
@@ -246,7 +246,7 @@ class ScenarioGenerator:
         # indeed it is a nested message structure => TaskSpec contains TaskType message
         task_spec.type = task_type
         task_spec.duration = duration
-        task_spec.required_skills = required_skills
+        task_spec.required_skills.extend(required_skills)
         return task_spec
 
     @staticmethod
@@ -381,7 +381,7 @@ class ScenarioGenerator:
         if type:
             member_of_staff.type = type
         if skills:
-            member_of_staff.skills.extend(skills)
+            member_of_staff.skills = skills
         if shifts:
             member_of_staff.shifts = shifts
         if  break_windows:
@@ -398,7 +398,6 @@ class ScenarioGenerator:
             member_of_staff.name = name
         if break_location_id:
             member_of_staff.break_location_id = break_location_id
-        
         return member_of_staff
 
     @staticmethod
