@@ -73,21 +73,30 @@ Additive.
 Unified to include the `staffId` variant (from the non-HIP version). The
 solver simply won't encounter `staffId` resources in practice.
 
-**Open question — discriminator vs. nullable fields.** The proto uses `oneof`,
-which in JSON manifests as "exactly one of `trackPartId`/`facilityId`/`staffId`
-is present." The C# code follows the same pattern: a `Resource` record with
-three nullable fields and no enforced invariant beyond construction-site
-discipline. Two paths for the unified model:
+**Decision: keep the current wire format for now.** Three candidate approaches
+exist; the decision is deferred until the evaluator migration to minimise
+wire format changes:
 
-- *Keep the current wire format.* Pydantic accepts a model with three optional
-  fields and a validator that enforces "exactly one set." Honest about the
-  current JSON; mildly awkward to express.
-- *Introduce an explicit discriminator field* (e.g. `kind: "trackPart" |
-  "facility" | "staff"` plus `id`). Cleaner schema, nicer Pydantic union, but
-  a wire-format change affecting all three projects.
+- *Current shape: nullable fields with validator.* Three optional fields
+  (`trackPartId`, `facilityId`, `staffId`), exactly one set, enforced by a
+  Pydantic `model_validator`. Preserves the existing wire format exactly.
+  Mildly awkward to express but no changes required for any consumer.
 
-The first path is the conservative choice for the migration. The second is
-worth considering as a separate cleanup later. **Decision pending.**
+- *Explicit discriminator field.* Add `kind: "trackPart" | "facility" |
+  "staff"` plus a single shared `id` field. Cleaner schema and unambiguous
+  parsing, but changes the wire format for all three consumers. Best deferred
+  to a coordinated update.
+
+- *Inheritance.* A base `Resource` with `name`, and subclasses
+  `TrackPartResource`, `FacilityResource`, `StaffResource` each with their
+  own required `id` field. Usage sites annotated as
+  `list[TrackPartResource | FacilityResource | StaffResource]` (not
+  `list[Resource]`, which would cause serialisation to truncate to base
+  class fields). Can preserve the existing wire format if no discriminator
+  field is added, but Pydantic's parsing becomes order-sensitive without one.
+
+The nullable-fields-with-validator shape is the current implementation.
+Revisit when migrating the evaluator.
 
 ### `TaskType`
 
@@ -494,8 +503,9 @@ For convenience, the open questions scattered through the document above:
   `TrainRequest`?
 - Should `canDepartFromAnyTrack` (non-HIP only) be added to `TrainRequest`?
 - Confirm `TaskSpec.priority` can be dropped.
-- `Resource`: keep the "exactly one of three nullable fields" shape, or
-  introduce an explicit discriminator field?
+- `Resource`: approach deferred to evaluator migration. Three candidates:
+  nullable fields with validator (current), explicit discriminator field,
+  or inheritance with subclasses. See `Resource` section for details.
 - Is there a canonical proto for `Plan` somewhere?
 - Does the evaluator's expected `Plan` input format match what the C# code
   produces?
