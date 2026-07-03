@@ -38,8 +38,6 @@ class TrainUnitType(RailModel):
     travel_speed: Optional[int] = Field(None, alias="travelSpeed")
     # TODO: confirm whether travelSpeed is per-TrainUnitType or per-location.
     start_up_time: Optional[int] = Field(None, alias="startUpTime")
-    type_prefix: Optional[str] = Field(None, alias="typePrefix")
-    # TODO: typePrefix is likely redundant with displayName; consider removing.
     needs_loco: bool = Field(False, alias="needsLoco")
     is_loco: bool = Field(False, alias="isLoco")
     needs_electricity: bool = Field(False, alias="needsElectricity")

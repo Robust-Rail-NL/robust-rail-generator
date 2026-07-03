@@ -433,7 +433,6 @@ class ScenarioGenerator:
             back_addition_time=back_addition_time,
             travel_speed=travel_speed,
             start_up_time=start_up_time,
-            type_prefix=type_prefix,
             needs_loco=needs_loco,
             is_loco=is_loco,
             needs_electricity=needs_electricity,
