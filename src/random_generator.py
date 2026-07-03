@@ -72,14 +72,32 @@ class RandomGenerator:
         return gateways
 
     def generate_train_compositions(self, config, scenario_generator, service_tasks):
-        distribution_config = {"number_trains_in": config["number_of_trains"], "number_trains_out": config["number_of_trains"], "min_time_in_yard": config["min_time_in_yard"], "min_gap_on_gateway": config["min_gap_on_gateway"], "mixed_traffic": config["mixed_traffic"], "matching": config["matching"]}
+        distribution_config = {
+            "number_trains_in":     config["number_of_trains"],
+            "number_trains_out":    config["number_of_trains"],
+            "min_time_in_yard":     config["min_time_in_yard"],
+            "min_gap_on_gateway":   config["min_gap_on_gateway"],
+            "mixed_traffic":        config["mixed_traffic"],
+            "matching":             config["matching"],
+        }
         number_train_units = 0
         if "train_unit_distribution" in config:
             # If a specific sublist of train unit types was provided, update the possible train unit types
             if "train_unit_types" in config["train_unit_distribution"]:
-                scenario_generator.scenario_train_unit_types = [u for u in scenario_generator.scenario_train_unit_types if u.display_name in config["train_unit_distribution"]["train_unit_types"]]
-                self.train_unit_types = (scenario_generator.scenario_train_unit_types.copy())
-                self.train_units_subtypes = {u.display_name.split("-")[0]: [sub.display_name for sub in self.train_unit_types if u.display_name.split("-")[0] in sub.display_name] for u in self.train_unit_types}
+                scenario_generator.scenario_train_unit_types = [
+                    u for u in scenario_generator.scenario_train_unit_types
+                    if u.display_name in config["train_unit_distribution"]["train_unit_types"]
+                ]
+                self.train_unit_types = scenario_generator.scenario_train_unit_types.copy()
+                self.train_units_subtypes = {
+                    u.display_name.split("-")[0]:
+                    [
+                        sub.display_name
+                        for sub in self.train_unit_types
+                        if u.display_name.split("-")[0] in sub.display_name
+                    ]
+                    for u in self.train_unit_types
+                }
             # If a distribution of train units over the trains was given, use this for the train creation
             distribution_config.update(config["train_unit_distribution"])
             # Decide the number of units per train
