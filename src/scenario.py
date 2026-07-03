@@ -83,13 +83,6 @@ class ScenarioGenerator:
                 train_member = IncomingTrainUnit.from_train_unit(member)
                 train.members.append(train_member)
 
-                # Add the information about service tasks for the individual train units
-                for task_standard in member.tasks or []:
-                    task = TaskSpec(type=task_standard.type,
-                                    duration=task_standard.duration)
-                    train_member.tasks.append(task)
-
-                    task.duration = task_standard.duration
         # Create the outgoing train objects
         outgoing_train_requests = self.scenario_solver.out
         for train_standard in outgoing_trains_scenario:
