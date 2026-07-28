@@ -132,3 +132,24 @@ The proposed workaround (which was originally also implemented in this code base
 However, the Python `protoletariat` package has since become available.
 It makes another pass over the generated code, converting it to proper Python
 modules and fixing the imports.
+
+# Publishing the generator image
+
+The version is tracked in a single place: `pyproject.toml`'s `[project] version`. The Dockerfile's
+`org.opencontainers.image.version` label and the image tags pushed to `ghcr.io` are both derived from
+this field via a build-arg, so nothing else needs editing by hand.
+
+```sh
+./docker-push.sh
+```
+This builds a multi-arch (`linux/amd64`, `linux/arm64`) image and pushes it to
+`ghcr.io/robust-rail-nl/generator`, tagged with the current version and `:latest`. Multi-arch matters
+even for a pure-Python image like this one: a single-arch build's manifest only matches the host it was
+built on, so arm64 hosts (e.g. Apple Silicon, AWS Graviton) either can't pull it or fall back to slow
+QEMU emulation.
+
+It requires a `buildx` builder using the `docker-container` driver with `network=host` (needed because
+the default driver's isolated network namespace can fail to resolve private/LAN DNS); the script
+creates one named `robust-rail-builder` if it doesn't already exist. This builder name is shared with
+sibling Robust-Rail-NL projects (e.g. `robust-rail-evaluator`, `robust-rail-solver`) that need the same
+setup.
