@@ -60,3 +60,23 @@ The `src/models` folder includes the format of a Location, a Scenario, a TrainUn
  ┣ 📜How to write a configuration file.md
  ┗ 📜env.yml
 ```
+
+# Publishing the generator image
+
+The version is tracked in a single place: `pyproject.toml`'s `[project] version`. The Dockerfile's
+`org.opencontainers.image.version` label and the image tags pushed to `ghcr.io` are both derived from
+this field via a build-arg, so nothing else needs editing by hand.
+
+```sh
+./docker-push.sh
+```
+This builds a multi-arch (`linux/amd64`, `linux/arm64`) image and pushes it to
+`ghcr.io/robust-rail-nl/generator`, tagged with the current version and `:latest`.
+Multi-arch matters here even though this is a Python image: pydantic v2 bundles `pydantic-core`, a
+compiled Rust extension, so the installed wheel — and therefore the image — is architecture-specific.
+
+It requires a `buildx` builder using the `docker-container` driver with `network=host` (needed because
+the default driver's isolated network namespace can fail to resolve private/LAN DNS); the script
+creates one named `robust-rail-builder` if it doesn't already exist. This builder name is shared with
+sibling Robust-Rail-NL projects (e.g. `robust-rail-evaluator`, `robust-rail-solver`) that need the same
+setup.
