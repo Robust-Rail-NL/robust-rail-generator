@@ -2,3 +2,6 @@
 
 # HIP files
 *.dat
+
+# JetBrains IDE project files
+.idea/
