@@ -438,8 +438,20 @@ for the migration:
 
 4. **What about ID types?** Proto uses `uint64` for various IDs. JSON has only
    one number type and a string type. JavaScript and some JSON parsers can't
-   handle uint64 cleanly. Are IDs ever actually large enough to need 64 bits,
-   or would 32 bits (or even strings) be safer? **Open question.**
+   handle uint64 cleanly.
+
+   **Decision: plain JSON numbers, not quoted strings.** The generator's
+   Pydantic models already emit raw numbers (`"arrival": 600`, not `"600"`).
+   HIP's JSON writer previously quoted all numeric fields
+   (`JsonNumberHandling.WriteAsString` in `Extensions.cs`) as a holdover
+   from protobuf's JSON mapping, which quotes 64-bit fields specifically to
+   protect JS/double-based JSON consumers from precision loss. That's been
+   dropped: TORS's protobuf-based JSON reader accepts both quoted and
+   unquoted 64-bit numbers on read (the spec only requires quoting on
+   write), and no current ID or timestamp value approaches the 2^53 safe-
+   integer boundary where this would matter. Revisit if a field ever
+   genuinely needs the full 64-bit range and a double-based consumer (e.g.
+   a JS/web tool) enters the pipeline.
 
 5. **Schema location and distribution.** Where does the exported JSON Schema
    live? Checked into each project, or published as an artifact (npm package /
@@ -508,6 +520,6 @@ For convenience, the open questions scattered through the document above:
 - Is there a canonical proto for `Plan` somewhere?
 - Does the evaluator's expected `Plan` input format match what the C# code
   produces?
-- The cross-cutting questions: naming conventions, ID types, schema
-  distribution, hashability per model. (Schema versioning and
-  forward-compatibility policy are resolved — see cross-cutting section above.)
+- The cross-cutting questions: naming conventions, schema distribution,
+  hashability per model. (Schema versioning, forward-compatibility policy,
+  and ID types are resolved — see cross-cutting section above.)
