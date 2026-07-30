@@ -1,4 +1,4 @@
-from .utilities import TimeInterval
+from .utilities import EXPECTED_SCHEMA_VERSION, TimeInterval
 from .location import (
     Location,
     TrackPart,
@@ -25,6 +25,7 @@ from .scenario import (
 from .plan import Plan, Action
 
 __all__ = [
+    "EXPECTED_SCHEMA_VERSION",
     "TimeInterval",
     "Location",
     "TrackPart",

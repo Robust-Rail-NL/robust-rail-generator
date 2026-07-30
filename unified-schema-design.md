@@ -155,11 +155,9 @@ rather than just 'SLT'. Under the unified model:
 This is a behavior change in the generator output and requires coordinated
 updates. Worth confirming.
 
-**Open question:** the HIP proto has `reversalDuration` (field 3), which the
-non-HIP proto does *not* have, while both have `backNormTime` and
-`backAdditionTime`. Is `reversalDuration` computed from those two, or is it a
-separate concept? If computed: drop it from the unified model and have the
-solver compute it. If separate: keep it.
+**Decision: `reversalDuration` is computed from `backNormTime` and
+`backAdditionTime` and is dropped from the wire format.** The solver derives
+it locally; it does not appear in the unified schema.
 
 **C# notes.**
 
@@ -418,16 +416,19 @@ for the migration:
 
 
 
-1. **Schema versioning.** Pydantic models will be versioned (semver in the
-   project). Should the JSON itself carry a `schemaVersion` field? My
-   suggestion: yes, at the top level of `Location` and `Scenario`. Cheap
-   insurance.
+1. **Schema versioning.** **Decision:** `schemaVersion` is an independent
+   monotonic integer (starting at `1` for the 2.0.0 release, incrementing only
+   on breaking schema changes). It appears at the top level of `Location`,
+   `Scenario`, and `Plan` — one shared interchange version across all three.
+   Each tool defines a local constant `EXPECTED_SCHEMA_VERSION = 1`; all three
+   are updated together as part of a coordinated release when the version bumps.
+   A `SCHEMA_CHANGELOG.md` in this repo records what changed at each increment.
 
-2. **Forward compatibility policy.** When the generator adds a new optional
-   field, should older solver/evaluator builds reject the JSON (`extra="forbid"`)
-   or accept and ignore it? Default position: ignore unknown fields *only* when
-   the schema version is recognized as compatible; reject otherwise. But this
-   needs a real policy decision.
+2. **Forward compatibility policy.** **Decision:** warn-and-continue. If
+   `schemaVersion` is missing or differs from the expected value, the consumer
+   logs a warning and proceeds. No hard reject on version mismatch, and no
+   tiered compatibility matrix. This can be tightened later if long-lived
+   deployments require it.
 
 3. **Field naming conventions.** Proto uses `camelCase`. C# records presumably
    use `PascalCase` (with JSON attributes). Python convention is `snake_case`.
@@ -492,8 +493,6 @@ For convenience, the open questions scattered through the document above:
 - Are `Walking`, `Break`, `NonService` task types ever present in JSON the
   solver reads? If so, verify the C# deserializer handles them gracefully
   once the enum is extended to include these plus `StandIn`/`StandOut`.
-- Is `TrainUnitType.reversalDuration` computed from `backNormTime`/
-  `backAdditionTime`, or a separate concept?
 - Confirm the `displayName` cleanup ("SLT" + carriages=4 instead of "SLT4").
 - Does `trainUnitTypes` belong on `Scenario` (referenced by name) or
   embedded into each `TrainUnit`?
@@ -509,6 +508,6 @@ For convenience, the open questions scattered through the document above:
 - Is there a canonical proto for `Plan` somewhere?
 - Does the evaluator's expected `Plan` input format match what the C# code
   produces?
-- The cross-cutting questions: schema versioning, forward-compatibility
-  policy, naming conventions, ID types, schema distribution, hashability
-  per model.
+- The cross-cutting questions: naming conventions, ID types, schema
+  distribution, hashability per model. (Schema versioning and
+  forward-compatibility policy are resolved — see cross-cutting section above.)

@@ -6,7 +6,7 @@ from typing import Optional, Type
 from pydantic import Field
 
 from .location import TaskType
-from .utilities import RailModel, TimeInterval
+from .utilities import RailModel, SchemaVersioned, TimeInterval
 
 
 class TrainUnitType(RailModel):
@@ -215,7 +215,7 @@ class MemberOfStaff(RailModel):
     name: Optional[str] = None
 
 
-class Scenario(RailModel):
+class Scenario(SchemaVersioned):
     """The daily-varying part of the problem specification: which trains
     arrive, depart, or remain in the shunting yard.
 
@@ -255,10 +255,14 @@ class Scenario(RailModel):
     workers: list[MemberOfStaff] = Field(default_factory=list)
 
 
-class EvaluatorScenario(RailModel):
+class EvaluatorScenario(SchemaVersioned):
     """TEMPORARY: The daily-varying part of the problem specification: which
     trains arrive, depart, or remain in the shunting yard.  Deprecated, flat
     version of `Scenario`.
+
+    Carries schemaVersion too: this is the shape that today's scenario_*.json
+    (the file the evaluator actually reads) is generated from, ahead of the
+    Phase 1 scenario unification that retires this class.
     """
 
     def to_dict(self) -> dict:

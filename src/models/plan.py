@@ -6,7 +6,7 @@ from pydantic import Field
 
 from .location import Resource, TaskType, TrackPart
 from .scenario import ShuntingUnit
-from .utilities import RailModel
+from .utilities import RailModel, SchemaVersioned
 
 
 class Action(RailModel):
@@ -32,7 +32,7 @@ class Action(RailModel):
     train_unit_ids: list[str] = Field(default_factory=list, alias="trainUnitIds")
 
 
-class Plan(RailModel):
+class Plan(SchemaVersioned):
     """The output of a shunting algorithm: an ordered list of actions.
 
     track_parts is acknowledged technical debt: the evaluator currently needs

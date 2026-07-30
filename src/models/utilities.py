@@ -1,4 +1,11 @@
-from pydantic import BaseModel, ConfigDict
+import json
+import logging
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+# Independent monotonic integer, decoupled from tool release versions.
+# Increments only on breaking schema changes. See SCHEMA_CHANGELOG.md.
+EXPECTED_SCHEMA_VERSION = 1
 
 
 class RailModel(BaseModel):
@@ -27,6 +34,43 @@ class RailModel(BaseModel):
         always applies by_alias=True and exclude_unset=True.
         """
         return self.model_dump_json(by_alias=True, exclude_unset=True, **kwargs)
+
+
+class SchemaVersioned(RailModel):
+    """Mixin for the top-level interchange models (Location, Scenario, Plan)
+    that carry the shared schemaVersion.
+
+    All three carry the same value and bump together on a breaking change;
+    see SCHEMA_CHANGELOG.md for what changed at each version. schemaVersion
+    is always emitted on serialisation, even by subclasses that otherwise
+    omit fields that were never explicitly set. A missing or unexpected
+    value on read produces a logged warning; parsing proceeds regardless
+    (warn-and-continue, no hard reject).
+    """
+
+    schema_version: int = Field(EXPECTED_SCHEMA_VERSION, alias="schemaVersion")
+
+    @model_validator(mode="after")
+    def _warn_on_schema_version_mismatch(self) -> "SchemaVersioned":
+        if "schema_version" not in self.model_fields_set:
+            logging.warning(
+                f"{type(self).__name__}: schemaVersion is missing; "
+                f"assuming {EXPECTED_SCHEMA_VERSION}."
+            )
+        elif self.schema_version != EXPECTED_SCHEMA_VERSION:
+            logging.warning(
+                f"{type(self).__name__}: schemaVersion {self.schema_version} "
+                f"does not match expected {EXPECTED_SCHEMA_VERSION}."
+            )
+        return self
+
+    def to_dict(self) -> dict:
+        data = super().to_dict()
+        data["schemaVersion"] = self.schema_version
+        return data
+
+    def to_json(self, **kwargs) -> str:
+        return json.dumps(self.to_dict(), **kwargs)
 
 
 class TimeInterval(RailModel):

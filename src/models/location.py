@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 
 from pydantic import Field, model_validator
 
-from .utilities import RailModel, TimeInterval
+from .utilities import RailModel, SchemaVersioned, TimeInterval
 
 
 class TrackPartType(str, Enum):
@@ -127,7 +127,7 @@ class WalkingDistanceEntry(RailModel):
     distance_in_seconds: float = Field(alias="distanceInSeconds")
 
 
-class Location(RailModel):
+class Location(SchemaVersioned):
     """The fixed part of the problem specification: track layout and
     facilities. Does not change on a daily basis."""
 
