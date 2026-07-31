@@ -2,7 +2,7 @@ import sys
 import math
 import argparse
 
-from __init__ import REPO_DIR, DATA_DIR
+from __init__ import REPO_DIR, DATA_DIR, VERSION
 from scenario import ScenarioGenerator, SolverScenarioGenerator
 from random_generator import RandomGenerator
 from check_config import *
@@ -218,6 +218,7 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
             )     
 
 if __name__ == "__main__":
+    print(f"robust-rail-generator {VERSION}")
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level.upper())
     create_scenario_from_config(args.config_file, path=args.path, scenario_file=args.scenario_file, location_file=args.location_file)
