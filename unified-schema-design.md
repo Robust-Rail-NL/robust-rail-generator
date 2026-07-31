@@ -280,9 +280,9 @@ Unified shape:
 - `type`: `TaskType`
 - `duration`: int
 - `requiredSkills`: list[str] — optional/empty for solver
-- `mandatory`: bool — replaces `priority` (see below)
+- `optional`: bool — replaces `priority` (see below)
 
-**Decision: replace `priority: int` with `mandatory: bool`.**
+**Decision: replace `priority: int` with `optional: bool`.**
 
 The TORS evaluator uses `priority` only as a binary flag — `0` means the task
 must be completed before a train may exit the yard; any non-zero value means
@@ -294,14 +294,14 @@ says lower = more important; `HIP_Scenario.proto` says higher = more important a
 marks the field `deprecated = true`); neither interpretation is implemented.
 
 Wire-format mapping:
-- `"priority": 0` → `"mandatory": true`
-- `"priority": <non-zero>` → `"mandatory": false`
+- `"priority": 0` → `"optional": false`
+- `"priority": <non-zero>` → `"optional": true`
 
 **Per-consumer changes:**
-- **Generator**: field renamed to `mandatory: bool` in Pydantic model;
-  `data/default_servicing_tasks.json` updated (all non-zero values → `false`).
-- **TORS**: `Task::priority` (int) renamed to `Task::mandatory` (bool);
-  rule files simplified to check `task.mandatory` / `!task.mandatory`.
+- **Generator**: field renamed to `optional: bool` in Pydantic model;
+  `data/default_servicing_tasks.json` updated (all non-zero values → `true`).
+- **TORS**: `Task::priority` (int) renamed to `Task::optional` (bool);
+  rule files simplified to check `!task.optional` / `task.optional`.
 - **HIP**: field was already deprecated and unused — drop from deserialization entirely.
 
 ### `MemberOfStaff`
@@ -516,7 +516,7 @@ For convenience, the open questions scattered through the document above:
 - Should `standingIndex` apply to `IncomingTrain` as well as
   `TrainRequest`?
 - Should `canDepartFromAnyTrack` (non-HIP only) be added to `TrainRequest`?
-- `TaskSpec.priority` → `mandatory: bool` — see `TaskSpec` section above.
+- `TaskSpec.priority` → `optional: bool` — see `TaskSpec` section above.
 - `Resource`: approach deferred to evaluator migration. Three candidates:
   nullable fields with validator (current), explicit discriminator field,
   or inheritance with subclasses. See `Resource` section for details.
