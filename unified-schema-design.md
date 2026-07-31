@@ -280,7 +280,7 @@ Unified shape:
 - `type`: `TaskType`
 - `duration`: int
 - `requiredSkills`: list[str] — optional/empty for solver
-- `optional`: bool — replaces `priority` (see below)
+- `optional`: bool, default `false` — replaces `priority` (see below)
 
 **Decision: replace `priority: int` with `optional: bool`.**
 
@@ -298,10 +298,11 @@ Wire-format mapping:
 - `"priority": <non-zero>` → `"optional": true`
 
 **Per-consumer changes:**
-- **Generator**: field renamed to `optional: bool` in Pydantic model;
-  `data/default_servicing_tasks.json` updated (all non-zero values → `true`).
-- **TORS**: `Task::priority` (int) renamed to `Task::optional` (bool);
-  rule files simplified to check `!task.optional` / `task.optional`.
+- **Generator**: field renamed to `optional: bool = False` in Pydantic model;
+  field may be omitted on the wire when `false`; `data/default_servicing_tasks.json`
+  updated (all non-zero values → `true`).
+- **TORS**: `Task::priority` (int) renamed to `Task::optional` (bool), defaulting
+  to `false` when absent; rule files simplified to check `!task.optional` / `task.optional`.
 - **HIP**: field was already deprecated and unused — drop from deserialization entirely.
 
 ### `MemberOfStaff`
