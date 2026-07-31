@@ -334,19 +334,13 @@ list of train unit IDs participating.
 
 Several things worth deciding for the unified model:
 
-- **Is `Plan` part of the same schema, or a separate one?** Argument for
-  same: it shares types (`ShuntingUnit`, `TaskType`, `Resource`, `TrackPart`),
-  and one schema is simpler to maintain than two. Argument for separate:
-  `Plan` is conceptually the solver's *output*, distinct from the problem
-  specification, and keeping them in different files makes the data flow
-  clearer.
-- **`Plan.trackParts` is acknowledged as a workaround.** The C# comment reads
-  "This field should be temporary and be replaced as soon as we send input
-  to the algorithm." The plan currently re-bundles infrastructure because
-  the evaluator can't reliably get the original `Location` input through
-  other channels. The unified migration is a good moment to fix this: the
-  evaluator should receive both the input `Location` and the output `Plan`,
-  and `Plan.trackParts` goes away.
+- **`Plan` lives in its own schema file** (`plan.py`) — already the case in
+  the current implementation. No change needed.
+- **`Plan.trackParts` is dropped.** The C# comment reads "This field should
+  be temporary and be replaced as soon as we send input to the algorithm."
+  Confirmed: TORS never reads `Plan.trackParts` — it loads all infrastructure
+  from `--path_location` via `LocationEngine`. The field is dead weight on
+  the wire. HIP should stop emitting it; it is absent from the unified schema.
 - **`Action.shuntingUnit` embeds a full `ShuntingUnit`** rather than
   referencing by ID. This is inconsistent with the "reference, don't embed"
   direction the rest of the document argues for. **Decision pending** —
