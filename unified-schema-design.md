@@ -280,20 +280,29 @@ Unified shape:
 - `type`: `TaskType`
 - `duration`: int
 - `requiredSkills`: list[str] — optional/empty for solver
-- `priority`: dropped. The HIP version marks it deprecated; the solver
-  always sets it to 1 and never reads it; the non-HIP comment about
-  "lower means more important" appears to be a documentation error. If the
-  generator never sets meaningful priorities and no one reads them, the field
-  goes away.
+- `mandatory`: bool — replaces `priority` (see below)
 
-**Open question:** confirm the generator can drop `priority` entirely. Are
-there any code paths that emit non-1 values? (User says no — confirming for
-the record.)
+**Decision: replace `priority: int` with `mandatory: bool`.**
 
-**C# note.** The C# `TaskSpec` retains `Priority` with a
-`// TODO set deprecation? or remove wholesale?` comment, mirroring the same
-unresolved question. The Pydantic model can be the place where it's
-finalized; removing it from C# follows.
+The TORS evaluator uses `priority` only as a binary flag — `0` means the task
+must be completed before a train may exit the yard; any non-zero value means
+optional. The two rule files that implement this (`mandatory_service_task_rule.cpp`
+and `optional_service_task_rule.cpp`) both reduce to a single zero/non-zero check.
+No code anywhere in cTORS, pyTORS, or the Python TORS layer distinguishes between
+different non-zero values. The proto comments are contradictory (`Scenario.proto`
+says lower = more important; `HIP_Scenario.proto` says higher = more important and
+marks the field `deprecated = true`); neither interpretation is implemented.
+
+Wire-format mapping:
+- `"priority": 0` → `"mandatory": true`
+- `"priority": <non-zero>` → `"mandatory": false`
+
+**Per-consumer changes:**
+- **Generator**: field renamed to `mandatory: bool` in Pydantic model;
+  `data/default_servicing_tasks.json` updated (all non-zero values → `false`).
+- **TORS**: `Task::priority` (int) renamed to `Task::mandatory` (bool);
+  rule files simplified to check `task.mandatory` / `!task.mandatory`.
+- **HIP**: field was already deprecated and unused — drop from deserialization entirely.
 
 ### `MemberOfStaff`
 
@@ -507,7 +516,7 @@ For convenience, the open questions scattered through the document above:
 - Should `standingIndex` apply to `IncomingTrain` as well as
   `TrainRequest`?
 - Should `canDepartFromAnyTrack` (non-HIP only) be added to `TrainRequest`?
-- Confirm `TaskSpec.priority` can be dropped.
+- `TaskSpec.priority` → `mandatory: bool` — see `TaskSpec` section above.
 - `Resource`: approach deferred to evaluator migration. Three candidates:
   nullable fields with validator (current), explicit discriminator field,
   or inheritance with subclasses. See `Resource` section for details.
