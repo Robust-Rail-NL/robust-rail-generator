@@ -157,13 +157,9 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         output_filepath = os.path.join(path, scenario_file)
     else:
         output_filepath = os.path.join(path, "scenarios", scenario_file)
-    output_solver_filepath = os.path.join(os.path.dirname(output_filepath), os.path.basename(output_filepath).replace("scenario", "scenario_solver"))
-    # Write TORS scenario file
-    scenario_generator.save_scenario_json(output_filepath)
-    # Write Solver format scenario file
-    solver_scenario_generator.save_scenario_json(output_solver_filepath)
+    # Write unified scenario file (HIP field names, consumed by both solver and evaluator)
+    solver_scenario_generator.save_scenario_json(output_filepath)
     print(f"Scenario file created: {output_filepath}")
-    print(f"Solver format scenario file created: {output_solver_filepath}")
 
 def create_trains(scenario_generator: ScenarioGenerator, config, services):
     created_train_units = {}
