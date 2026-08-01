@@ -149,17 +149,30 @@ mixed in.
 - **Optional (generator/evaluator only):** `travelSpeed`, `startUpTime`,
   `typePrefix`, `needsLoco`, `isLoco`, `needsElectricity`, `idPrefix`.
 
-**Decision: fix the `displayName` overloading.** The current non-HIP proto has a
-`#warning` comment noting that `displayName` is "currently 'SLT4' or 'SLT6'"
-rather than just 'SLT'. Under the unified model:
+**Decision: fix the `displayName` overloading — confirmed.**
 
-- `displayName` is the train *type* name only: "SLT", "SGM", "VIRM".
-- `carriages` carries the carriage count: 4, 6.
-- `typePrefix` (if needed at all) is redundant with `displayName` and could be
-  removed.
+- `displayName` is the train *type family* name only: `"SLT"`, `"VIRM"`, `"SNG"`.
+- `carriages` carries the carriage count: `4`, `6`. It is already a separate
+  field and is the right place for this.
+- The combined form (`"SLT-4"`, `"SLT4"`) disappears from the wire format.
+  Consumers that need a unique type key use `(displayName, carriages)` — the
+  C# code already does this (`Equals`/`GetHashCode` key on this pair).
 
-This is a behavior change in the generator output and requires coordinated
-updates. Worth confirming.
+**Per-consumer changes:**
+
+- **Generator**: strip the carriage-count suffix when building `displayName` from
+  the internal type `name` (e.g. `"SLT-4"` → `displayName: "SLT"`). The generator
+  config format (`"type": "SLT-4"`, `"member_types": ["SLT-4"]`) can keep the
+  combined form as a lookup key; only the emitted `displayName` changes.
+- **HIP (C#)**: already keys on `(DisplayName, Carriages)` — no schema change
+  needed. Drop any code path that concatenates the two into a single string.
+- **TORS (C++)**: update any type lookup that matches on `displayName` alone to
+  match on `(displayName, carriages)`.
+
+**Config cleanup (this repo):** `scenario_config_test.json` conflated train unit
+*instances* (NS fleet IDs like `"SLT4-4"`, `"SLT5-5"`) with train unit *types*.
+These have been collapsed to the 18 distinct real types (`"SLT-4"`, `"SLT-6"`,
+`"VIRM-4"`, etc.) that the config was actually modelling.
 
 **Decision: `reversalDuration` is computed from `backNormTime` and
 `backAdditionTime` and is dropped from the wire format.** The solver derives
