@@ -130,13 +130,25 @@ The `PredefinedTaskType` enum in the Pydantic model is therefore:
 `Move`, `Split`, `Combine`, `Wait`, `Arrive`, `Exit`, `Walking`, `Break`,
 `NonService`, `StandIn`, `StandOut`.
 
-**Decision: wire format is always PascalCase for enum values** (`"Break"`,
-`"StandIn"`, `"Move"`, etc.). The proto lowercase aliases (`move = 0; Move = 0;`)
-are a parsing-tolerance detail, not the authoritative form. `break` is a reserved
-C++ keyword and cannot be used as a proto enum alias — this is not a problem
-because the generator (Pydantic) emits PascalCase and no consumer should rely on
-receiving lowercase. Existing plan data already uses PascalCase (`"StandIn"`
-confirmed in real data).
+**Decision: wire format is always PascalCase for enum values, and this is
+enforced at the schema level.**
+
+- `"Break"`, `"StandIn"`, `"Move"` — not `"break"`, `"standIn"`, `"move"`.
+- **Pydantic** defines enum members with PascalCase string values
+  (`Move = "Move"`, not `Move = "move"`); validation therefore rejects
+  non-PascalCase input without any extra logic.
+- **Solver (C#)** must be fixed to emit PascalCase. The `JsonStringEnumConverter`
+  in `System.Text.Json` uses the C# member name (already PascalCase) by
+  default — if lowercase is currently being emitted, it is due to a custom
+  naming policy or a protobuf JSON holdover and is a targeted fix.
+- **Evaluator (C++)** drops the lowercase proto aliases once the solver is
+  fixed; no tolerance layer needed in steady state. The `break` C++ keyword
+  collision (blocking a lowercase alias for `Break`) is a non-issue:
+  `"Break"` is the canonical spelling.
+- Solver and evaluator changes are made simultaneously so integration is
+  never in a state where one side is strict and the other isn't.
+- Existing plan files with lowercase task-type values become invalid. This
+  is acceptable at pre-release (no stable 2.0.0 yet).
 
 **C# note.** The C# `PredefinedTaskType` enum currently has only
 `Move`, `Split`, `Combine`, `Wait`, `Arrive`, `Exit` — it needs `Walking`,
@@ -157,25 +169,40 @@ mixed in.
 - **Optional (generator/evaluator only):** `travelSpeed`, `startUpTime`,
   `typePrefix`, `needsLoco`, `isLoco`, `needsElectricity`, `idPrefix`.
 
-**Decision: fix the `displayName` overloading — confirmed.**
+**Decision: `TrainUnitType` is identified by `typePrefix` + `carriages`; `displayName` is dropped as a wire field.**
 
-- `displayName` is the train *type family* name only: `"SLT"`, `"VIRM"`, `"SNG"`.
-- `carriages` carries the carriage count: `4`, `6`. It is already a separate
-  field and is the right place for this.
-- The combined form (`"SLT-4"`, `"SLT4"`) disappears from the wire format.
-  Consumers that need a unique type key use `(displayName, carriages)` — the
-  C# code already does this (`Equals`/`GetHashCode` key on this pair).
+- `typePrefix` is the type *family* name: `"SLT"`, `"VIRM"`, `"SNG"`, `"FFF"`.
+  It is already present on `TrainUnitType` in the C# record and in
+  `default_train_unit_types.json` with this exact semantics.
+- `carriages` is the carriage count: `4`, `6`. Already a separate field.
+- `typeDisplayName` is a **derived value** — `typePrefix + "-" + carriages`
+  (e.g. `"SLT-4"`, `"VIRM-6"`) — computed on demand, not stored on the wire.
+  It is useful for display and logging but is not part of the schema.
+- Consumers that need a unique type key use `(typePrefix, carriages)`.
+  The C# `Equals`/`GetHashCode` currently key on `(DisplayName, Carriages)`;
+  once the rename lands, they key on `(TypePrefix, Carriages)` instead.
 
 **Per-consumer changes:**
 
-- **Generator**: strip the carriage-count suffix when building `displayName` from
-  the internal type `name` (e.g. `"SLT-4"` → `displayName: "SLT"`). The generator
-  config format (`"type": "SLT-4"`, `"member_types": ["SLT-4"]`) can keep the
-  combined form as a lookup key; only the emitted `displayName` changes.
-- **HIP (C#)**: already keys on `(DisplayName, Carriages)` — no schema change
-  needed. Drop any code path that concatenates the two into a single string.
-- **TORS (C++)**: update any type lookup that matches on `displayName` alone to
-  match on `(displayName, carriages)`.
+- **Generator**: rename `display_name` → `type_prefix` in `TrainUnitType`
+  Pydantic model and all call sites. Strip the carriage suffix from config
+  `name` values when assigning `type_prefix` (e.g. `"SLT-4"` → `"SLT"`).
+  Fix `add_custom_train_unit_types` to read `unit_type["typePrefix"]`
+  (camelCase, matching the JSON) — the current `unit_type.get("type_prefix", None)`
+  is wrong and silently drops the field.
+- **HIP (C#)**: rename `DisplayName` → `TypePrefix` on `TrainUnitType`;
+  update `Equals`/`GetHashCode` accordingly. Remove any code path that
+  concatenates type name and carriage count. `ProblemInstance.cs`'s
+  `traintypemap` must key on `(TypePrefix, Carriages)` — the current
+  `traintypemap[unit.TypeDisplayName]` lookup breaks once two variants
+  share the same family name.
+- **TORS (C++)**: update any type lookup that matches on `displayName`
+  alone to match on `(typePrefix, carriages)`.
+
+**Config cleanup (this repo):** `scenario_config_test.json` has wrong
+`typePrefix` values — they embed the carriage count (`"SLT4"`, `"VIRM4"`)
+rather than the family name (`"SLT"`, `"VIRM"`). Fix to match
+`default_train_unit_types.json`.
 
 **Config cleanup (this repo):** `scenario_config_test.json` conflated train unit
 *instances* (NS fleet IDs like `"SLT4-4"`, `"SLT5-5"`) with train unit *types*.
@@ -278,12 +305,13 @@ nested model), not on `TrainUnit` itself. `TrainRequest.trainUnits` is plain
 
 **Type reference.** Non-HIP `TrainUnit` has `typeDisplayName` (a string
 reference). HIP `TrainUnit` has `type` (an embedded `TrainUnitType` object).
-**Decision: reference by `(typeDisplayName, carriages)` pair** — `TrainUnit`
-carries *both* `typeDisplayName: str` and `carriages: int`, forming the lookup
-key into `Scenario.trainUnitTypes`. A bare `typeDisplayName` is insufficient
-because a single type family (e.g. `"SLT"`) can appear with different carriage
-counts; without `carriages` the resolver cannot pick the right `TrainUnitType`
-entry. Embedding the full type object is redundant and risks inconsistency.
+**Decision: reference by `(typePrefix, carriages)` pair** — `TrainUnit`
+carries both `typePrefix: str` and `carriages: int`, forming the lookup key
+into `Scenario.trainUnitTypes`. `typeDisplayName` is a derived value
+(`typePrefix + "-" + carriages`) and does not appear on the wire. A bare
+string reference is insufficient because a single type family (e.g. `"SLT"`)
+can appear with multiple carriage counts; embedding the full type object is
+redundant and risks inconsistency.
 
 **C# note.** The C# `TrainUnit` currently has *both* `Type` (embedded object)
 *and* `TypeDisplayName` (string). This is a mid-migration state, not an
@@ -548,8 +576,8 @@ For convenience, the open questions scattered through the document above:
 - Are `Walking`, `Break`, `NonService` task types ever present in JSON the
   solver reads? If so, verify the C# deserializer handles them gracefully
   once the enum is extended to include these plus `StandIn`/`StandOut`.
-- ~~Confirm the `displayName` cleanup ("SLT" + carriages=4 instead of "SLT4").~~ **Resolved** — see `TrainUnitType` section.
-- ~~Does `trainUnitTypes` belong on `Scenario` (referenced by name) or embedded into each `TrainUnit`?~~ **Resolved: on `Scenario`, referenced by `(typeDisplayName, carriages)` from `TrainUnit`** — see `TrainUnit` section.
+- ~~Confirm the `displayName` cleanup ("SLT" + carriages=4 instead of "SLT4").~~ **Resolved** — see `TrainUnitType` section; `displayName` renamed to `typePrefix`, derived `typeDisplayName()` is `typePrefix + "-" + carriages`.
+- ~~Does `trainUnitTypes` belong on `Scenario` (referenced by name) or embedded into each `TrainUnit`?~~ **Resolved: on `Scenario`, referenced by `(typePrefix, carriages)` from `TrainUnit`** — see `TrainUnit` section.
 - Where does `Train.minimumDuration` (non-HIP) belong in the unified model,
   and what does it mean?
 - ~~Should `standingIndex` apply to `IncomingTrain` as well as `TrainRequest`?~~ **Resolved: yes, both** — see `IncomingTrain / TrainRequest` section.
