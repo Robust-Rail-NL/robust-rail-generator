@@ -73,30 +73,36 @@ Additive.
 Unified to include the `staffId` variant (from the non-HIP version). The
 solver simply won't encounter `staffId` resources in practice.
 
-**Decision: keep the current wire format for now.** Three candidate approaches
-exist; the decision is deferred until the evaluator migration to minimise
-wire format changes:
+**Decision: introduce an explicit `kind` discriminator field.**
 
-- *Current shape: nullable fields with validator.* Three optional fields
-  (`trackPartId`, `facilityId`, `staffId`), exactly one set, enforced by a
-  Pydantic `model_validator`. Preserves the existing wire format exactly.
-  Mildly awkward to express but no changes required for any consumer.
+Wire shape (schemaVersion 1):
 
-- *Explicit discriminator field.* Add `kind: "trackPart" | "facility" |
-  "staff"` plus a single shared `id` field. Cleaner schema and unambiguous
-  parsing, but changes the wire format for all three consumers. Best deferred
-  to a coordinated update.
+```json
+{ "kind": "trackPart", "id": 57 }
+{ "kind": "facility",  "id": 72 }
+{ "kind": "staff",     "id": 5  }
+```
 
-- *Inheritance.* A base `Resource` with `name`, and subclasses
-  `TrackPartResource`, `FacilityResource`, `StaffResource` each with their
-  own required `id` field. Usage sites annotated as
-  `list[TrackPartResource | FacilityResource | StaffResource]` (not
-  `list[Resource]`, which would cause serialisation to truncate to base
-  class fields). Can preserve the existing wire format if no discriminator
-  field is added, but Pydantic's parsing becomes order-sensitive without one.
+The `name` field (previously a redundant string copy of the numeric ID) is
+dropped. The `staffId` variant is kept in the schema; the solver will never
+produce it but must not choke on it in input.
 
-The nullable-fields-with-validator shape is the current implementation.
-Revisit when migrating the evaluator.
+**Per-consumer changes:**
+
+- **Generator (Python/Pydantic):** replace the three `Optional[int]` fields and
+  the `@model_validator` with `kind: Literal["trackPart", "facility", "staff"]`
+  and `id: int`.
+- **Solver (C#, `noproto` branch):** `NoProto/Location.cs` — update the
+  `Resource` record to `(string Kind, ulong Id)` and the two factory methods
+  (`FromInfra`, `FromFacility`). `PlanGraph.cs` needs no changes (all
+  construction goes through the factories).
+- **Evaluator (C++, `noproto` branch):** update `protos/HIP_Location.proto`
+  (replace `oneof { trackPartId, facilityId }` with `string kind` + `uint64 id`);
+  update the two access sites in `Plan.cpp` to dispatch on `resource.kind()`.
+  Add a hard error (`throw`) for any unrecognised `kind` value, so that an
+  old-format plan produces an immediate, informative failure rather than a
+  silently wrong result. (The schemaVersion warning fires first; the `kind`
+  check is a belt-and-suspenders guard.)
 
 ### `TaskType`
 
@@ -518,9 +524,7 @@ For convenience, the open questions scattered through the document above:
   `TrainRequest`?
 - Should `canDepartFromAnyTrack` (non-HIP only) be added to `TrainRequest`?
 - `TaskSpec.priority` → `optional: bool` — see `TaskSpec` section above.
-- `Resource`: approach deferred to evaluator migration. Three candidates:
-  nullable fields with validator (current), explicit discriminator field,
-  or inheritance with subclasses. See `Resource` section for details.
+- `Resource`: **resolved** — see `Resource` section above.
 - Is there a canonical proto for `Plan` somewhere?
 - Does the evaluator's expected `Plan` input format match what the C# code
   produces?
