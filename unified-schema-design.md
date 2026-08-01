@@ -130,6 +130,14 @@ The `PredefinedTaskType` enum in the Pydantic model is therefore:
 `Move`, `Split`, `Combine`, `Wait`, `Arrive`, `Exit`, `Walking`, `Break`,
 `NonService`, `StandIn`, `StandOut`.
 
+**Decision: wire format is always PascalCase for enum values** (`"Break"`,
+`"StandIn"`, `"Move"`, etc.). The proto lowercase aliases (`move = 0; Move = 0;`)
+are a parsing-tolerance detail, not the authoritative form. `break` is a reserved
+C++ keyword and cannot be used as a proto enum alias — this is not a problem
+because the generator (Pydantic) emits PascalCase and no consumer should rely on
+receiving lowercase. Existing plan data already uses PascalCase (`"StandIn"`
+confirmed in real data).
+
 **C# note.** The C# `PredefinedTaskType` enum currently has only
 `Move`, `Split`, `Combine`, `Wait`, `Arrive`, `Exit` — it needs `Walking`,
 `Break`, `NonService`, `StandIn`, and `StandOut` added. The commented-out
@@ -225,10 +233,13 @@ has it; the HIP `Scenario` does not (HIP embeds `TrainUnitType` directly
 inside `TrainUnit`). Putting it on `Scenario` and referring to it by name from
 `TrainUnit` is more normalized. Confirm that's the right call.
 
-**Open question:** the non-HIP `Train` has a `standingIndex` field and a
-`minimumDuration` field. `standingIndex` exists in HIP `TrainRequest` but not
-`IncomingTrain`. Should `standingIndex` be on both? Where does
-`minimumDuration` go (and what does it mean)?
+**Decision: `standingIndex` appears on both `IncomingTrain` and
+`TrainRequest`.** TORS reads it for both incoming standing and outgoing
+standing trains. The proto field is already field 7 on each in the evaluator's
+local `HIP_Scenario.proto`; generator and design doc should match.
+
+**Open question:** where does `Train.minimumDuration` (non-HIP) go in the
+unified model, and what does it mean?
 
 ### `IncomingTrain` / `TrainRequest`
 
@@ -267,8 +278,12 @@ nested model), not on `TrainUnit` itself. `TrainRequest.trainUnits` is plain
 
 **Type reference.** Non-HIP `TrainUnit` has `typeDisplayName` (a string
 reference). HIP `TrainUnit` has `type` (an embedded `TrainUnitType` object).
-**Decision: reference by name** (string keying into `Scenario.trainUnitTypes`).
-Embedding is redundant and risks inconsistency.
+**Decision: reference by `(typeDisplayName, carriages)` pair** — `TrainUnit`
+carries *both* `typeDisplayName: str` and `carriages: int`, forming the lookup
+key into `Scenario.trainUnitTypes`. A bare `typeDisplayName` is insufficient
+because a single type family (e.g. `"SLT"`) can appear with different carriage
+counts; without `carriages` the resolver cannot pick the right `TrainUnitType`
+entry. Embedding the full type object is redundant and risks inconsistency.
 
 **C# note.** The C# `TrainUnit` currently has *both* `Type` (embedded object)
 *and* `TypeDisplayName` (string). This is a mid-migration state, not an
@@ -300,6 +315,11 @@ Unified shape:
 - `duration`: int
 - `requiredSkills`: list[str] — optional/empty for solver
 - `optional`: bool, default `false` — replaces `priority` (see below)
+
+**Note: `requiredSkills` is present in the unified spec above and is actively
+read by TORS.** The HIP-shaped `TaskSpec` message in `HIP_Scenario.proto` is
+missing it — not a design question, just an implementation gap the evaluator's
+proto update must close.
 
 **Decision: replace `priority: int` with `optional: bool`.**
 
@@ -528,15 +548,13 @@ For convenience, the open questions scattered through the document above:
 - Are `Walking`, `Break`, `NonService` task types ever present in JSON the
   solver reads? If so, verify the C# deserializer handles them gracefully
   once the enum is extended to include these plus `StandIn`/`StandOut`.
-- Confirm the `displayName` cleanup ("SLT" + carriages=4 instead of "SLT4").
-- Does `trainUnitTypes` belong on `Scenario` (referenced by name) or
-  embedded into each `TrainUnit`?
+- ~~Confirm the `displayName` cleanup ("SLT" + carriages=4 instead of "SLT4").~~ **Resolved** — see `TrainUnitType` section.
+- ~~Does `trainUnitTypes` belong on `Scenario` (referenced by name) or embedded into each `TrainUnit`?~~ **Resolved: on `Scenario`, referenced by `(typeDisplayName, carriages)` from `TrainUnit`** — see `TrainUnit` section.
 - Where does `Train.minimumDuration` (non-HIP) belong in the unified model,
   and what does it mean?
-- Should `standingIndex` apply to `IncomingTrain` as well as
-  `TrainRequest`?
+- ~~Should `standingIndex` apply to `IncomingTrain` as well as `TrainRequest`?~~ **Resolved: yes, both** — see `IncomingTrain / TrainRequest` section.
 - Should `canDepartFromAnyTrack` (non-HIP only) be added to `TrainRequest`?
-- `TaskSpec.priority` → `optional: bool` — see `TaskSpec` section above.
+- ~~`TaskSpec.priority` → `optional: bool` — see `TaskSpec` section above.~~ **Resolved** — see `TaskSpec` section.
 - `Resource`: **resolved** — see `Resource` section above.
 - Is there a canonical proto for `Plan` somewhere?
 - Does the evaluator's expected `Plan` input format match what the C# code
