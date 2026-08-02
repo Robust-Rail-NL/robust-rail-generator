@@ -89,9 +89,11 @@ produce it but must not choke on it in input.
 
 **Per-consumer changes:**
 
-- **Generator (Python/Pydantic):** replace the three `Optional[int]` fields and
+- ~~**Generator (Python/Pydantic):** replace the three `Optional[int]` fields and
   the `@model_validator` with `kind: Literal["trackPart", "facility", "staff"]`
-  and `id: int`.
+  and `id: int`.~~ **Done** (`16dc053`) — used a `ResourceKind` str enum rather
+  than a bare `Literal`, for consistency with `TrackPartType`/`PredefinedTaskType`
+  elsewhere in this file; behaviour is the same.
 - **Solver (C#, `noproto` branch):** `NoProto/Location.cs` — update the
   `Resource` record to `(string Kind, ulong Id)` and the two factory methods
   (`FromInfra`, `FromFacility`). `PlanGraph.cs` needs no changes (all
