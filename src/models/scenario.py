@@ -12,15 +12,17 @@ from .utilities import RailModel, SchemaVersioned, TimeInterval
 class TrainUnitType(RailModel):
     """A type of train unit, e.g. SLT or SGM.
 
-    Identity is (display_name, carriages): two TrainUnitType instances with
-    the same display name and carriage count are considered the same type.
+    Identity is (type_prefix, carriages): two TrainUnitType instances with
+    the same type prefix and carriage count are considered the same type.
 
-    Note: display_name is the type name only ("SLT", "SGM", "VIRM") and does
-    NOT encode carriage count. The old convention of "SLT4" / "SLT6" is
-    replaced by display_name="SLT" + carriages=4.
+    Note: type_prefix is the type family name only ("SLT", "SGM", "VIRM")
+    and does NOT encode carriage count. The old convention of "SLT4" / "SLT6"
+    is replaced by type_prefix="SLT" + carriages=4. type_display_name is a
+    derived value (type_prefix + "-" + carriages) for display/logging only;
+    it is not part of the wire schema.
     """
 
-    display_name: str = Field(alias="displayName")
+    type_prefix: str = Field(alias="typePrefix")
     carriages: int
 
     # Optional: all consumers may omit these if not relevant.
@@ -46,36 +48,48 @@ class TrainUnitType(RailModel):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TrainUnitType):
             return NotImplemented
-        return self.display_name == other.display_name and self.carriages == other.carriages
+        return self.type_prefix == other.type_prefix and self.carriages == other.carriages
 
     def __hash__(self) -> int:
-        return hash((self.display_name, self.carriages))
+        return hash((self.type_prefix, self.carriages))
+
+    @property
+    def type_display_name(self) -> str:
+        return f"{self.type_prefix}-{self.carriages}"
 
 
 class TaskSpec(RailModel):
     """A task to be performed on a train unit.
 
-    Note: priority has been dropped from the unified schema. It was marked
-    deprecated in the HIP proto and always set to 1 without being read.
+    Note: priority has been dropped from the unified schema and replaced by
+    optional. TORS used priority only as a binary 0/non-zero flag; HIP had
+    it marked deprecated and unread.
     """
 
     type: Optional[TaskType] = None
     duration: Optional[int] = None
     # Optional: evaluator/generator only. Empty list means no personnel required.
     required_skills: list[str] = Field(default_factory=list, alias="requiredSkills")
+    # False: task must be completed before the train may exit the yard.
+    optional: bool = False
 
 
 class TrainUnit(RailModel):
     """A combination of carriages that can move independently.
 
-    type_display_name references an entry in Scenario.train_unit_types by
-    display_name + carriages. Embedding the full TrainUnitType is intentionally
-    avoided to prevent redundancy and inconsistency.
+    (type_prefix, carriages) is the lookup key into an entry in
+    Scenario.train_unit_types. Embedding the full TrainUnitType is
+    intentionally avoided to prevent redundancy and inconsistency.
     """
 
-    type_display_name: Optional[str] = Field(None, alias="typeDisplayName")
+    type_prefix: str = Field(alias="typePrefix")
+    carriages: int
     id: Optional[str] = None
     tasks: Optional[list[TaskSpec]] = None
+
+    @property
+    def type_display_name(self) -> str:
+        return f"{self.type_prefix}-{self.carriages}"
 
 
 class IncomingTrainUnit(TrainUnit):
@@ -91,7 +105,7 @@ class IncomingTrainUnit(TrainUnit):
                            "without id. Using '****'.")
            id = "****"
        # noinspection PyArgumentList
-       return cls(type_display_name=other.type_display_name, id=id, tasks=tasks)
+       return cls(type_prefix=other.type_prefix, carriages=other.carriages, id=id, tasks=tasks)
 
     id: str = None
     tasks: list[TaskSpec] = Field(default_factory=list)

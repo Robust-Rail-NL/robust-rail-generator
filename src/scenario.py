@@ -97,7 +97,7 @@ class ScenarioGenerator:
 
             # Collect information of the train unit members of the current train
             for member in train_standard.members:
-                train_unit = TrainUnit(type_display_name=member.type_display_name)
+                train_unit = TrainUnit(type_prefix=member.type_prefix, carriages=member.carriages)
                 train.train_units.append(train_unit)
 
         # Create the in-standing train objects (train that are already in the yard at the start of the scenario)
@@ -126,8 +126,6 @@ class ScenarioGenerator:
                     )
                     train_member.tasks.append(task)
 
-                train_member.type_display_name = member.type_display_name
-
         # Create the outstanding train requests: trains that remain in the yard at the end of the scenario
         out_standing_train_requests = self.scenario_solver.out_standing
         _out_standing_trains = self.scenario.out_standing
@@ -142,8 +140,8 @@ class ScenarioGenerator:
             out_standing_train_requests.append(train)
 
             # Collect information of the train unit members of the current train            
-            for member in train_standard.members:                
-                train_unit = TrainUnit(type_display_name=member.type_display_name)
+            for member in train_standard.members:
+                train_unit = TrainUnit(type_prefix=member.type_prefix, carriages=member.carriages)
                 train.train_units.append(train_unit)
 
     # Add outgoing train to the scenario
@@ -242,34 +240,34 @@ class ScenarioGenerator:
         return task_spec
 
     @staticmethod
-    def create_incoming_train_unit(id: str, type_display_name: str, tasks: List[TaskSpec]) -> IncomingTrainUnit:
+    def create_incoming_train_unit(id: str, type_prefix: str, carriages: int, tasks: List[TaskSpec]) -> IncomingTrainUnit:
         """_summary_
         Creates a train unit object with specific member id.
 
         Args:
             id (str):  A unique identifier of the unit, e.g. '2401'
-            type_display_name (str): display_name of the TrainUnitType, e.g. 'SLT4'
+            type_prefix (str): type_prefix of the TrainUnitType, e.g. 'SLT'
+            carriages (int): carriage count of the TrainUnitType, e.g. 4
             tasks (List[TaskSpec]): Tasks for this train unit
 
         Returns:
             _type_: represents a combination of carriages which can move independently
         """
-        return IncomingTrainUnit(id=id, type_display_name=type_display_name, tasks=tasks)
+        return IncomingTrainUnit(id=id, type_prefix=type_prefix, carriages=carriages, tasks=tasks)
 
     @staticmethod
-    def create_train_unit_unmatched_members(type_display_name: str):
+    def create_train_unit_unmatched_members(type_prefix: str, carriages: int):
         """_summary_
         Creates a train unit object with no specific member (no ids), used for outgoing train requests.
 
         Args:
-            type_display_name (str): display_name of the TrainUnitType, e.g. 'SLT4'
+            type_prefix (str): type_prefix of the TrainUnitType, e.g. 'SLT'
+            carriages (int): carriage count of the TrainUnitType, e.g. 4
 
         Returns:
             _type_: represents a combination of carriages which can move independently
         """
-        train_unit = TrainUnit()
-        train_unit.type_display_name = type_display_name
-        return train_unit
+        return TrainUnit(type_prefix=type_prefix, carriages=carriages)
 
     @staticmethod
     def create_task_type(predefined_task_type: PredefinedTaskType = None, other: str = None)->TaskType:
@@ -393,12 +391,12 @@ class ScenarioGenerator:
         return member_of_staff
 
     @staticmethod
-    def create_train_unit_type(display_name: str, carriages: int, length: float, combine_duration: int, split_duration: int, back_norm_time: int, back_addition_time: int, travel_speed: int, start_up_time: int, type_prefix: str, needs_loco: bool, is_loco: bool, needs_electricity: bool, id_prefix: int = None)->TrainUnitType:
+    def create_train_unit_type(type_prefix: str, carriages: int, length: float, combine_duration: int, split_duration: int, back_norm_time: int, back_addition_time: int, travel_speed: int, start_up_time: int, needs_loco: bool, is_loco: bool, needs_electricity: bool, id_prefix: int = None)->TrainUnitType:
         """_summary_
         Create the type of train units, of which multiple instances can be created. The type specifies all the train characteristics.
 
         Args:
-            display_name (str): Name of the train unit type. For example, "SGM" or "SLT". Currently, this is "SLT4" or "SLT6", see 'type_prefix' later on. #warning
+            type_prefix (str): Type family name of the train unit type, e.g. "SGM" or "SLT" (does not encode carriage count).
             carriages (int):  This is the total number of carriages, including the first and last carriage.
             length (float):  Length of this train unit, in meters
             combine_duration (int):  Time it takes to perform a combine in seconds
@@ -407,17 +405,16 @@ class ScenarioGenerator:
             back_addition_time (int): _description_
             travel_speed (int):  this is the speed of the train but that is yet to be determined whether that is here or location specific #warning
             start_up_time (int): Startup + Shutdown
-            type_prefix (str): for example: "SLT" or "VIRM"
             needs_loco (bool):  This TrainUnitType needs a locomotive, e.g. it cannot drive itself
             is_loco (bool): Can pull/push other wagons
             needs_electricity (bool): / This train needs electricity, so it can only drive on electrified track parts
-            id_prefix (int, optional):  Prefix of train IDs of this type (i.e., the last two digits are removed).  For example, for SLT4 this is 24. Defaults to None.
+            id_prefix (int, optional):  Prefix of train IDs of this type (i.e., the last two digits are removed).  For example, for SLT-4 this is 24. Defaults to None.
 
         Returns:
             TrainUnitType: _description_
         """
         train_unit_type = TrainUnitType(
-            display_name=display_name,
+            type_prefix=type_prefix,
             carriages=carriages,
             length=length,
             combine_duration=combine_duration,
@@ -479,12 +476,11 @@ class ScenarioGenerator:
         for unit_type in train_unit_data:
             self.add_train_unit_type(
                 self.create_train_unit_type(
-                    display_name=unit_type["name"],
+                    type_prefix=unit_type["typePrefix"],
                     carriages=unit_type["carriages"],
                     length=unit_type["length"] / 100, # length in meters
                     combine_duration=unit_type["combineDuration"],
                     split_duration=unit_type["splitDuration"],
-                    type_prefix=unit_type["typePrefix"],
                     needs_loco=unit_type["needsLoco"],
                     is_loco=unit_type["isLoco"],
                     needs_electricity=unit_type["needsElectricity"],
@@ -503,12 +499,11 @@ class ScenarioGenerator:
         for unit_type in train_unit_data:
             self.add_train_unit_type(
                 self.create_train_unit_type(
-                    display_name=unit_type["name"],
+                    type_prefix=unit_type["typePrefix"],
                     carriages=unit_type["carriages"],
                     length=unit_type["length"] / 100, # length in meters
                     combine_duration=unit_type["combineDuration"],
                     split_duration=unit_type["splitDuration"],
-                    type_prefix=unit_type.get("type_prefix", None),
                     needs_loco=unit_type["needsLoco"],
                     is_loco=unit_type["isLoco"],
                     needs_electricity=unit_type["needsElectricity"],
@@ -528,7 +523,7 @@ class SolverScenarioGenerator(ScenarioGenerator):
             end=standard_scenario_generator.scenario.end_time,
         )
         self.scenario_solver = standard_scenario_generator.scenario_solver
-    
+
     # Converts protobuf object into json representation and saves it into json file 
     def save_scenario_json(self, file_name: str):
         json_data = self.scenario_solver.to_dict()

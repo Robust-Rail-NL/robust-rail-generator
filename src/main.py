@@ -82,11 +82,11 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         random_generator.generate_train_unit_types(config["number_of_train_unit_types"])
 
     random_generator.train_units_subtypes = {
-        u.display_name.split("-")[0]:
+        u.type_prefix:
         [
-            sub.display_name
+            sub.type_display_name
             for sub in random_generator.train_unit_types
-            if u.display_name.split("-")[0] in sub.display_name
+            if u.type_prefix == sub.type_prefix
         ]
         for u in random_generator.train_unit_types
     }
@@ -162,9 +162,14 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     print(f"Scenario file created: {output_filepath}")
 
 def create_trains(scenario_generator: ScenarioGenerator, config, services):
+    type_by_display_name = {t.type_display_name: t for t in scenario_generator.scenario_train_unit_types}
     created_train_units = {}
     for train_unit in config["custom_train_units"]:
-        unit = scenario_generator.create_incoming_train_unit(train_unit["id"], train_unit["type"], [services[s] for s in train_unit["services"]])
+        train_unit_type = type_by_display_name[train_unit["type"]]
+        unit = scenario_generator.create_incoming_train_unit(
+            train_unit["id"], train_unit_type.type_prefix, train_unit_type.carriages,
+            [services[s] for s in train_unit["services"]]
+        )
         created_train_units[train_unit["id"]] = unit
     for train in config["custom_trains"]:
         if "arrival_track" in train:
@@ -178,7 +183,12 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
                 )
             )
         if "departure_track" in train:
-            unmatched_train_units = [scenario_generator.create_train_unit_unmatched_members(train_unit) for train_unit in train["member_types"]]
+            unmatched_train_units = [
+                scenario_generator.create_train_unit_unmatched_members(
+                    type_by_display_name[train_unit].type_prefix, type_by_display_name[train_unit].carriages
+                )
+                for train_unit in train["member_types"]
+            ]
             scenario_generator.add_outgoing_train(
                 scenario_generator.create_train(
                     id=train["id"], 
@@ -201,7 +211,12 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
                 )
             )                
         if "end_at_track" in train:
-            unmatched_train_units = [scenario_generator.create_train_unit_unmatched_members(train_unit) for train_unit in train["member_types"]]
+            unmatched_train_units = [
+                scenario_generator.create_train_unit_unmatched_members(
+                    type_by_display_name[train_unit].type_prefix, type_by_display_name[train_unit].carriages
+                )
+                for train_unit in train["member_types"]
+            ]
             scenario_generator.add_out_standing_train(
                 scenario_generator.create_train(
                     id=train["id"], 

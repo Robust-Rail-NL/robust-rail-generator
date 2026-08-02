@@ -1,6 +1,6 @@
 {
     "schoonmaken": {
-        "priority": 1,
+        "optional": true,
         "duration": "900",
         "requiredSkills": [
             "inwendige_reiniging"
@@ -8,7 +8,7 @@
         "requiredFacility": "Reinigingsperron"
     },
     "wassen": {
-        "priority": 2,
+        "optional": true,
         "duration": "900",
         "requiredFacility": "Wasmachine",
         "requiredSkills": [
@@ -16,7 +16,7 @@
         ]
     },
     "technische_controle_A": {
-        "priority": 2,
+        "optional": true,
         "duration": "600",
         "requiredSkills": [
             "technische_controle_A"
@@ -24,7 +24,7 @@
         "requiredFacility": "Inspectieput"
     },
     "technische_controle_B": {
-        "priority": 3,
+        "optional": true,
         "duration": "1200",
         "requiredSkills": [
             "technische_controle_B"
@@ -32,7 +32,7 @@
         "requiredFacility": "Inspectieput"
     },
     "reparatie": {
-        "priority": 1,
+        "optional": true,
         "duration": "300",
         "requiredFacility": "Monteur",
         "requiredSkills": [

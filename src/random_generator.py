@@ -86,15 +86,15 @@ class RandomGenerator:
             if "train_unit_types" in config["train_unit_distribution"]:
                 scenario_generator.scenario_train_unit_types = [
                     u for u in scenario_generator.scenario_train_unit_types
-                    if u.display_name in config["train_unit_distribution"]["train_unit_types"]
+                    if u.type_display_name in config["train_unit_distribution"]["train_unit_types"]
                 ]
                 self.train_unit_types = scenario_generator.scenario_train_unit_types.copy()
                 self.train_units_subtypes = {
-                    u.display_name.split("-")[0]:
+                    u.type_prefix:
                     [
-                        sub.display_name
+                        sub.type_display_name
                         for sub in self.train_unit_types
-                        if u.display_name.split("-")[0] in sub.display_name
+                        if u.type_prefix == sub.type_prefix
                     ]
                     for u in self.train_unit_types
                 }
@@ -162,7 +162,7 @@ class RandomGenerator:
     def generate_train_unit_types(self, num):
         for i in range(num):
             unit_type = self.scenario_generator.create_train_unit_type(
-                display_name=f"unitType{i}",
+                type_prefix=f"unitType{i}",
                 carriages=random.randrange(3, 8),
                 length=random.randrange(40, 160, 5),
                 combine_duration=random.randrange(0, 600, 10),
@@ -174,13 +174,13 @@ class RandomGenerator:
                 needs_loco=False, # assumed
                 is_loco=False, # assumed
                 needs_electricity=True, # assumed
-                type_prefix="random",
             )
             self.train_unit_types.append(unit_type)
             self.scenario_generator.add_train_unit_type(unit_type)
 
     def generate_train_units(self, number_train_units, servicing, distribution_config, service_tasks):
         random.shuffle(self.train_unit_types)
+        type_by_display_name = {t.type_display_name: t for t in self.train_unit_types}
         number_of_serviced_units = 0
         if servicing:
             number_of_serviced_units = math.floor(distribution_config["servicing_ratio"] * number_train_units)
@@ -196,15 +196,17 @@ class RandomGenerator:
                     for typ, num in distribution_config["unit_types_per_train"]:
                         idx += num
                         if i < idx:
-                            unit_type = typ.display_name
+                            unit_type = typ.type_display_name
                             break
             if i < number_of_serviced_units:
                 current_tasks = random.choices(list(service_tasks.values()), k=random.randint(1, distribution_config["tasks_per_train_unit"]))
             else:
                 current_tasks = []
+            train_unit_type = type_by_display_name[unit_type]
             unit = self.scenario_generator.create_incoming_train_unit(
                 id=str(i),
-                type_display_name=unit_type,
+                type_prefix=train_unit_type.type_prefix,
+                carriages=train_unit_type.carriages,
                 tasks=current_tasks
             )
             if unit_type not in self.incoming_train_units:
@@ -254,7 +256,7 @@ class RandomGenerator:
         id_offset = distribution_config["number_trains_in"]
         for (i, train_units) in enumerate(distribution_out):
             ### Outgoing train
-            unmatched_train_units = [self.scenario_generator.create_train_unit_unmatched_members(train_unit.type_display_name) for train_unit in train_units]
+            unmatched_train_units = [self.scenario_generator.create_train_unit_unmatched_members(train_unit.type_prefix, train_unit.carriages) for train_unit in train_units]
             if i+id_offset in standing_trains["outstanding"]:
                 train_out = self.scenario_generator.create_train(
                     id=f"{i+id_offset}",
@@ -334,7 +336,7 @@ class RandomGenerator:
             logging.info(f"Number of units per train is assigned, assigning the actual units to trains.")
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
-                    in_trains[i].append(in_units[t.display_name].pop())
+                    in_trains[i].append(in_units[t.type_display_name].pop())
             # Matching: 0 same order, 1: random order, 2: reverse order
             if distribution_config["matching"] == 1:
                 random.shuffle(distribution_config["unit_types_per_train"])
@@ -342,7 +344,7 @@ class RandomGenerator:
                 distribution_config["unit_types_per_train"].reverse()
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
-                    out_trains[i].append(out_units[t.display_name].pop())
+                    out_trains[i].append(out_units[t.type_display_name].pop())
         elif "subtypes_per_in_train" in distribution_config:
             # The number of units per train and its train type were already generated, so allocate the units.
             # This is the only method that allows train units of same supertype in one composition

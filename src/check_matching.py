@@ -37,7 +37,7 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
     return True
 
 def check_train_lengths(scenario_generator, use_default_material):
-    type_lengths = {t.display_name: t.length for t in scenario_generator.scenario.train_unit_types}
+    type_lengths = {t.type_display_name: t.length for t in scenario_generator.scenario.train_unit_types}
     track_lengths = {t.name: t.length for t in scenario_generator.location.track_parts if t.parking_allowed and t.saw_movement_allowed}
     avg_track_length = sum(track_lengths.values()) / len(track_lengths.values())
     long_trains = []
@@ -48,7 +48,7 @@ def check_train_lengths(scenario_generator, use_default_material):
             logging.warning(f"Length of train {train.id} with {len(train.members)} units is {length} and exceeds length of longest track is {avg_track_length}")
             return False
         if use_default_material:
-            carriages = sum([int(unit.type_display_name.split("-")[1]) for unit in train.members])
+            carriages = sum([unit.carriages for unit in train.members])
             if carriages > 12:
                 logging.warning(f"Train {train.id} has {carriages} carriages, which exceeds the default 12 for train in the Netherlands with default train unit types.")
                 return False

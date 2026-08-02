@@ -220,7 +220,7 @@
         "reversalBaseTime": 0,
         "reversalCarriageTime": 0,
         "needsElectricity": true,
-        "typePrefix": "SGMm",
+        "typePrefix": "SGMM",
         "noDeparturePreparationLimit": 7200,
         "needsLoco": false,
         "isLoco": false
@@ -234,7 +234,7 @@
         "reversalBaseTime": 0,
         "reversalCarriageTime": 0,
         "needsElectricity": true,
-        "typePrefix": "SGMm",
+        "typePrefix": "SGMM",
         "noDeparturePreparationLimit": 7200,
         "needsLoco": false,
         "isLoco": false

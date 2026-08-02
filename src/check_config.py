@@ -8,6 +8,11 @@ from __init__ import DATA_DIR
 from models.location import Location, TrackPartType
 
 
+def _type_display_names(train_unit_type_entries):
+    """typePrefix + '-' + carriages for each entry, matching TrainUnitType.type_display_name."""
+    return [f"{unit['typePrefix']}-{unit['carriages']}" for unit in train_unit_type_entries]
+
+
 def check_configuration_file(config, location_path):
     """Checks basic parts of the configuration file to be present"""
     if not os.path.isfile(location_path):
@@ -41,9 +46,9 @@ def check_configuration_file(config, location_path):
             logging.error("No default material used and no `custom_train_unit_types` defined.")
             return False, config
         else:
-            train_unit_names = [unit["name"] for unit in config["custom_train_unit_types"]]
+            train_unit_names = _type_display_names(config["custom_train_unit_types"])
     else:
-        train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json")))]
+        train_unit_names = _type_display_names(json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json"))))
     if config["trains_given"] and ("custom_train_units" not in config or "custom_trains" not in config):
         logging.error("No 'custom_train_units' or 'custom_trains defined' while 'trains_given' is true.")
         return False, config
@@ -156,9 +161,9 @@ def check_train_details_file(config, location: Location):
         logging.warning("Not defined: 'track_ids_used', assuming ids are used")
         config["track_ids_used"] = True
     if config["use_default_material"]:
-        train_unit_names = [unit["name"] for unit in json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json")))]
+        train_unit_names = _type_display_names(json.load(open(os.path.join(DATA_DIR, "default_train_unit_types.json"))))
     else:
-        train_unit_names = [unit["name"] for unit in config["custom_train_unit_types"]]
+        train_unit_names = _type_display_names(config["custom_train_unit_types"])
     for i, t in enumerate(config["custom_train_units"]):
         if "id" not in t or "type" not in t or "services" not in t:
             logging.error(f"Incorrectly specified the {i}th custom train unit: missing id, type or service parameter")
