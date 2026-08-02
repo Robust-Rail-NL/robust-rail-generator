@@ -86,37 +86,20 @@ class Facility(RailModel):
     time_window: Optional[TimeInterval] = Field(None, alias="timeWindow")
 
 
+class ResourceKind(str, Enum):
+    TRACK_PART = "trackPart"
+    FACILITY = "facility"
+    # staff resources are only present in generator/evaluator output; the
+    # solver will not produce this kind but the unified schema includes it.
+    STAFF = "staff"
+
+
 class Resource(RailModel):
     """A resource involved in an action: either a TrackPart, a Facility,
-    or a member of staff.
+    or a member of staff, identified by an explicit kind discriminator."""
 
-    Exactly one of track_part_id, facility_id, or staff_id must be set.
-
-    TODO: consider introducing an explicit discriminator field (e.g.
-    kind: "trackPart" | "facility" | "staff") to make this a proper tagged
-    union. For now we keep the current wire format and enforce the constraint
-    via a validator.
-    """
-
-    name: Optional[str] = None
-    track_part_id: Optional[int] = Field(None, alias="trackPartId")
-    facility_id: Optional[int] = Field(None, alias="facilityId")
-    # staff_id is only present in generator/evaluator output; the solver
-    # will not encounter it but the unified schema includes it.
-    staff_id: Optional[int] = Field(None, alias="staffId")
-
-    @model_validator(mode="after")
-    def exactly_one_id_set(self) -> Resource:
-        set_fields = sum([
-            self.track_part_id is not None,
-            self.facility_id is not None,
-            self.staff_id is not None,
-        ])
-        if set_fields != 1:
-            raise ValueError(
-                "Exactly one of 'trackPartId', 'facilityId', or 'staffId' must be set."
-            )
-        return self
+    kind: ResourceKind
+    id: int
 
 
 class WalkingDistanceEntry(RailModel):

@@ -99,59 +99,31 @@
     },
     "Resource": {
       "additionalProperties": false,
-      "description": "A resource involved in an action: either a TrackPart, a Facility,\nor a member of staff.\n\nExactly one of track_part_id, facility_id, or staff_id must be set.\n\nTODO: consider introducing an explicit discriminator field (e.g.\nkind: \"trackPart\" | \"facility\" | \"staff\") to make this a proper tagged\nunion. For now we keep the current wire format and enforce the constraint\nvia a validator.",
+      "description": "A resource involved in an action: either a TrackPart, a Facility,\nor a member of staff, identified by an explicit kind discriminator.",
       "properties": {
-        "name": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Name"
+        "kind": {
+          "$ref": "#/$defs/ResourceKind"
         },
-        "trackPartId": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Trackpartid"
-        },
-        "facilityId": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Facilityid"
-        },
-        "staffId": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Staffid"
+        "id": {
+          "title": "Id",
+          "type": "integer"
         }
       },
+      "required": [
+        "kind",
+        "id"
+      ],
       "title": "Resource",
       "type": "object"
+    },
+    "ResourceKind": {
+      "enum": [
+        "trackPart",
+        "facility",
+        "staff"
+      ],
+      "title": "ResourceKind",
+      "type": "string"
     },
     "ShuntingUnit": {
       "additionalProperties": false,
