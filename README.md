@@ -35,7 +35,7 @@ python src/format_converter.py --scenario-path ./data/example_scenario.json
 # Repository Structure
 This gives an overview of the file structure in this repository. The `data` folder stores only a few example files and should not be used for file storage. It also contains two default information files.
 
-**TODO update with information about Pydantic models, under `src/models`, and the JSON schema under `schema`.**
+The interchange format is defined by the Pydantic models under `src/models`. JSON Schema for these models is exported to `schema/` via `python3 scripts/export_schema.py`; regenerate it after any change to a model's wire shape.
 The `src/models` folder includes the format of a Location, a Scenario, a TrainUnitType and the Utilities of a scenario. The `src` folder contains the main generation files: `main.py` is the main method to call, which uses the `check_config.py` to check the configuration and the `check_matching` to make sure that the generated files are feasible. `scenario.py` houses the main structure of the scenario along with the encoding into Pydantic models. The `random_generator.py` contains all the code for randomly generating scenarios. Finally, `format_converter.py` can be used to convert the regular (evaluator) format into solver format, for both location and scenario files. Finally, `example.py` gives an example for the possible parameters.
 ```
 📦robust-rail-generator

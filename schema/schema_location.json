@@ -277,6 +277,11 @@
   "additionalProperties": false,
   "description": "The fixed part of the problem specification: track layout and\nfacilities. Does not change on a daily basis.",
   "properties": {
+    "schemaVersion": {
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
     "trackParts": {
       "items": {
         "$ref": "#/$defs/TrackPart"

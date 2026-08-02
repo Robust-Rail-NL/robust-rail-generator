@@ -340,6 +340,11 @@
   "additionalProperties": false,
   "description": "The output of a shunting algorithm: an ordered list of actions.\n\ntrack_parts is acknowledged technical debt: the evaluator currently needs\nit because it cannot reliably access the original Location input through\nother channels. Once the evaluator receives both Location and Plan as\ninputs, this field should be removed.",
   "properties": {
+    "schemaVersion": {
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
     "actions": {
       "items": {
         "$ref": "#/$defs/Action"
