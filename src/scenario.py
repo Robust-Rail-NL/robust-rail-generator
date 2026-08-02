@@ -17,11 +17,9 @@ from models import IncomingTrainUnit, TrainRequest
 from models import PredefinedTaskType
 
 
-# To better understand the structure and the parameters/arguments please refer to the Scenario.proto 
-
 class ScenarioGenerator:
     def __init__(self, start: int, end: int):
-        """Initialize the scenario generator, which create a JSON file according to the Scenario.proto structure. The 'hip' file structure is specialized for the robust-rail-solver."""
+        """Initialize the scenario generator, which creates a JSON file according to the unified Scenario schema (see models/scenario.py). The 'hip' file structure is specialized for the robust-rail-solver."""
         self.scenario = EvaluatorScenario(start_time=start, end_time=end)
         self.scenario_in: List[Train] = []
         self.scenario_out: List[Train] = []
@@ -34,7 +32,6 @@ class ScenarioGenerator:
         self.location_solver = None
     
     def save_scenario_json(self, file_name: str):
-        # Converts protobuf object into json representation and saves it into .json file 
         # Use the Dict step to ensure that 0-values are written
         json_data = self.scenario.to_dict()
         with open(file_name, "w") as f:
@@ -232,8 +229,6 @@ class ScenarioGenerator:
             TaskSpec: task specification specifies a certain task.
         """
         task_spec = TaskSpec()
-        # Since task_type is a protobuf object its content must be copied to the other proto object
-        # indeed it is a nested message structure => TaskSpec contains TaskType message
         task_spec.type = task_type
         task_spec.duration = duration
         task_spec.required_skills.extend(required_skills)
@@ -524,7 +519,6 @@ class SolverScenarioGenerator(ScenarioGenerator):
         )
         self.scenario_solver = standard_scenario_generator.scenario_solver
 
-    # Converts protobuf object into json representation and saves it into json file 
     def save_scenario_json(self, file_name: str):
         json_data = self.scenario_solver.to_dict()
         with open(file_name, "w") as f:

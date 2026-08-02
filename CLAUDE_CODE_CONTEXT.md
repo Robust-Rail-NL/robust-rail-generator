@@ -1,5 +1,11 @@
 # Generator refactor: protobuf → Pydantic
 
+**Status: historical.** This refactor is complete — protobuf is fully removed
+and the generator runs on the Pydantic models in `models/`. Kept as a record
+of the original refactor plan; the "Key model notes" section below has been
+updated to match the current schema (see `unified-schema-design.md` and
+`SCHEMA_CHANGELOG.md` for what changed since).
+
 ## What this work is
 
 Replace all protobuf usage in `robust-rail-generator` with native Pydantic
@@ -58,19 +64,23 @@ code can use `snake_case`; wire format is `camelCase`.
 **`Scenario.in_`** — `in` is a Python keyword; the field is `in_` in Python
 but serialises as `"in"` in JSON. Pydantic handles this transparently.
 
-**`TrainUnitType` identity** — equality and hashing are by `(display_name,
-carriages)`. `display_name` is the type name only (`"SLT"`, `"SGM"`) — it
-does NOT encode carriage count. Old code may use `"SLT4"` / `"SLT6"`;
-replace with `display_name="SLT", carriages=4`.
+**`TrainUnitType` identity** — equality and hashing are by `(type_prefix,
+carriages)`. `type_prefix` is the type family name only (`"SLT"`, `"SGM"`) —
+it does NOT encode carriage count. Old code may use `"SLT4"` / `"SLT6"`;
+replace with `type_prefix="SLT", carriages=4`. `type_display_name` is a
+derived property (`type_prefix + "-" + carriages`), not a wire field.
 
-**`TrainUnit.type_display_name`** — a string reference into
-`Scenario.train_unit_types` by `display_name`. Do not embed the full
-`TrainUnitType` object in `TrainUnit`.
+**`TrainUnit.type_prefix` / `TrainUnit.carriages`** — the `(type_prefix,
+carriages)` pair is the lookup key into `Scenario.train_unit_types`. Do not
+embed the full `TrainUnitType` object in `TrainUnit`. `TrainUnit` also
+exposes a derived `type_display_name` property for logging/bucketing.
 
 **`ShuntingUnit.members`** — list of TrainUnit ID strings, not embedded
 objects.
 
-**`TaskSpec.priority`** — dropped. Do not add it back.
+**`TaskSpec.optional`** — replaces the old `priority: int`. `False` means
+the task must be completed before the train may exit the yard; `True` means
+optional. Do not add `priority` back.
 
 **`PredefinedTaskType`** enum values: `Move`, `Split`, `Combine`, `Wait`,
 `Arrive`, `Exit`, `StandIn`, `StandOut`, `Walking`, `Break`, `NonService`.
@@ -110,7 +120,6 @@ These are noted in the models as `TODO` comments. Leave them as-is:
 - Is `reversalDuration` computed from `backNormTime`/`backAdditionTime` or
   separate?
 - Is `travelSpeed` per-type or per-location?
-- Is `typePrefix` redundant with `displayName`?
 - Should `canDepartFromAnyTrack` be on `TrainRequest`?
 - Should `standingIndex` be on `IncomingTrain` as well as `TrainRequest`?
 - Should `Action.shunting_unit` be an ID reference rather than an embedded
