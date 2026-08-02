@@ -61,10 +61,10 @@ class TestAddCustomTrainUnitTypes:
 class TestCreateIncomingTrainUnit:
     def test_type_prefix_and_carriages_round_trip(self):
         gen = make_generator()
-        unit = gen.create_incoming_train_unit(id="2401", type_prefix="SLT", carriages=4, tasks=[])
+        unit = gen.create_incoming_train_unit(id=2401, type_prefix="SLT", carriages=4, tasks=[])
         assert unit.type_prefix == "SLT"
         assert unit.carriages == 4
-        assert unit.id == "2401"
+        assert unit.id == 2401
 
 
 class TestCreateTrainUnitUnmatchedMembers:

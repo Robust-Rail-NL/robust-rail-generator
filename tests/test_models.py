@@ -46,11 +46,11 @@ class TestTrainUnit:
         assert u.to_dict()["carriages"] == 4
 
     def test_incoming_train_unit_from_train_unit_copies_type_fields(self):
-        base = TrainUnit(type_prefix="VIRM", carriages=6, id="2401")
+        base = TrainUnit(type_prefix="VIRM", carriages=6, id=2401)
         incoming = IncomingTrainUnit.from_train_unit(base)
         assert incoming.type_prefix == "VIRM"
         assert incoming.carriages == 6
-        assert incoming.id == "2401"
+        assert incoming.id == 2401
 
 
 class TestTaskSpec:

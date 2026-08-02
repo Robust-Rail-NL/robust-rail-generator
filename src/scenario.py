@@ -235,12 +235,12 @@ class ScenarioGenerator:
         return task_spec
 
     @staticmethod
-    def create_incoming_train_unit(id: str, type_prefix: str, carriages: int, tasks: List[TaskSpec]) -> IncomingTrainUnit:
+    def create_incoming_train_unit(id: int, type_prefix: str, carriages: int, tasks: List[TaskSpec]) -> IncomingTrainUnit:
         """_summary_
         Creates a train unit object with specific member id.
 
         Args:
-            id (str):  A unique identifier of the unit, e.g. '2401'
+            id (int):  A unique identifier of the unit, e.g. 2401
             type_prefix (str): type_prefix of the TrainUnitType, e.g. 'SLT'
             carriages (int): carriage count of the TrainUnitType, e.g. 4
             tasks (List[TaskSpec]): Tasks for this train unit

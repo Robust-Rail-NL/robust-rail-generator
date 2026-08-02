@@ -29,7 +29,7 @@ class Action(RailModel):
     shunting_unit: Optional[ShuntingUnit] = Field(None, alias="shuntingUnit")
     location: Optional[int] = None
     resources: list[Resource] = Field(default_factory=list)
-    train_unit_ids: list[str] = Field(default_factory=list, alias="trainUnitIds")
+    train_unit_ids: list[int] = Field(default_factory=list, alias="trainUnitIds")
 
 
 class Plan(SchemaVersioned):

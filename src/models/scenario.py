@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import Optional, Type
 
 from pydantic import Field
@@ -84,7 +83,7 @@ class TrainUnit(RailModel):
 
     type_prefix: str = Field(alias="typePrefix")
     carriages: int
-    id: Optional[str] = None
+    id: Optional[int] = None
     tasks: Optional[list[TaskSpec]] = None
 
     @property
@@ -98,16 +97,11 @@ class IncomingTrainUnit(TrainUnit):
     @classmethod
     def from_train_unit(cls,
                         other: TrainUnit) -> IncomingTrainUnit:
-       id = other.id
-       tasks = other.tasks or []
-       if id is None:
-           logging.warning("Creating IncomingTrainUnit from TrainUnit "
-                           "without id. Using '****'.")
-           id = "****"
        # noinspection PyArgumentList
-       return cls(type_prefix=other.type_prefix, carriages=other.carriages, id=id, tasks=tasks)
+       return cls(type_prefix=other.type_prefix, carriages=other.carriages,
+                   id=other.id, tasks=other.tasks or [])
 
-    id: str = None
+    id: int
     tasks: list[TaskSpec] = Field(default_factory=list)
 
 
@@ -187,7 +181,7 @@ class ShuntingUnit(RailModel):
     # TrainUnit objects (as in the HIP proto and C# mid-migration state). The
     # Plan proto embeds a full ShuntingUnit in each Action, so if Action
     # references ShuntingUnit by ID instead, a registry is needed.
-    members: list[str] = Field(default_factory=list)
+    members: list[int] = Field(default_factory=list)
     parent_ids: list[str] = Field(default_factory=list, alias="parentIDs")
     child_ids: list[str] = Field(default_factory=list, alias="childIDs")
 

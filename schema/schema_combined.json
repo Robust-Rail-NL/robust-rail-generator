@@ -74,7 +74,7 @@
         },
         "trainUnitIds": {
           "items": {
-            "type": "string"
+            "type": "integer"
           },
           "title": "Trainunitids",
           "type": "array"
@@ -284,9 +284,8 @@
           "type": "integer"
         },
         "id": {
-          "default": null,
           "title": "Id",
-          "type": "string"
+          "type": "integer"
         },
         "tasks": {
           "items": {
@@ -298,7 +297,8 @@
       },
       "required": [
         "typePrefix",
-        "carriages"
+        "carriages",
+        "id"
       ],
       "title": "IncomingTrainUnit",
       "type": "object"
@@ -727,7 +727,7 @@
         },
         "members": {
           "items": {
-            "type": "string"
+            "type": "integer"
           },
           "title": "Members",
           "type": "array"
@@ -1057,7 +1057,7 @@
         "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
