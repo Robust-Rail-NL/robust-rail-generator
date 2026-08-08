@@ -15,8 +15,13 @@ class Action(RailModel):
     For Move actions, location is the destination TrackPart ID and resources
     contains the path. For other actions, location is where the action occurs.
 
-    train_unit_ids, if present, identifies the subset of the ShuntingUnit's
-    members involved. If absent, all members are involved.
+    The units an action involves are the ShuntingUnit's members, all of them.
+    There was a trainUnitIds field for naming a subset; it was never written by
+    the solver, never read by the evaluator on the HIP path, and null in all 606
+    actions of every fixture, so it was removed rather than carried further. Note
+    for anyone reintroducing per-action subsets: protobuf repeated fields have no
+    presence tracking, so "absent" and "empty" arrive identically and cannot mean
+    different things without a deliberate design for it.
 
     TODO: ShuntingUnit is currently embedded in full. Consider switching to
     an ID reference once the evaluator has access to a ShuntingUnit registry
@@ -29,7 +34,6 @@ class Action(RailModel):
     shunting_unit: Optional[ShuntingUnit] = Field(None, alias="shuntingUnit")
     location: Optional[int] = None
     resources: list[Resource] = Field(default_factory=list)
-    train_unit_ids: list[int] = Field(default_factory=list, alias="trainUnitIds")
 
 
 class Plan(SchemaVersioned):
