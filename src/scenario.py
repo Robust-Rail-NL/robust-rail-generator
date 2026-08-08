@@ -88,7 +88,7 @@ class ScenarioGenerator:
                 last_parking_track_part=train_standard.parking_track_part,
                 arrival=train_standard.time,
                 departure=train_standard.time,
-                display_name=train_standard.id,
+                id=train_standard.id,
             )
             outgoing_train_requests.append(train)
 
@@ -132,7 +132,7 @@ class ScenarioGenerator:
                 last_parking_track_part=train_standard.parking_track_part,
                 arrival=train_standard.time,
                 departure=train_standard.time,
-                display_name=train_standard.id,
+                id=train_standard.id,
             )
             out_standing_train_requests.append(train)
 

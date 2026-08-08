@@ -235,7 +235,7 @@
         "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
@@ -543,7 +543,7 @@
         "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
@@ -716,7 +716,7 @@
         "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
@@ -734,14 +734,14 @@
         },
         "parentIDs": {
           "items": {
-            "type": "string"
+            "type": "integer"
           },
           "title": "Parentids",
           "type": "array"
         },
         "childIDs": {
           "items": {
-            "type": "string"
+            "type": "integer"
           },
           "title": "Childids",
           "type": "array"
@@ -991,17 +991,17 @@
           "default": null,
           "title": "Departure"
         },
-        "displayName": {
+        "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "title": "Displayname"
+          "title": "Id"
         },
         "trainUnits": {
           "items": {

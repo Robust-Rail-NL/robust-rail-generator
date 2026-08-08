@@ -204,7 +204,7 @@ class RandomGenerator:
                 current_tasks = []
             train_unit_type = type_by_display_name[unit_type]
             unit = self.scenario_generator.create_incoming_train_unit(
-                id=str(i),
+                id=i,
                 type_prefix=train_unit_type.type_prefix,
                 carriages=train_unit_type.carriages,
                 tasks=current_tasks
@@ -230,7 +230,7 @@ class RandomGenerator:
             ### Incoming train
             if i in standing_trains["instanding"]:
                 train_in = self.scenario_generator.create_train(
-                    id=str(i),
+                    id=i,
                     time=self.scenario_generator.scenario.start_time,
                     members=train_units,
                     standing_index=1,
@@ -243,7 +243,7 @@ class RandomGenerator:
             else:
                 gateway, side = random.choice(self.gateways["arrival"])
                 train_in = self.scenario_generator.create_train(
-                    id=str(i),
+                    id=i,
                     time=arrival_times[i],
                     members=train_units,
                     side_track_part=side.id,
@@ -259,7 +259,7 @@ class RandomGenerator:
             unmatched_train_units = [self.scenario_generator.create_train_unit_unmatched_members(train_unit.type_prefix, train_unit.carriages) for train_unit in train_units]
             if i+id_offset in standing_trains["outstanding"]:
                 train_out = self.scenario_generator.create_train(
-                    id=f"{i+id_offset}",
+                    id=i + id_offset,
                     time=self.scenario_generator.scenario.end_time,
                     members=unmatched_train_units,
                     standing_index=1,
@@ -272,7 +272,7 @@ class RandomGenerator:
             else:
                 gateway, side = random.choice(self.gateways["departure"])
                 train_out = self.scenario_generator.create_train(
-                    id=f"{i+id_offset}",
+                    id=i + id_offset,
                     time=departure_times[i],
                     members=unmatched_train_units,
                     standing_index=1, # assume

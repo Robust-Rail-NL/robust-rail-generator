@@ -83,7 +83,7 @@
         "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
@@ -314,7 +314,7 @@
         "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
@@ -474,17 +474,17 @@
           "default": null,
           "title": "Departure"
         },
-        "displayName": {
+        "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "title": "Displayname"
+          "title": "Id"
         },
         "trainUnits": {
           "items": {

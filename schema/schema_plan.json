@@ -132,7 +132,7 @@
         "id": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "integer"
             },
             {
               "type": "null"
@@ -150,14 +150,14 @@
         },
         "parentIDs": {
           "items": {
-            "type": "string"
+            "type": "integer"
           },
           "title": "Parentids",
           "type": "array"
         },
         "childIDs": {
           "items": {
-            "type": "string"
+            "type": "integer"
           },
           "title": "Childids",
           "type": "array"

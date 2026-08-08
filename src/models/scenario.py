@@ -116,7 +116,7 @@ class IncomingTrain(RailModel):
     # None for standing trains (already present at scenario start).
     arrival: Optional[int] = None
     departure: Optional[int] = None
-    id: Optional[str] = None
+    id: Optional[int] = None
     members: list[IncomingTrainUnit] = Field(default_factory=list)
     # TODO: confirm whether standing_index should be present on IncomingTrain
     # as well as TrainRequest. The non-HIP proto has it on the flat Train type;
@@ -135,7 +135,13 @@ class TrainRequest(RailModel):
     # None for standing trains (remaining at scenario end).
     arrival: Optional[int] = None
     departure: Optional[int] = None
-    display_name: Optional[str] = Field(None, alias="displayName")
+    # Formerly "displayName", which is what the generator called it while
+    # assigning it the departing train's id and every consumer treated it as
+    # one: the evaluator derives both the Outgoing's and its ShuntingUnit's
+    # identity from it, and the solver's only read prints it as "train (id)".
+    # The type information the old name implied is carried per unit in
+    # train_units, as (type_prefix, carriages).
+    id: Optional[int] = None
     # If a TrainUnit's id is None, any unit of the matching type is acceptable.
     train_units: list[TrainUnit] = Field(default_factory=list, alias="trainUnits")
     standing_index: Optional[float] = Field(None, alias="standingIndex")
@@ -158,7 +164,7 @@ class Train(RailModel):
     # None for standing trains (already present at scenario start / remaining
     # at scenario end).
     time: Optional[int] = None
-    id: Optional[str] = None
+    id: Optional[int] = None
     members: list[TrainUnit] = Field(default_factory=list)
     standing_index: Optional[float] = Field(None, alias="standingIndex")
     can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
@@ -176,14 +182,14 @@ class ShuntingUnit(RailModel):
     StandOut task types in Plan actions carry this information explicitly.
     """
 
-    id: Optional[str] = None
+    id: Optional[int] = None
     # TODO: decide whether members should be IDs (current decision) or embedded
     # TrainUnit objects (as in the HIP proto and C# mid-migration state). The
     # Plan proto embeds a full ShuntingUnit in each Action, so if Action
     # references ShuntingUnit by ID instead, a registry is needed.
     members: list[int] = Field(default_factory=list)
-    parent_ids: list[str] = Field(default_factory=list, alias="parentIDs")
-    child_ids: list[str] = Field(default_factory=list, alias="childIDs")
+    parent_ids: list[int] = Field(default_factory=list, alias="parentIDs")
+    child_ids: list[int] = Field(default_factory=list, alias="childIDs")
 
 
 class NonServiceTraffic(RailModel):
@@ -192,7 +198,7 @@ class NonServiceTraffic(RailModel):
     members: list[int] = Field(default_factory=list)
     arrival: Optional[int] = None
     departure: Optional[int] = None
-    id: Optional[str] = None
+    id: Optional[int] = None
 
 
 class DisabledTrackPart(RailModel):
