@@ -148,11 +148,11 @@
           "default": null,
           "title": "Type"
         },
-        "relatedTrackParts": {
+        "relatedTrackPartIDs": {
           "items": {
             "type": "integer"
           },
-          "title": "Relatedtrackparts",
+          "title": "Relatedtrackpartids",
           "type": "array"
         },
         "taskTypes": {
@@ -502,11 +502,11 @@
       "additionalProperties": false,
       "description": "Non-service traffic that reserves part of the infrastructure.",
       "properties": {
-        "members": {
+        "memberIDs": {
           "items": {
             "type": "integer"
           },
-          "title": "Members",
+          "title": "Memberids",
           "type": "array"
         },
         "arrival": {
@@ -551,7 +551,7 @@
     },
     "Plan": {
       "additionalProperties": false,
-      "description": "The output of a shunting algorithm: an ordered list of actions.\n\ntrack_parts is acknowledged technical debt: the evaluator currently needs\nit because it cannot reliably access the original Location input through\nother channels. Once the evaluator receives both Location and Plan as\ninputs, this field should be removed.",
+      "description": "The output of a shunting algorithm: an ordered list of actions.\n\nThere was a trackParts field here, carrying a copy of the Location's track\ngraph because the evaluator supposedly could not reach the original. That\ncondition no longer holds \u2014 run_evaluator.py passes --path_location\nalongside --path_plan \u2014 and in practice nothing ever wrote or read it.",
       "properties": {
         "schemaVersion": {
           "default": 1,
@@ -563,13 +563,6 @@
             "$ref": "#/$defs/Action"
           },
           "title": "Actions",
-          "type": "array"
-        },
-        "trackParts": {
-          "items": {
-            "$ref": "#/$defs/TrackPart"
-          },
-          "title": "Trackparts",
           "type": "array"
         }
       },
@@ -704,7 +697,7 @@
     },
     "ShuntingUnit": {
       "additionalProperties": false,
-      "description": "A combination of TrainUnits that moves as a single unit at some point\nin time.\n\nmembers is a list of TrainUnit IDs (not embedded objects). Consumers that\nneed the full TrainUnit look it up via the scenario.\n\nNote: standingType has been dropped from the unified schema. StandIn and\nStandOut task types in Plan actions carry this information explicitly.",
+      "description": "A combination of TrainUnits that moves as a single unit at some point\nin time.\n\nmemberIDs is a list of TrainUnit IDs, not embedded objects; consumers that\nneed the full TrainUnit look it up via the scenario. Every array of IDs in\nthis schema carries the \"IDs\" suffix, so that a field holding references is\ndistinguishable by name from one holding objects \u2014 IncomingTrain.members\ngenuinely embeds its units.\n\nNote: standingType has been dropped from the unified schema. StandIn and\nStandOut task types in Plan actions carry this information explicitly.",
       "properties": {
         "id": {
           "anyOf": [
@@ -718,11 +711,11 @@
           "default": null,
           "title": "Id"
         },
-        "members": {
+        "memberIDs": {
           "items": {
             "type": "integer"
           },
-          "title": "Members",
+          "title": "Memberids",
           "type": "array"
         },
         "parentIDs": {

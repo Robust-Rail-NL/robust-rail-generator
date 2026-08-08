@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import Field
 
-from .location import Resource, TaskType, TrackPart
+from .location import Resource, TaskType
 from .scenario import ShuntingUnit
 from .utilities import RailModel, SchemaVersioned
 
@@ -39,12 +39,10 @@ class Action(RailModel):
 class Plan(SchemaVersioned):
     """The output of a shunting algorithm: an ordered list of actions.
 
-    track_parts is acknowledged technical debt: the evaluator currently needs
-    it because it cannot reliably access the original Location input through
-    other channels. Once the evaluator receives both Location and Plan as
-    inputs, this field should be removed.
+    There was a trackParts field here, carrying a copy of the Location's track
+    graph because the evaluator supposedly could not reach the original. That
+    condition no longer holds — run_evaluator.py passes --path_location
+    alongside --path_plan — and in practice nothing ever wrote or read it.
     """
 
     actions: list[Action] = Field(default_factory=list)
-    # TODO: remove once the evaluator receives Location as a separate input.
-    track_parts: list[TrackPart] = Field(default_factory=list, alias="trackParts")

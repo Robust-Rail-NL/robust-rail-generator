@@ -175,19 +175,22 @@ class ShuntingUnit(RailModel):
     """A combination of TrainUnits that moves as a single unit at some point
     in time.
 
-    members is a list of TrainUnit IDs (not embedded objects). Consumers that
-    need the full TrainUnit look it up via the scenario.
+    memberIDs is a list of TrainUnit IDs, not embedded objects; consumers that
+    need the full TrainUnit look it up via the scenario. Every array of IDs in
+    this schema carries the "IDs" suffix, so that a field holding references is
+    distinguishable by name from one holding objects — IncomingTrain.members
+    genuinely embeds its units.
 
     Note: standingType has been dropped from the unified schema. StandIn and
     StandOut task types in Plan actions carry this information explicitly.
     """
 
     id: Optional[int] = None
-    # TODO: decide whether members should be IDs (current decision) or embedded
-    # TrainUnit objects (as in the HIP proto and C# mid-migration state). The
-    # Plan proto embeds a full ShuntingUnit in each Action, so if Action
-    # references ShuntingUnit by ID instead, a registry is needed.
-    members: list[int] = Field(default_factory=list)
+    # TODO: decide whether these should stay IDs (current decision) or become
+    # embedded TrainUnit objects (as in the HIP proto and C# mid-migration
+    # state). The Plan proto embeds a full ShuntingUnit in each Action, so if
+    # Action references ShuntingUnit by ID instead, a registry is needed.
+    member_ids: list[int] = Field(default_factory=list, alias="memberIDs")
     parent_ids: list[int] = Field(default_factory=list, alias="parentIDs")
     child_ids: list[int] = Field(default_factory=list, alias="childIDs")
 
@@ -195,7 +198,7 @@ class ShuntingUnit(RailModel):
 class NonServiceTraffic(RailModel):
     """Non-service traffic that reserves part of the infrastructure."""
 
-    members: list[int] = Field(default_factory=list)
+    member_ids: list[int] = Field(default_factory=list, alias="memberIDs")
     arrival: Optional[int] = None
     departure: Optional[int] = None
     id: Optional[int] = None

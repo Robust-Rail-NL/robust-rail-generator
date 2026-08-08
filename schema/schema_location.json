@@ -28,11 +28,11 @@
           "default": null,
           "title": "Type"
         },
-        "relatedTrackParts": {
+        "relatedTrackPartIDs": {
           "items": {
             "type": "integer"
           },
-          "title": "Relatedtrackparts",
+          "title": "Relatedtrackpartids",
           "type": "array"
         },
         "taskTypes": {

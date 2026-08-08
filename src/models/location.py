@@ -79,7 +79,7 @@ class Facility(RailModel):
 
     id: Optional[int] = None
     type: Optional[str] = None
-    related_track_parts: list[int] = Field(default_factory=list, alias="relatedTrackParts")
+    related_track_part_ids: list[int] = Field(default_factory=list, alias="relatedTrackPartIDs")
     task_types: list[TaskType] = Field(default_factory=list, alias="taskTypes")
     simultaneous_usage_count: Optional[int] = Field(None, alias="simultaneousUsageCount")
     # Optional: evaluator/generator only.

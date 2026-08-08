@@ -280,11 +280,11 @@
       "additionalProperties": false,
       "description": "Non-service traffic that reserves part of the infrastructure.",
       "properties": {
-        "members": {
+        "memberIDs": {
           "items": {
             "type": "integer"
           },
-          "title": "Members",
+          "title": "Memberids",
           "type": "array"
         },
         "arrival": {

@@ -40,7 +40,7 @@ class RandomGenerator:
 
     def get_gateway_tracks(self, config, location):
         gateways = []
-        facilities = [t for f in location.facilities for t in f.related_track_parts]
+        facilities = [t for f in location.facilities for t in f.related_track_part_ids]
         for track in location.track_parts:
             if track.type == TrackPartType.RAILROAD:
                 bumper_a = [config["track_id_map"][a].id
