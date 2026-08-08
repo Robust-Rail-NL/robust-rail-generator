@@ -1,0 +1,49 @@
+name: Python
+
+# pydantic is the 2.0.0 migration branch; main and dev are the stable ones.
+on:
+  push:
+    branches: [ "main", "dev", "pydantic" ]
+  pull_request:
+    branches: [ "main", "dev", "pydantic" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v5
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+    - name: Install dependencies
+      run: uv sync --frozen
+    - name: Test
+      run: uv run --frozen pytest -q
+
+  schema:
+    runs-on: ubuntu-latest
+    name: Schema freshness
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v5
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+    - name: Install dependencies
+      run: uv sync --frozen
+
+    # schema/*.json is the interchange contract the solver and the evaluator
+    # validate against, and it is generated from the Pydantic models rather
+    # than written by hand. If a model changes and the export is not re-run,
+    # everything downstream keeps validating against the old contract and
+    # reports success — which is worse than not validating at all.
+    - name: Check the exported schemas match the models
+      run: |
+        uv run --frozen python scripts/export_schema.py
+        git diff --exit-code schema/ \
+          || { echo "::error::schema/ is stale — run 'python scripts/export_schema.py' and commit the result"; exit 1; }
