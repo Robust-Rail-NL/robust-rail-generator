@@ -18,9 +18,10 @@ SRC_DIR = os.path.join(os.path.dirname(__file__), "..", "src")
 SCHEMA_DIR = os.path.join(os.path.dirname(__file__), "..", "schema")
 sys.path.insert(0, SRC_DIR)
 
+from pydantic import TypeAdapter
 from pydantic.json_schema import models_json_schema
 
-from models import Location, Scenario, Plan
+from models import Location, Scenario, Plan, ScenarioConfig
 
 TITLE = "Robust Rail Interchange Schema"
 DESCRIPTION = (
@@ -41,6 +42,14 @@ def main() -> None:
     write(os.path.join(SCHEMA_DIR, "schema_location.json"), Location.model_json_schema())
     write(os.path.join(SCHEMA_DIR, "schema_scenario.json"), Scenario.model_json_schema())
     write(os.path.join(SCHEMA_DIR, "schema_plan.json"), Plan.model_json_schema())
+
+    # ScenarioConfig is a discriminated union rather than a single model, so it
+    # goes through TypeAdapter. It is also generator input rather than
+    # interchange, which is why it stays out of the combined schema below.
+    write(
+        os.path.join(SCHEMA_DIR, "schema_scenario_config.json"),
+        TypeAdapter(ScenarioConfig).json_schema(),
+    )
 
     mapping, combined = models_json_schema(
         [(Location, "validation"), (Scenario, "validation"), (Plan, "validation")],

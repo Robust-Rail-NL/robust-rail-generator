@@ -24,6 +24,14 @@ from .scenario import (
     DisabledTrackPart,
 )
 from .plan import Plan, Action
+from .scenario_config import (
+    ScenarioConfig,
+    CustomTrainsConfig,
+    GeneratedTrainsConfig,
+    TrainUnitDistribution,
+    Gateway,
+    Intent,
+)
 
 __all__ = [
     "EXPECTED_SCHEMA_VERSION",
@@ -50,4 +58,10 @@ __all__ = [
     "DisabledTrackPart",
     "Plan",
     "Action",
+    "ScenarioConfig",
+    "CustomTrainsConfig",
+    "GeneratedTrainsConfig",
+    "TrainUnitDistribution",
+    "Gateway",
+    "Intent",
 ]

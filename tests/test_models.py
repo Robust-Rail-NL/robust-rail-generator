@@ -6,7 +6,15 @@ import re
 
 import pytest
 
+from pydantic import TypeAdapter, ValidationError
+
 from models.scenario import IncomingTrainUnit, TaskSpec, TrainUnit, TrainUnitType
+from models.scenario_config import (
+    CustomTrainsConfig,
+    GeneratedTrainsConfig,
+    ScenarioConfig,
+    TrainUnitDistribution,
+)
 
 DATA_DIR = __import__("os").path.join(
     __import__("os").path.dirname(__file__), "..", "data"
@@ -81,3 +89,50 @@ class TestDefaultTrainUnitTypesData:
                 f"typePrefix {entry['typePrefix']!r} for {entry['name']!r} "
                 "is not all-uppercase"
             )
+
+
+class TestScenarioConfig:
+    """The configuration files are the only pipeline input written by hand, and
+    check_config.py accepts any key it does not recognise — so a mistyped
+    optional key has always been ignored rather than reported. These cover the
+    part of that gap the model closes."""
+
+    def test_trains_given_selects_the_custom_form(self):
+        config = TypeAdapter(ScenarioConfig).validate_python({
+            "location": "loc", "start_time": 0, "end_time": 3600,
+            "use_default_material": True, "perform_servicing": False,
+            "trains_given": True, "custom_trains": [], "custom_train_units": [],
+        })
+        assert isinstance(config, CustomTrainsConfig)
+
+    def test_trains_given_false_selects_the_generated_form(self):
+        config = TypeAdapter(ScenarioConfig).validate_python({
+            "location": "loc", "start_time": 0, "end_time": 3600,
+            "use_default_material": True, "perform_servicing": False,
+            "trains_given": False, "number_of_trains": 4, "seed": 1,
+        })
+        assert isinstance(config, GeneratedTrainsConfig)
+
+    def test_a_mistyped_optional_key_is_rejected(self):
+        with pytest.raises(ValidationError):
+            TypeAdapter(ScenarioConfig).validate_python({
+                "location": "loc", "start_time": 0, "end_time": 3600,
+                "use_default_material": True, "perform_servicing": False,
+                "trains_given": False, "min_time_in_yards": 600,
+            })
+
+    def test_the_camelcase_standing_ratios_are_rejected(self):
+        """scenario_config_test.json carried inStanding_ratio/outStanding_ratio,
+        which random_generator.py never reads, so they quietly did nothing."""
+        with pytest.raises(ValidationError):
+            TrainUnitDistribution(train_unit_types=["VIRM-4"], inStanding_ratio=0.3)
+
+    def test_intent_is_a_declared_field_not_a_tolerated_extra(self):
+        config = TypeAdapter(ScenarioConfig).validate_python({
+            "location": "loc", "start_time": 0, "end_time": 3600,
+            "use_default_material": True, "perform_servicing": False,
+            "trains_given": False,
+            "intent": {"designed_for": "domain", "notes": ["a", "b"]},
+        })
+        assert config.intent.designed_for == "domain"
+        assert config.intent.notes == ["a", "b"]
