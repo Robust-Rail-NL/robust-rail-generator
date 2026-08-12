@@ -790,6 +790,7 @@
     }
   },
   "required": [
+    "trainUnitTypes",
     "startTime",
     "endTime"
   ],

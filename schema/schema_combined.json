@@ -370,6 +370,9 @@
           "type": "array"
         }
       },
+      "required": [
+        "trackParts"
+      ],
       "title": "Location",
       "type": "object"
     },
@@ -566,6 +569,9 @@
           "type": "array"
         }
       },
+      "required": [
+        "actions"
+      ],
       "title": "Plan",
       "type": "object"
     },
@@ -689,6 +695,7 @@
         }
       },
       "required": [
+        "trainUnitTypes",
         "startTime",
         "endTime"
       ],

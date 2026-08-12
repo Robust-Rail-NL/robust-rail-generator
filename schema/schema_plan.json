@@ -207,6 +207,9 @@
       "type": "array"
     }
   },
+  "required": [
+    "actions"
+  ],
   "title": "Plan",
   "type": "object"
 }

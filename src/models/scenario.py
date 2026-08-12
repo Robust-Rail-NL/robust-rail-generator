@@ -247,9 +247,13 @@ class Scenario(SchemaVersioned):
     def to_json(self, **kwargs) -> str:
         return self.model_dump_json(by_alias=True, exclude_unset=False, **kwargs)
 
-    train_unit_types: list[TrainUnitType] = Field(
-        default_factory=list, alias="trainUnitTypes"
-    )
+    # Required: every TrainUnit references a type by (typePrefix, carriages),
+    # so a scenario without this table cannot be resolved. Note that this is the
+    # one promotion with a cost — ScenarioGenerator builds a Scenario empty and
+    # populates it field by field, so it must now pass train_unit_types=[]
+    # explicitly. Requiredness on the wire and construct-then-populate pull in
+    # opposite directions; worth remembering before promoting more fields here.
+    train_unit_types: list[TrainUnitType] = Field(alias="trainUnitTypes")
 
     # Trains arriving at and departing from the shunting yard.
     # The HIP-shape split (IncomingTrain / TrainRequest) is used rather than

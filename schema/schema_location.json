@@ -347,6 +347,9 @@
       "type": "array"
     }
   },
+  "required": [
+    "trackParts"
+  ],
   "title": "Location",
   "type": "object"
 }

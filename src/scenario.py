@@ -25,7 +25,10 @@ class ScenarioGenerator:
         self.scenario_out: List[Train] = []
 
         self.scenario_train_unit_types: List[TrainUnitType] = []
-        self.scenario_solver = Scenario(start_time=start, end_time=end)
+        # train_unit_types is required on Scenario, so it has to be passed here
+        # even though create_solver_format_scenario overwrites it later.
+        self.scenario_solver = Scenario(start_time=start, end_time=end,
+                                        train_unit_types=[])
         
         # Location where the scenario happens
         self.location = None

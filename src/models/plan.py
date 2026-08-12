@@ -45,4 +45,7 @@ class Plan(SchemaVersioned):
     alongside --path_plan — and in practice nothing ever wrote or read it.
     """
 
-    actions: list[Action] = Field(default_factory=list)
+    # Required: a plan is its actions. It carried a default until 2026-08-12,
+    # which made {} a valid Plan — so a producer that emitted nothing at all
+    # passed validation and the emptiness only surfaced downstream, if ever.
+    actions: list[Action]

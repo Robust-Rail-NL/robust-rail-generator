@@ -114,7 +114,14 @@ class Location(SchemaVersioned):
     """The fixed part of the problem specification: track layout and
     facilities. Does not change on a daily basis."""
 
-    track_parts: list[TrackPart] = Field(default_factory=list, alias="trackParts")
+    # Required, unlike the two below: a Location without trackParts is not a
+    # partially-specified location, it is not a location. With a default it
+    # validated, so {} was a valid Location and a fixture sweep reporting
+    # "N/N valid" said less than it appeared to. An empty list still validates
+    # — `required` is key presence only — but the corpus has no such file, and
+    # minItems was left off deliberately (see SCHEMA_CHANGELOG.md).
+    track_parts: list[TrackPart] = Field(alias="trackParts")
+    # Optional: a location may genuinely have no facilities and no task types.
     facilities: list[Facility] = Field(default_factory=list, alias="facilities")
     task_types: list[TaskType] = Field(default_factory=list, alias="taskTypes")
 
