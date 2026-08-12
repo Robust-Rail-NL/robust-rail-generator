@@ -19,9 +19,17 @@ class Action(RailModel):
     There was a trainUnitIds field for naming a subset; it was never written by
     the solver, never read by the evaluator on the HIP path, and null in all 606
     actions of every fixture, so it was removed rather than carried further. Note
-    for anyone reintroducing per-action subsets: protobuf repeated fields have no
-    presence tracking, so "absent" and "empty" arrive identically and cannot mean
+    for anyone reintroducing per-action subsets: the evaluator reads this format
+    through protobuf, and protobuf repeated fields have no presence tracking, so
+    on that path "absent" and "empty" arrive identically and cannot mean
     different things without a deliberate design for it.
+
+    That constraint is the evaluator's alone, and is worth not overgeneralising —
+    it was read as applying to every consumer once, which is wrong in a way that
+    matters: the solver moved off protobuf to System.Text.Json and does
+    distinguish the two, which is why it can enforce `required` on read (see its
+    NoProto/Location.cs). Any "absent vs empty" reasoning has to be settled per
+    consumer.
 
     TODO: ShuntingUnit is currently embedded in full. Consider switching to
     an ID reference once the evaluator has access to a ShuntingUnit registry
