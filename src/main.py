@@ -146,7 +146,8 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         # If no name is given, generate it
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
         custom = f"custom" if config["trains_given"] else f"random_{config['seed']}s"
-        scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_file.split(os.sep)[-1].split('_')[-1].split('.')[0]}"
+        config_suffix = config_file.split(os.sep)[-1].removeprefix("scenario_config_").removesuffix(".json")
+        scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_suffix}"
     if ".json" not in scenario_file:
         scenario_file += ".json"
     if os.sep in scenario_file:
