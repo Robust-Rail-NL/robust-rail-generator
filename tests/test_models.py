@@ -2,13 +2,22 @@
 (Phase 2 of the 2.0.0 roadmap, see unified-schema-design.md)."""
 
 import json
+import logging
 import re
 
 import pytest
 
 from pydantic import TypeAdapter, ValidationError
 
-from models.scenario import IncomingTrainUnit, TaskSpec, TrainUnit, TrainUnitType
+from models.scenario import (
+    IncomingTrain,
+    IncomingTrainUnit,
+    Scenario,
+    TaskSpec,
+    TrainRequest,
+    TrainUnit,
+    TrainUnitType,
+)
 from models.scenario_config import (
     CustomTrainsConfig,
     GeneratedTrainsConfig,
@@ -89,6 +98,83 @@ class TestDefaultTrainUnitTypesData:
                 f"typePrefix {entry['typePrefix']!r} for {entry['name']!r} "
                 "is not all-uppercase"
             )
+
+
+def _scenario(**overrides):
+    kwargs = dict(train_unit_types=[], in_=[], out=[], start_time=0, end_time=100)
+    kwargs.update(overrides)
+    return Scenario(**kwargs)
+
+
+def _incoming(track, standing_index, id_):
+    return IncomingTrain(
+        entry_track_part=1, first_parking_track_part=track,
+        id=id_, standing_index=standing_index,
+    )
+
+
+def _request(track, standing_index, id_):
+    return TrainRequest(
+        leave_track_part=1, last_parking_track_part=track,
+        id=id_, standing_index=standing_index,
+    )
+
+
+class TestStandingOrder:
+    """solver#17/#18 and unified-schema-design.md's "Standing order" section:
+    inStanding order is a given fact and must be fully, unambiguously
+    specified wherever a track has more than one standing unit; outStanding
+    order is an optional terminal requirement, where "no preference" (all
+    unset) is legitimate but a partial mix of set/unset is still ambiguous.
+    """
+
+    def test_instanding_distinct_indices_are_accepted(self):
+        _scenario(in_standing=[_incoming(5, 0, 1), _incoming(5, 1, 2)])
+
+    def test_instanding_duplicate_index_is_rejected(self):
+        with pytest.raises(ValidationError):
+            _scenario(in_standing=[_incoming(5, 0, 1), _incoming(5, 0, 2)])
+
+    def test_instanding_missing_index_is_rejected_when_track_is_shared(self):
+        with pytest.raises(ValidationError):
+            _scenario(in_standing=[_incoming(5, 0, 1), _incoming(5, None, 2)])
+
+    def test_instanding_index_on_a_singleton_track_is_not_required(self):
+        _scenario(in_standing=[_incoming(5, None, 1)])
+
+    def test_instanding_singleton_track_with_index_set_warns(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            _scenario(in_standing=[_incoming(5, 0, 1)])
+        assert "unused" in caplog.text
+
+    def test_instanding_out_of_sequence_indices_warn_but_are_accepted(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            _scenario(in_standing=[_incoming(5, 0, 1), _incoming(5, 2, 2)])
+        assert "not a contiguous sequence" in caplog.text
+
+    def test_outstanding_all_unset_is_accepted_as_no_preference(self):
+        _scenario(out_standing=[_request(5, None, 1), _request(5, None, 2)])
+
+    def test_outstanding_all_unset_does_not_warn(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            _scenario(out_standing=[_request(5, None, 1), _request(5, None, 2)])
+        assert "outStanding" not in caplog.text
+
+    def test_outstanding_all_unset_logs_one_info_summary(self, caplog):
+        with caplog.at_level(logging.INFO):
+            _scenario(out_standing=[_request(5, None, 1), _request(5, None, 2)])
+        assert "1 track has multiple standing trains with no order specified" in caplog.text
+
+    def test_outstanding_mixed_set_and_unset_is_rejected(self):
+        with pytest.raises(ValidationError):
+            _scenario(out_standing=[_request(5, 0, 1), _request(5, None, 2)])
+
+    def test_outstanding_duplicate_index_is_rejected(self):
+        with pytest.raises(ValidationError):
+            _scenario(out_standing=[_request(5, 0, 1), _request(5, 0, 2)])
+
+    def test_outstanding_distinct_indices_are_accepted(self):
+        _scenario(out_standing=[_request(5, 0, 1), _request(5, 1, 2)])
 
 
 class TestScenarioConfig:

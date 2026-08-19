@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Optional, Type
+import logging
+from typing import Callable, Optional, Type
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from .location import TaskType
 from .utilities import RailModel, SchemaVersioned, TimeInterval
@@ -232,6 +233,98 @@ class MemberOfStaff(RailModel):
     name: Optional[str] = None
 
 
+def _validate_standing_group(
+    entries: list,
+    track_of: Callable[[object], int],
+    list_name: str,
+    required: bool,
+) -> None:
+    """Check standingIndex consistency within one Scenario standing list.
+
+    Groups entries by the track they stand on. A track with a single
+    standing unit has nothing to be ordered against, so any standingIndex
+    set there is decorative (warning only).
+
+    For a track with two or more standing units:
+    - required=True (inStanding): standing order is a given fact, so every
+      unit must have a standingIndex, and they must be mutually distinct.
+    - required=False (outStanding): standing order is an optional terminal
+      requirement. All unset means "no preference" and is fine. A *mix* of
+      set and unset is still ambiguous (error), as are duplicate values
+      among the ones that are set.
+
+    Either way, distinct values that don't form a contiguous 0..N-1
+    sequence are allowed (order is still unambiguous) but flagged as a
+    warning, since it's a likely sign of a typo or a leftover index from
+    elsewhere.
+    """
+    groups: dict[int, list] = {}
+    for entry in entries:
+        groups.setdefault(track_of(entry), []).append(entry)
+
+    unordered_tracks = 0
+
+    for track, group in groups.items():
+        indices = [entry.standing_index for entry in group]
+
+        if len(group) == 1:
+            if indices[0] is not None:
+                logging.warning(
+                    f"{list_name}: standingIndex is set on track {track}, but it "
+                    "is the only standing unit there; the value is unused."
+                )
+            continue
+
+        set_values = [i for i in indices if i is not None]
+
+        if required:
+            if len(set_values) != len(indices):
+                raise ValueError(
+                    f"{list_name}: track {track} has {len(indices)} standing "
+                    "units sharing it, but not all have standingIndex set. "
+                    "Standing order is a given fact and must be fully "
+                    "specified whenever more than one unit shares a track."
+                )
+        else:
+            if 0 < len(set_values) < len(indices):
+                raise ValueError(
+                    f"{list_name}: track {track} has a mix of standingIndex "
+                    "set and unset among its standing units — either set it "
+                    "for all of them (a specific order) or none (no "
+                    "preference)."
+                )
+            if not set_values:
+                # No preference among these units — a legitimate, complete
+                # specification, not worth a per-track warning. Counted
+                # below for a single summary instead.
+                unordered_tracks += 1
+                continue
+
+        if len(set(set_values)) != len(set_values):
+            raise ValueError(
+                f"{list_name}: track {track} has two or more standing units "
+                "with the same standingIndex; order must be unambiguous."
+            )
+
+        if sorted(set_values) != list(range(len(set_values))):
+            logging.warning(
+                f"{list_name}: track {track}'s standingIndex values "
+                f"{sorted(set_values)} are not a contiguous sequence "
+                f"starting at 0 ({list(range(len(set_values)))} expected)."
+            )
+
+    if unordered_tracks == 1:
+        logging.info(
+            f"{list_name}: 1 track has multiple standing trains with no "
+            "order specified."
+        )
+    elif unordered_tracks > 1:
+        logging.info(
+            f"{list_name}: {unordered_tracks} tracks each have multiple "
+            "standing trains with no order specified."
+        )
+
+
 class Scenario(SchemaVersioned):
     """The daily-varying part of the problem specification: which trains
     arrive, depart, or remain in the shunting yard.
@@ -275,6 +368,22 @@ class Scenario(SchemaVersioned):
     )
     workers: list[MemberOfStaff] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def _validate_standing_order(self) -> "Scenario":
+        _validate_standing_group(
+            self.in_standing,
+            lambda t: t.first_parking_track_part,
+            "inStanding",
+            required=True,
+        )
+        _validate_standing_group(
+            self.out_standing,
+            lambda t: t.last_parking_track_part,
+            "outStanding",
+            required=False,
+        )
+        return self
+
 
 class EvaluatorScenario(SchemaVersioned):
     """TEMPORARY: The daily-varying part of the problem specification: which
@@ -312,3 +421,19 @@ class EvaluatorScenario(SchemaVersioned):
         default_factory=list, alias="disabledTrackPart"
     )
     workers: list[MemberOfStaff] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_standing_order(self) -> "EvaluatorScenario":
+        _validate_standing_group(
+            self.in_standing,
+            lambda t: t.parking_track_part,
+            "inStanding",
+            required=True,
+        )
+        _validate_standing_group(
+            self.out_standing,
+            lambda t: t.parking_track_part,
+            "outStanding",
+            required=False,
+        )
+        return self
