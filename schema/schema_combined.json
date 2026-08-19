@@ -247,7 +247,8 @@
         "standingIndex": {
           "anyOf": [
             {
-              "type": "number"
+              "minimum": 0,
+              "type": "integer"
             },
             {
               "type": "null"
@@ -1006,7 +1007,8 @@
         "standingIndex": {
           "anyOf": [
             {
-              "type": "number"
+              "minimum": 0,
+              "type": "integer"
             },
             {
               "type": "null"

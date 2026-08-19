@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Callable, Optional, Type
 
-from pydantic import Field, model_validator
+from pydantic import Field, NonNegativeInt, model_validator
 
 from .location import TaskType
 from .utilities import RailModel, SchemaVersioned, TimeInterval
@@ -119,10 +119,11 @@ class IncomingTrain(RailModel):
     departure: Optional[int] = None
     id: Optional[int] = None
     members: list[IncomingTrainUnit] = Field(default_factory=list)
-    # TODO: confirm whether standing_index should be present on IncomingTrain
-    # as well as TrainRequest. The non-HIP proto has it on the flat Train type;
-    # the HIP proto only has it on TrainRequest.
-    standing_index: Optional[float] = Field(None, alias="standingIndex")
+    # Required and mutually distinct within inStanding groups sharing a
+    # track (a given fact about the initial state); see the "Standing order"
+    # decision in unified-schema-design.md. Enforced by Scenario's
+    # cross-record validator, not by this field's own type.
+    standing_index: Optional[NonNegativeInt] = Field(None, alias="standingIndex")
 
 
 class TrainRequest(RailModel):
@@ -145,7 +146,9 @@ class TrainRequest(RailModel):
     id: Optional[int] = None
     # If a TrainUnit's id is None, any unit of the matching type is acceptable.
     train_units: list[TrainUnit] = Field(default_factory=list, alias="trainUnits")
-    standing_index: Optional[float] = Field(None, alias="standingIndex")
+    # Optional within outStanding: null means no preference. See the
+    # "Standing order" decision in unified-schema-design.md.
+    standing_index: Optional[NonNegativeInt] = Field(None, alias="standingIndex")
     # TODO: confirm whether can_depart_from_any_track (non-HIP only) should
     # be added here for outstanding trains.
     can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
@@ -167,7 +170,7 @@ class Train(RailModel):
     time: Optional[int] = None
     id: Optional[int] = None
     members: list[TrainUnit] = Field(default_factory=list)
-    standing_index: Optional[float] = Field(None, alias="standingIndex")
+    standing_index: Optional[NonNegativeInt] = Field(None, alias="standingIndex")
     can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
     minimum_duration: Optional[str] =  Field(None, alias="minimumDuration")
 
