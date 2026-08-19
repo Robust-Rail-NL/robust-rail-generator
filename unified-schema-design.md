@@ -267,6 +267,10 @@ inside `TrainUnit`). Putting it on `Scenario` and referring to it by name from
 standing trains. The proto field is already field 7 on each in the evaluator's
 local `HIP_Scenario.proto`; generator and design doc should match.
 
+**Type and required-ness are settled below** — see "Standing order
+(`inStanding` / `outStanding`)" after the `IncomingTrain` / `TrainRequest`
+section.
+
 **Open question:** where does `Train.minimumDuration` (non-HIP) go in the
 unified model, and what does it mean?
 
@@ -291,6 +295,43 @@ unified model, and what does it mean?
 
 **Open question:** the non-HIP `Train` has `canDepartFromAnyTrack` (for
 outstanding trains). HIP has no equivalent. Add it to `TrainRequest`?
+
+### Standing order (`inStanding` / `outStanding`)
+
+**Decision: `standingIndex` is `Optional[NonNegativeInt]` on both
+`IncomingTrain` and `TrainRequest`, required (and mutually distinct) within
+`inStanding` groups sharing a track, left optional within `outStanding`.**
+
+- **Type.** Neither engine ever does arithmetic with this value — both only
+  compare it to establish an order (`ExitAction.cpp`'s `minIndex` scan,
+  `ArriveAction.cpp`'s tie check). cTORS's own `TrainGoal` already types it
+  `const int` internally (`TrainGoals.h:23`) and truncates the wire's
+  `double` down to that at construction (`TrainGoal.cpp:41`); no fractional
+  value appears anywhere in the current corpus either. The `double` never
+  bought real precision, so it becomes `NonNegativeInt` — negative values
+  have no interpretation.
+
+- **Required within `inStanding`.** Which unit sits at which end of a track
+  is a fact about the world at scenario start, the same kind of given as
+  `entryTrackPart` for an arriving train — leaving it unconstrained doesn't
+  add flexibility, it under-specifies the scenario: two solvers (or two runs
+  of one solver) can each produce a plan valid for a different starting
+  arrangement while nominally solving "the same scenario." `solver#17`
+  already shows this failure mode in practice (solver and evaluator
+  disagreeing which side a combined inStanding unit's members sit on);
+  `solver#18` is the same defect for order — the field is parsed and then
+  never read again, so ordering silently falls back to solver-internal
+  arrival order instead of the scenario's own statement. Enforced as a
+  validation rule across sibling records sharing a track, not by the field's
+  own type — a track with a single standing unit has nothing to be ordered
+  against, so the rule only bites where ambiguity is actually possible.
+
+- **Optional within `outStanding`.** Unlike inStanding, outStanding order
+  describes a terminal requirement, not a given fact — "park these N units
+  on this track by the end of the horizon, no preference on order" is a
+  complete, valid specification, not a data gap. `null` means exactly that.
+  A scenario that does care can still set distinct indices, using the same
+  field and comparison semantics as `inStanding`.
 
 ### `TrainUnit`
 
@@ -583,6 +624,7 @@ For convenience, the open questions scattered through the document above:
 - Where does `Train.minimumDuration` (non-HIP) belong in the unified model,
   and what does it mean?
 - ~~Should `standingIndex` apply to `IncomingTrain` as well as `TrainRequest`?~~ **Resolved: yes, both** — see `IncomingTrain / TrainRequest` section.
+- ~~Should `standingIndex` be required, and what should a null value mean?~~ **Resolved:** `Optional[NonNegativeInt]`; required and mutually distinct within `inStanding` groups sharing a track (a given fact), left optional within `outStanding` (a terminal requirement that may be left unconstrained) — see "Standing order" section.
 - Should `canDepartFromAnyTrack` (non-HIP only) be added to `TrainRequest`?
 - ~~`TaskSpec.priority` → `optional: bool` — see `TaskSpec` section above.~~ **Resolved** — see `TaskSpec` section.
 - `Resource`: **resolved** — see `Resource` section above.
