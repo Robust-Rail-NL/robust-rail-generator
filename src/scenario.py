@@ -35,6 +35,15 @@ class ScenarioGenerator:
         self.location_solver = None
     
     def save_scenario_json(self, file_name: str):
+        # add_in_standing_train() and friends build self.scenario by mutating
+        # its list fields in place, which never runs Pydantic's validators
+        # (those only fire on construction, not on list mutation). Round-trip
+        # through model_validate so cross-record checks like standing order
+        # actually run against the final, fully-populated state before it's
+        # written out.
+        self.scenario = type(self.scenario).model_validate(
+            self.scenario.model_dump(by_alias=True)
+        )
         # Use the Dict step to ensure that 0-values are written
         json_data = self.scenario.to_dict()
         with open(file_name, "w") as f:
@@ -75,6 +84,7 @@ class ScenarioGenerator:
                 arrival=train_standard.time,
                 departure=train_standard.time,
                 id=train_standard.id,
+                standing_index=train_standard.standing_index,
             )
             incoming_trains.append(train)
 
@@ -92,6 +102,7 @@ class ScenarioGenerator:
                 arrival=train_standard.time,
                 departure=train_standard.time,
                 id=train_standard.id,
+                standing_index=train_standard.standing_index,
             )
             outgoing_train_requests.append(train)
 
@@ -110,6 +121,7 @@ class ScenarioGenerator:
                 arrival=train_standard.time,
                 departure=train_standard.time,
                 id=train_standard.id,
+                standing_index=train_standard.standing_index,
             )
             in_standing_trains.append(train)
 
@@ -136,6 +148,7 @@ class ScenarioGenerator:
                 arrival=train_standard.time,
                 departure=train_standard.time,
                 id=train_standard.id,
+                standing_index=train_standard.standing_index,
             )
             out_standing_train_requests.append(train)
 
@@ -523,6 +536,12 @@ class SolverScenarioGenerator(ScenarioGenerator):
         self.scenario_solver = standard_scenario_generator.scenario_solver
 
     def save_scenario_json(self, file_name: str):
+        # See ScenarioGenerator.save_scenario_json: scenario_solver is also
+        # built by list mutation (create_solver_format_scenario appends to
+        # its in_/out/in_standing/out_standing), so force validation here too.
+        self.scenario_solver = type(self.scenario_solver).model_validate(
+            self.scenario_solver.model_dump(by_alias=True)
+        )
         json_data = self.scenario_solver.to_dict()
         with open(file_name, "w") as f:
-            json.dump(json_data, f, indent=4)      
+            json.dump(json_data, f, indent=4)
