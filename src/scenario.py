@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 import json
 import logging
-from typing import List
+from typing import List, Optional
 
 from __init__ import DATA_DIR
 
@@ -183,7 +183,7 @@ class ScenarioGenerator:
         self.scenario_train_unit_types.append(train_unit_type)
 
     @staticmethod
-    def create_train(side_track_part: int, track_part: int, time: int, id: str, members: List[TrainUnit], can_depart_from_any_track: bool = True, standing_index: float = 1.0, minimum_duration: str = "60")->Train:
+    def create_train(side_track_part: int, track_part: int, time: int, id: str, members: List[TrainUnit], can_depart_from_any_track: bool = True, standing_index: Optional[float] = None, minimum_duration: str = "60")->Train:
         """_summary_
         Method used to create train objects that are added either as an in- or an out-going train.
 
@@ -196,7 +196,7 @@ class ScenarioGenerator:
             id (str): unique identifier of the Train
             members (List[TrainUnit]): train units in the train
             can_depart_from_any_track (bool): For outstanding trains: set to true to allow departures from any track, instead of just the parking_track_part (TORS required, not used)
-            standing_index (float): if train is in- or outstanding and there are multiple trains on one track, use this to determine the index of the train on the track, with lower indices at the A-side of the track
+            standing_index (Optional[float]): if train is in- or outstanding and there are multiple trains on one track, use this to determine the index of the train on the track, with lower indices at the A-side of the track. Leave unset if there is no preference (or only one train stands on the track).
             minimum_duration (str): minimum duration on the track part where the train arrives/departs
 
         Returns:
@@ -213,7 +213,7 @@ class ScenarioGenerator:
         train.members.extend(members)
         if can_depart_from_any_track:
             train.can_depart_from_any_track = can_depart_from_any_track
-        if standing_index:
+        if standing_index is not None:
             train.standing_index = standing_index
         if minimum_duration:
             train.minimum_duration = minimum_duration

@@ -233,7 +233,6 @@ class RandomGenerator:
                     id=i,
                     time=self.scenario_generator.scenario.start_time,
                     members=train_units,
-                    standing_index=1,
                     side_track_part=standing_trains["instanding"][i].a_side[0] if len(config["track_id_map"][standing_trains["instanding"][i].a_side[0]].a_side) == 0 else standing_trains["instanding"][i].b_side[0],
                     track_part=standing_trains["instanding"][i].id,
                     can_depart_from_any_track=True,
@@ -262,7 +261,6 @@ class RandomGenerator:
                     id=i + id_offset,
                     time=self.scenario_generator.scenario.end_time,
                     members=unmatched_train_units,
-                    standing_index=1,
                     side_track_part=standing_trains["outstanding"][i+id_offset].a_side[0] if len(config["track_id_map"][standing_trains["outstanding"][i+id_offset].a_side[0]].a_side) == 0 else standing_trains["outstanding"][i+id_offset].b_side[0],
                     track_part=standing_trains["outstanding"][i+id_offset].id,
                     can_depart_from_any_track=True,
@@ -275,7 +273,6 @@ class RandomGenerator:
                     id=i + id_offset,
                     time=departure_times[i],
                     members=unmatched_train_units,
-                    standing_index=1, # assume
                     side_track_part=side.id,
                     track_part=gateway.id,
                     can_depart_from_any_track=False,

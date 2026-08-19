@@ -208,7 +208,7 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
                     members=[created_train_units[i] for i in train["members"]], 
                     track_part=train["start_at_track"],
                     side_track_part=train["start_at_track_side"],
-                    standing_index=train["parking_index"] if "parking_index" in train else 1
+                    standing_index=train.get("parking_index")
                 )
             )                
         if "end_at_track" in train:
@@ -225,7 +225,7 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
                     members=unmatched_train_units, 
                     track_part=train["end_at_track"],
                     side_track_part=train["end_at_track_side"],
-                    standing_index=train["parking_index"] if "parking_index" in train else 1
+                    standing_index=train.get("parking_index")
                 )
             )     
 
