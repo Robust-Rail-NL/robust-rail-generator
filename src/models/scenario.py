@@ -393,6 +393,13 @@ class EvaluatorScenario(SchemaVersioned):
     Carries schemaVersion too: this is the shape that today's scenario_*.json
     (the file the evaluator actually reads) is generated from, ahead of the
     Phase 1 scenario unification that retires this class.
+
+    TODO: this and `Scenario` (and the manual field-by-field conversion
+    between them in ScenarioGenerator.create_solver_format_scenario) are the
+    same concept represented twice, kept in sync by hand. Retiring this class
+    means rewiring ScenarioGenerator to build Scenario/IncomingTrain/
+    TrainRequest directly instead of accumulating into this flat Train-based
+    shape first. See unified-schema-design.md, "Next steps" item 6.
     """
 
     def to_dict(self) -> dict:

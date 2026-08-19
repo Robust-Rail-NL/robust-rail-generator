@@ -60,7 +60,16 @@ class ScenarioGenerator:
     def create_solver_format_scenario(self, use_scenario=True):
         """Create the solver format of the scenario file. The default source
         to use is `self.scenario['<attr>']` (use_scenario=True), otherwise we
-        use 'self.scenario_in' and 'self.scenario_out'."""
+        use 'self.scenario_in' and 'self.scenario_out'.
+
+        TODO: this whole function exists to bridge EvaluatorScenario (flat
+        Train-based, what self.scenario accumulates into) and Scenario
+        (IncomingTrain/TrainRequest-based, what's actually written out). It's
+        a manual field-by-field copy that has to be kept in sync with both
+        models by hand -- see the TODO on EvaluatorScenario. It goes away
+        once ScenarioGenerator builds Scenario directly instead of via this
+        conversion step.
+        """
         if use_scenario:
             incoming_trains_scenario = self.scenario.in_
             outgoing_trains_scenario = self.scenario.out
