@@ -257,7 +257,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "5",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "10",
@@ -306,7 +306,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "5",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "10",
@@ -355,7 +355,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "5",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "10",
@@ -378,7 +378,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "5",
-                "standingIndex": 0.0
+                "standingIndex": null
             }
         ]
     },

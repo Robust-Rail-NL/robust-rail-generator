@@ -24,7 +24,7 @@
                 }
             ],
             "canDepartFromAnyTrack": true,
-            "standingIndex": 1.0,
+            "standingIndex": null,
             "minimumDuration": "60"
         },
         {
@@ -40,7 +40,7 @@
                 }
             ],
             "canDepartFromAnyTrack": true,
-            "standingIndex": 1.0,
+            "standingIndex": null,
             "minimumDuration": "60"
         }
     ],
@@ -57,7 +57,7 @@
                     "tasks": []
                 }
             ],
-            "standingIndex": 1.0,
+            "standingIndex": null,
             "minimumDuration": "60",
             "canDepartFromAnyTrack": false
         },
@@ -73,7 +73,7 @@
                     "tasks": []
                 }
             ],
-            "standingIndex": 1.0,
+            "standingIndex": null,
             "minimumDuration": "60",
             "canDepartFromAnyTrack": false
         }

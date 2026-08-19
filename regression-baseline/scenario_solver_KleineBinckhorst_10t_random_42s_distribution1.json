@@ -462,7 +462,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "42",
@@ -511,7 +511,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "42",
@@ -560,7 +560,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "42",
@@ -609,7 +609,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "42",
@@ -658,7 +658,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "42",
@@ -707,7 +707,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "standingIndex": null
             },
             {
                 "leaveTrackPart": "42",
@@ -743,7 +743,7 @@
                     }
                 ],
                 "lastParkingTrackPart": "15",
-                "standingIndex": 0.0
+                "standingIndex": null
             }
         ]
     },
