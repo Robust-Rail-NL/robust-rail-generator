@@ -9,6 +9,27 @@ bump their local `EXPECTED_SCHEMA_VERSION` together when it does.
 Mismatch behaviour is warn-and-continue: a missing or unexpected
 `schemaVersion` produces a logged warning, not a hard reject.
 
+## Unversioned — 2026-08-19
+
+`Scenario.standingIndex` (in/outStanding trains) changed from
+`Optional[float]` to `Optional[NonNegativeInt]`, and a new check rejects
+ambiguous standing order: two or more standing units sharing a track must have
+fully-specified, distinct `standingIndex` values (inStanding: required once
+any one is set; outStanding: all-unset is fine, a mix of set/unset is not).
+**Also deliberately not a version bump**, same reasoning shape as 2026-08-12:
+
+- Nothing breaks. No fixture across `scenario-planning-inputs` has ever set a
+  non-null `standingIndex` — checked directly, every occurrence in every
+  committed `scenario_*.json`/`plan_*.json` is `null` — so the type narrowing
+  changes nothing observable, and no track in the corpus has two or more
+  standing units on it, so the new consistency check never fires today.
+- The narrowing makes the schema honest about behaviour that already held one
+  layer down: cTORS's `TrainGoal` already typed the field `const int`
+  internally, silently truncating the wire double at construction. The
+  evaluator needed no code change as a result; the solver did — its default
+  for an absent index moved from `?? 0.0` to `?? 0` alongside the schema
+  change, since it now reads an int rather than a double off the wire.
+
 ## Unversioned — 2026-08-12
 
 `Location.trackParts`, `Plan.actions` and `Scenario.trainUnitTypes` became
