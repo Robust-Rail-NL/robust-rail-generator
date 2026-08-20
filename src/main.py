@@ -1,23 +1,51 @@
-import sys
-import math
 import argparse
+import math
+import sys
 
-from __init__ import REPO_DIR, DATA_DIR, VERSION
-from scenario import ScenarioGenerator, SolverScenarioGenerator
-from random_generator import RandomGenerator
+from __init__ import DATA_DIR, REPO_DIR, VERSION
 from check_config import *
 from check_matching import *
-
+from random_generator import RandomGenerator
+from scenario import ScenarioGenerator, SolverScenarioGenerator
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--path", help="Specifies the directory where all data relevant to a given location resides. Defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/ (relative to this Python script). Use . for the current working directory.", required=False, default=None)
-parser.add_argument("-c", "--config-file", help="(required) specifies the name of a configuration file, looked up in a /configurations/ folder below the --path above, but can also be a full path.", required=True)
-parser.add_argument("-l", "--location-file", help="specifies the name of the location file mentioned in the config. Defaults to location.json. Can be either a filename (relative to the --path above) or a full path.", required=False, default=None)
-parser.add_argument("-s", "--scenario-file", help="specifies the custom name of the created scenario file. Defaults to a standard format. Can be either a filename (written in a /scenarios/ folder below the --path mentioned above) or a full path.", required=False, default=None)
+parser.add_argument(
+    "-p",
+    "--path",
+    help="Specifies the directory where all data relevant to a given location resides. Defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/ (relative to this Python script). Use . for the current working directory.",
+    required=False,
+    default=None,
+)
+parser.add_argument(
+    "-c",
+    "--config-file",
+    help="(required) specifies the name of a configuration file, looked up in a /configurations/ folder below the --path above, but can also be a full path.",
+    required=True,
+)
+parser.add_argument(
+    "-l",
+    "--location-file",
+    help="specifies the name of the location file mentioned in the config. Defaults to location.json. Can be either a filename (relative to the --path above) or a full path.",
+    required=False,
+    default=None,
+)
+parser.add_argument(
+    "-s",
+    "--scenario-file",
+    help="specifies the custom name of the created scenario file. Defaults to a standard format. Can be either a filename (written in a /scenarios/ folder below the --path mentioned above) or a full path.",
+    required=False,
+    default=None,
+)
 
 
 ### Add logging to the arguments
-parser.add_argument("--log-level", default="ERROR", required=False, help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.")
+parser.add_argument(
+    "--log-level",
+    default="ERROR",
+    required=False,
+    help="Configure the logging level (e.g., INFO, WARNING, ERROR) default=ERROR.",
+)
+
 
 def create_scenario_from_config(config_file, path=None, scenario_file=None, location_file=None):
     # Use the path if specified, otherwise check at default location for configuration file
@@ -25,12 +53,12 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         config_file += ".json"
     # Path defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/
     if path is None:
-        path = os.path.join(REPO_DIR,"scenario-planning-inputs", "Location_KleineBinckhorst")
+        path = os.path.join(REPO_DIR, "scenario-planning-inputs", "Location_KleineBinckhorst")
     elif path == ".":
         # Use current working directory as path
         path = os.getcwd()
         config_file = os.path.join(path, config_file)
-    
+
     # If full config path is specified
     if os.sep in config_file:
         config = json.load(open(config_file, "r"))
@@ -39,11 +67,11 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         filepath = os.path.join(path, "configurations", config_file)
         config = json.load(open(filepath, "r"))
 
-   # If location not specified use default
+    # If location not specified use default
     if location_file is None:
         location_file = os.path.join(path, "location.json")
     # If not full path is specified, take location file from --path
-    elif not os.sep in location_file:
+    elif os.sep not in location_file:
         location_file = os.path.join(path, location_file)
 
     # Check the configuration file
@@ -55,7 +83,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     scenario_generator.load_location(config["location_file"])
     config["track_id_map"] = {tr.id: tr for tr in scenario_generator.location.track_parts}
     # Check the format of the trains
-    if config['trains_given']:
+    if config["trains_given"]:
         correct_file, config = check_train_details_file(config, scenario_generator.location)
         if not correct_file:
             sys.exit(1)
@@ -82,11 +110,8 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         random_generator.generate_train_unit_types(config["number_of_train_unit_types"])
 
     random_generator.train_units_subtypes = {
-        u.type_prefix:
-        [
-            sub.type_display_name
-            for sub in random_generator.train_unit_types
-            if u.type_prefix == sub.type_prefix
+        u.type_prefix: [
+            sub.type_display_name for sub in random_generator.train_unit_types if u.type_prefix == sub.type_prefix
         ]
         for u in random_generator.train_unit_types
     }
@@ -98,9 +123,17 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         if "custom_servicing_tasks" in config:
             for service in config["custom_servicing_tasks"]:
                 task_type = scenario_generator.create_task_type(None, service["type"])
-                service_obj = scenario_generator.create_task_spec(task_type, service["duration"], service["required_skills"])
+                service_obj = scenario_generator.create_task_spec(
+                    task_type, service["duration"], service["required_skills"]
+                )
                 service_tasks[service["name"]] = service_obj
-            estimated_servicing_time = sum([service_tasks[service_type].duration for train_unit in config["custom_train_units"] for service_type in train_unit["services"]])
+            estimated_servicing_time = sum(
+                [
+                    service_tasks[service_type].duration
+                    for train_unit in config["custom_train_units"]
+                    for service_type in train_unit["services"]
+                ]
+            )
         else:
             # Add default servicing tasks that match the location facilities.
             default_service_tasks = json.load(open(os.path.join(DATA_DIR, "default_servicing_tasks.json"), "r"))
@@ -108,44 +141,63 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
             for service, task_info in default_service_tasks.items():
                 if task_info["requiredFacility"] in location_facilities:
                     task_type = scenario_generator.create_task_type(None, service)
-                    service_obj = scenario_generator.create_task_spec(task_type, int(task_info["duration"]), task_info["requiredSkills"])
+                    service_obj = scenario_generator.create_task_spec(
+                        task_type, int(task_info["duration"]), task_info["requiredSkills"]
+                    )
                     service_tasks[service] = service_obj
             avg_duration = math.ceil(max([task.duration for _, task in service_tasks.items()]) / len(service_tasks))
-            estimated_number_servicing_units = math.ceil(config["train_unit_distribution"]["servicing_ratio"] * config["number_of_trains"] * max(config["train_unit_distribution"]["units_per_composition"]) / len(config["train_unit_distribution"]["units_per_composition"]))
+            estimated_number_servicing_units = math.ceil(
+                config["train_unit_distribution"]["servicing_ratio"]
+                * config["number_of_trains"]
+                * max(config["train_unit_distribution"]["units_per_composition"])
+                / len(config["train_unit_distribution"]["units_per_composition"])
+            )
             estimated_servicing_time = sum([avg_duration for _ in range(estimated_number_servicing_units)])
             config["train_unit_distribution"]["average_servicing_time"] = avg_duration
 
     # Check if the time window is sufficient for servicing and parking all trains
-    if (config["end_time"] - config["start_time"] - estimated_servicing_time) // config["min_gap_on_gateway"] < config["number_of_trains"] * 2.1:
-        logging.error(f"The specified time window from {config['start_time']} to {config['end_time']} with an estimated servicing time of {estimated_servicing_time} and `min_gap_on_gateway` {config['min_gap_on_gateway']} does not provide enough time for {config['number_of_trains']} trains to be parked and serviced.")
+    if (config["end_time"] - config["start_time"] - estimated_servicing_time) // config["min_gap_on_gateway"] < config[
+        "number_of_trains"
+    ] * 2.1:
+        logging.error(
+            f"The specified time window from {config['start_time']} to {config['end_time']} with an estimated servicing time of {estimated_servicing_time} and `min_gap_on_gateway` {config['min_gap_on_gateway']} does not provide enough time for {config['number_of_trains']} trains to be parked and serviced."
+        )
         sys.exit(1)
 
     # Add the trains when specified
     if config["trains_given"]:
         create_trains(scenario_generator, config, service_tasks)
-        matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
+        matching_possible = check_matching(
+            scenario_generator, config["use_default_material"], config["min_time_in_yard"]
+        )
         if not matching_possible:
-            logging.error("The specified incoming and outgoing trains do not match. Please check the configuration file.")
+            logging.error(
+                "The specified incoming and outgoing trains do not match. Please check the configuration file."
+            )
             sys.exit(1)
     else:
         # Generate random trains if none are specified
         random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
         # Check matching of incoming and outgoing trains
-        matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
+        matching_possible = check_matching(
+            scenario_generator, config["use_default_material"], config["min_time_in_yard"]
+        )
         while not matching_possible:
             logging.warning("The generated incoming and outgoing trains do not match. Regenerating train compositions.")
             random_generator.reset()
             random_generator.generate_train_compositions(config, scenario_generator)
-            matching_possible = check_matching(scenario_generator, config["use_default_material"], config["min_time_in_yard"])
-    
+            matching_possible = check_matching(
+                scenario_generator, config["use_default_material"], config["min_time_in_yard"]
+            )
+
     # Also generate the format of the solver
     scenario_generator.create_solver_format_scenario()
     solver_scenario_generator = SolverScenarioGenerator(scenario_generator)
-    
+
     if scenario_file is None:
         # If no name is given, generate it
         num_trains = len(config["custom_trains"]) if config["trains_given"] else config["number_of_trains"]
-        custom = f"custom" if config["trains_given"] else f"random_{config['seed']}s"
+        custom = "custom" if config["trains_given"] else f"random_{config['seed']}s"
         config_suffix = config_file.split(os.sep)[-1].removeprefix("scenario_config_").removesuffix(".json")
         scenario_file = f"scenario_{config['location']}_{num_trains}t_{custom}_{config_suffix}"
     if ".json" not in scenario_file:
@@ -162,25 +214,28 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     solver_scenario_generator.save_scenario_json(output_filepath)
     print(f"Scenario file created: {output_filepath}")
 
+
 def create_trains(scenario_generator: ScenarioGenerator, config, services):
     type_by_display_name = {t.type_display_name: t for t in scenario_generator.scenario_train_unit_types}
     created_train_units = {}
     for train_unit in config["custom_train_units"]:
         train_unit_type = type_by_display_name[train_unit["type"]]
         unit = scenario_generator.create_incoming_train_unit(
-            train_unit["id"], train_unit_type.type_prefix, train_unit_type.carriages,
-            [services[s] for s in train_unit["services"]]
+            train_unit["id"],
+            train_unit_type.type_prefix,
+            train_unit_type.carriages,
+            [services[s] for s in train_unit["services"]],
         )
         created_train_units[train_unit["id"]] = unit
     for train in config["custom_trains"]:
         if "arrival_track" in train:
             scenario_generator.add_incoming_train(
                 scenario_generator.create_train(
-                    id=train["id"], 
-                    members=[created_train_units[i] for i in train["members"]], 
-                    time=train["arrival_time"], 
+                    id=train["id"],
+                    members=[created_train_units[i] for i in train["members"]],
+                    time=train["arrival_time"],
                     track_part=train["arrival_track"],
-                    side_track_part=train["arrival_track_side"]
+                    side_track_part=train["arrival_track_side"],
                 )
             )
         if "departure_track" in train:
@@ -192,25 +247,25 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
             ]
             scenario_generator.add_outgoing_train(
                 scenario_generator.create_train(
-                    id=train["id"], 
+                    id=train["id"],
                     members=unmatched_train_units,
-                    time=train["departure_time"], 
+                    time=train["departure_time"],
                     track_part=train["departure_track"],
                     side_track_part=train["departure_track_side"],
-                    can_depart_from_any_track=train["depart_any_track"] if "depart_any_track" in train else False
+                    can_depart_from_any_track=train["depart_any_track"] if "depart_any_track" in train else False,
                 )
             )
         if "start_at_track" in train:
             scenario_generator.add_in_standing_train(
                 scenario_generator.create_train(
-                    id=train["id"], 
+                    id=train["id"],
                     time=0,
-                    members=[created_train_units[i] for i in train["members"]], 
+                    members=[created_train_units[i] for i in train["members"]],
                     track_part=train["start_at_track"],
                     side_track_part=train["start_at_track_side"],
-                    standing_index=train.get("parking_index")
+                    standing_index=train.get("parking_index"),
                 )
-            )                
+            )
         if "end_at_track" in train:
             unmatched_train_units = [
                 scenario_generator.create_train_unit_unmatched_members(
@@ -220,17 +275,20 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
             ]
             scenario_generator.add_out_standing_train(
                 scenario_generator.create_train(
-                    id=train["id"], 
+                    id=train["id"],
                     time=0,
-                    members=unmatched_train_units, 
+                    members=unmatched_train_units,
                     track_part=train["end_at_track"],
                     side_track_part=train["end_at_track_side"],
-                    standing_index=train.get("parking_index")
+                    standing_index=train.get("parking_index"),
                 )
-            )     
+            )
+
 
 if __name__ == "__main__":
     print(f"robust-rail-generator {VERSION}")
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level.upper())
-    create_scenario_from_config(args.config_file, path=args.path, scenario_file=args.scenario_file, location_file=args.location_file)
+    create_scenario_from_config(
+        args.config_file, path=args.path, scenario_file=args.scenario_file, location_file=args.location_file
+    )

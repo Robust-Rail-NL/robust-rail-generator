@@ -1,37 +1,37 @@
-from .utilities import EXPECTED_SCHEMA_VERSION, TimeInterval
 from .location import (
-    Location,
-    TrackPart,
-    TrackPartType,
     Facility,
+    Location,
+    PredefinedTaskType,
     Resource,
     ResourceKind,
     TaskType,
-    PredefinedTaskType,
+    TrackPart,
+    TrackPartType,
     WalkingDistanceEntry,
 )
+from .plan import Action, Plan
 from .scenario import (
-    Scenario,
+    DisabledTrackPart,
     IncomingTrain,
     IncomingTrainUnit,
+    MemberOfStaff,
+    NonServiceTraffic,
+    Scenario,
+    ShuntingUnit,
+    TaskSpec,
     TrainRequest,
     TrainUnit,
     TrainUnitType,
-    ShuntingUnit,
-    TaskSpec,
-    MemberOfStaff,
-    NonServiceTraffic,
-    DisabledTrackPart,
 )
-from .plan import Plan, Action
 from .scenario_config import (
-    ScenarioConfig,
     CustomTrainsConfig,
-    GeneratedTrainsConfig,
-    TrainUnitDistribution,
     Gateway,
+    GeneratedTrainsConfig,
     Intent,
+    ScenarioConfig,
+    TrainUnitDistribution,
 )
+from .utilities import EXPECTED_SCHEMA_VERSION, TimeInterval
 
 __all__ = [
     "EXPECTED_SCHEMA_VERSION",

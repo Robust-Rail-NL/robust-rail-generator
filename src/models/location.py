@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, Optional
+from typing import Optional
 
 from pydantic import Field, model_validator
 
@@ -132,6 +132,4 @@ class Location(SchemaVersioned):
     movement_track_coefficient: Optional[int] = Field(None, alias="movementTrackCoefficient")
     movement_switch_coefficient: Optional[int] = Field(None, alias="movementSwitchCoefficient")
     # Optional: evaluator/generator only. Walking distance matrix.
-    distance_entries: list[WalkingDistanceEntry] = Field(
-        default_factory=list, alias="distanceEntries"
-    )
+    distance_entries: list[WalkingDistanceEntry] = Field(default_factory=list, alias="distanceEntries")

@@ -1,20 +1,28 @@
 from __future__ import annotations
-import os
+
 import json
 import logging
+import os
 from typing import List, Optional
 
 from __init__ import DATA_DIR
+from models import IncomingTrainUnit, PredefinedTaskType, TrainRequest
 
 # Import standard protos (Scenario, Location, TrainUnitTypes, Utilities)
 from models.location import Location, TaskType, TrackPartType
 from models.scenario import (
-    Scenario, EvaluatorScenario, TrainUnitType, NonServiceTraffic,
-    DisabledTrackPart, TrainUnit, MemberOfStaff, TaskSpec, Train, IncomingTrain
+    DisabledTrackPart,
+    EvaluatorScenario,
+    IncomingTrain,
+    MemberOfStaff,
+    NonServiceTraffic,
+    Scenario,
+    TaskSpec,
+    Train,
+    TrainUnit,
+    TrainUnitType,
 )
 from models.utilities import TimeInterval
-from models import IncomingTrainUnit, TrainRequest
-from models import PredefinedTaskType
 
 
 class ScenarioGenerator:
@@ -27,13 +35,12 @@ class ScenarioGenerator:
         self.scenario_train_unit_types: List[TrainUnitType] = []
         # train_unit_types is required on Scenario, so it has to be passed here
         # even though create_solver_format_scenario overwrites it later.
-        self.scenario_solver = Scenario(start_time=start, end_time=end,
-                                        train_unit_types=[])
-        
+        self.scenario_solver = Scenario(start_time=start, end_time=end, train_unit_types=[])
+
         # Location where the scenario happens
         self.location = None
         self.location_solver = None
-    
+
     def save_scenario_json(self, file_name: str):
         # add_in_standing_train() and friends build self.scenario by mutating
         # its list fields in place, which never runs Pydantic's validators
@@ -41,22 +48,19 @@ class ScenarioGenerator:
         # through model_validate so cross-record checks like standing order
         # actually run against the final, fully-populated state before it's
         # written out.
-        self.scenario = type(self.scenario).model_validate(
-            self.scenario.model_dump(by_alias=True)
-        )
+        self.scenario = type(self.scenario).model_validate(self.scenario.model_dump(by_alias=True))
         # Use the Dict step to ensure that 0-values are written
         json_data = self.scenario.to_dict()
         with open(file_name, "w") as f:
             json.dump(json_data, f, indent=4)
         logging.info(f"Scenario saved to {file_name}")
-            
+
     def load_scenario(self, file_name):
         with open(file_name, "r") as f:
             json_scenario = json.load(f)
         self.scenario = EvaluatorScenario.model_validate(json_scenario)
-        self.scenario_train_unit_types = [TrainUnitType.model_validate(t) for
-                                        t in json_scenario["trainUnitTypes"]]
-        
+        self.scenario_train_unit_types = [TrainUnitType.model_validate(t) for t in json_scenario["trainUnitTypes"]]
+
     def create_solver_format_scenario(self, use_scenario=True):
         """Create the solver format of the scenario file. The default source
         to use is `self.scenario['<attr>']` (use_scenario=True), otherwise we
@@ -161,30 +165,28 @@ class ScenarioGenerator:
             )
             out_standing_train_requests.append(train)
 
-            # Collect information of the train unit members of the current train            
+            # Collect information of the train unit members of the current train
             for member in train_standard.members:
                 train_unit = TrainUnit(type_prefix=member.type_prefix, carriages=member.carriages)
                 train.train_units.append(train_unit)
 
     # Add outgoing train to the scenario
     def add_outgoing_train(self, out_train: Train):
-        # Add outgoing train to the scenario        
-        train_units = out_train.members
+        # Add outgoing train to the scenario
         self.scenario.out.append(out_train)
         self.scenario_out.append(out_train)
-    
+
     def add_incoming_train(self, in_train: Train):
         # Add incoming Train to the scenario
         self.scenario.in_.append(in_train)
         self.scenario_in.append(in_train)
-        
+
     def add_in_standing_train(self, in_standing_train: Train):
         # Add in_standing Train to the scenario
         self.scenario.in_standing.append(in_standing_train)
 
     def add_out_standing_train(self, out_standing_train: Train):
         # Add out_standing Train to the scenario
-        train_units = out_standing_train.members
         self.scenario.out_standing.append(out_standing_train)
 
     def add_non_service_traffic(self, non_service_traffic: NonServiceTraffic):
@@ -200,12 +202,21 @@ class ScenarioGenerator:
         self.scenario.workers.append(workers)
 
     def add_train_unit_type(self, train_unit_type: TrainUnitType):
-        # Add TrainUnitType to scenario    
+        # Add TrainUnitType to scenario
         self.scenario.train_unit_types.append(train_unit_type)
         self.scenario_train_unit_types.append(train_unit_type)
 
     @staticmethod
-    def create_train(side_track_part: int, track_part: int, time: int, id: str, members: List[TrainUnit], can_depart_from_any_track: bool = True, standing_index: Optional[int] = None, minimum_duration: str = "60")->Train:
+    def create_train(
+        side_track_part: int,
+        track_part: int,
+        time: int,
+        id: str,
+        members: List[TrainUnit],
+        can_depart_from_any_track: bool = True,
+        standing_index: Optional[int] = None,
+        minimum_duration: str = "60",
+    ) -> Train:
         """_summary_
         Method used to create train objects that are added either as an in- or an out-going train.
 
@@ -242,7 +253,7 @@ class ScenarioGenerator:
         return train
 
     @staticmethod
-    def create_task_spec(task_type: TaskType, duration: int, required_skills: List[str])->TaskSpec:
+    def create_task_spec(task_type: TaskType, duration: int, required_skills: List[str]) -> TaskSpec:
         """_summary_
 
         Args:
@@ -260,7 +271,9 @@ class ScenarioGenerator:
         return task_spec
 
     @staticmethod
-    def create_incoming_train_unit(id: int, type_prefix: str, carriages: int, tasks: List[TaskSpec]) -> IncomingTrainUnit:
+    def create_incoming_train_unit(
+        id: int, type_prefix: str, carriages: int, tasks: List[TaskSpec]
+    ) -> IncomingTrainUnit:
         """_summary_
         Creates a train unit object with specific member id.
 
@@ -290,7 +303,7 @@ class ScenarioGenerator:
         return TrainUnit(type_prefix=type_prefix, carriages=carriages)
 
     @staticmethod
-    def create_task_type(predefined_task_type: PredefinedTaskType = None, other: str = None)->TaskType:
+    def create_task_type(predefined_task_type: PredefinedTaskType = None, other: str = None) -> TaskType:
         """_summary_
         Create a task type, of the tasks assigned to train units. Matches the predefined task type. e.g., "type" : {"other" : "inwendige_reiniging"}
 
@@ -307,7 +320,7 @@ class ScenarioGenerator:
         return TaskType(predefined=predefined_task_type, other=other)
 
     @staticmethod
-    def create_non_service_traffic(members: List[int], arrival: int, departure: int, id: str)->NonServiceTraffic:
+    def create_non_service_traffic(members: List[int], arrival: int, departure: int, id: str) -> NonServiceTraffic:
         # TODO: what is this used for
         """_summary_
 
@@ -328,7 +341,9 @@ class ScenarioGenerator:
         return non_service_traffic
 
     @staticmethod
-    def create_disabled_track_part(track_part: int = None, arrival: int = None, departure: int = None)->DisabledTrackPart:
+    def create_disabled_track_part(
+        track_part: int = None, arrival: int = None, departure: int = None
+    ) -> DisabledTrackPart:
         # Create and incoming magic train
         # TODO : what is this used for
         """_summary_
@@ -341,7 +356,7 @@ class ScenarioGenerator:
         Returns:
             DisabledTrackPart: An incoming magic train
 
-        """        
+        """
         disabled_trackpart = DisabledTrackPart()
         if track_part:
             disabled_trackpart.track_part = track_part
@@ -352,7 +367,7 @@ class ScenarioGenerator:
         return disabled_trackpart
 
     @staticmethod
-    def create_time_interval(start: float, end: float)->TimeInterval:
+    def create_time_interval(start: float, end: float) -> TimeInterval:
         """_summary_
         Create the time interval of the scenario.
         Args:
@@ -365,7 +380,19 @@ class ScenarioGenerator:
         return TimeInterval(start=start, end=end)
 
     @staticmethod
-    def create_member_of_staff(id: int = None, type: str = None, skills: List[str] = None, shifts: List[TimeInterval] = None, break_windows: List[TimeInterval] = None, break_duration: float = None, start_location_id: int = None, end_location_id: int = None, can_move_trains: bool = None, name: str = None, break_location_id: int = None)->MemberOfStaff:
+    def create_member_of_staff(
+        id: int = None,
+        type: str = None,
+        skills: List[str] = None,
+        shifts: List[TimeInterval] = None,
+        break_windows: List[TimeInterval] = None,
+        break_duration: float = None,
+        start_location_id: int = None,
+        end_location_id: int = None,
+        can_move_trains: bool = None,
+        name: str = None,
+        break_location_id: int = None,
+    ) -> MemberOfStaff:
         """_summary_
         Create Member of Staff which is a human that is able to perform various tasks at the facility
 
@@ -384,7 +411,7 @@ class ScenarioGenerator:
 
         Returns:
             MemberOfStaff: a human that is able to perform various tasks at the facility
-        """        
+        """
         member_of_staff = MemberOfStaff()
         if id:
             member_of_staff.id = id
@@ -394,7 +421,7 @@ class ScenarioGenerator:
             member_of_staff.skills = skills
         if shifts:
             member_of_staff.shifts = shifts
-        if  break_windows:
+        if break_windows:
             member_of_staff.break_windows = break_windows
         if break_duration:
             member_of_staff.break_duration = break_duration
@@ -411,7 +438,21 @@ class ScenarioGenerator:
         return member_of_staff
 
     @staticmethod
-    def create_train_unit_type(type_prefix: str, carriages: int, length: float, combine_duration: int, split_duration: int, back_norm_time: int, back_addition_time: int, travel_speed: int, start_up_time: int, needs_loco: bool, is_loco: bool, needs_electricity: bool, id_prefix: int = None)->TrainUnitType:
+    def create_train_unit_type(
+        type_prefix: str,
+        carriages: int,
+        length: float,
+        combine_duration: int,
+        split_duration: int,
+        back_norm_time: int,
+        back_addition_time: int,
+        travel_speed: int,
+        start_up_time: int,
+        needs_loco: bool,
+        is_loco: bool,
+        needs_electricity: bool,
+        id_prefix: int = None,
+    ) -> TrainUnitType:
         """_summary_
         Create the type of train units, of which multiple instances can be created. The type specifies all the train characteristics.
 
@@ -447,10 +488,10 @@ class ScenarioGenerator:
             is_loco=is_loco,
             needs_electricity=needs_electricity,
         )
-        
+
         if id_prefix:
             train_unit_type.id_prefix = id_prefix
-            
+
         return train_unit_type
 
     def load_location(self, file_name):
@@ -461,7 +502,7 @@ class ScenarioGenerator:
         self.location = Location.model_validate(json_location)
 
     def convert_location_to_solver_format(self, file_name):
-        # Converts a standard location into a solver compatible location file format    
+        # Converts a standard location into a solver compatible location file format
         # Check if self.location is not empty
         if self.location.ListFields():
             track_parts = self.location.track_parts
@@ -498,7 +539,7 @@ class ScenarioGenerator:
                 self.create_train_unit_type(
                     type_prefix=unit_type["typePrefix"],
                     carriages=unit_type["carriages"],
-                    length=unit_type["length"] / 100, # length in meters
+                    length=unit_type["length"] / 100,  # length in meters
                     combine_duration=unit_type["combineDuration"],
                     split_duration=unit_type["splitDuration"],
                     needs_loco=unit_type["needsLoco"],
@@ -509,7 +550,7 @@ class ScenarioGenerator:
                     back_norm_time=unit_type["backNormTime"] if "backNormTime" in unit_type else 0,
                     back_addition_time=unit_type["backAdditionTime"] if "backAdditionTime" in unit_type else 0,
                     travel_speed=10,
-                    start_up_time=0
+                    start_up_time=0,
                 )
             )
 
@@ -521,7 +562,7 @@ class ScenarioGenerator:
                 self.create_train_unit_type(
                     type_prefix=unit_type["typePrefix"],
                     carriages=unit_type["carriages"],
-                    length=unit_type["length"] / 100, # length in meters
+                    length=unit_type["length"] / 100,  # length in meters
                     combine_duration=unit_type["combineDuration"],
                     split_duration=unit_type["splitDuration"],
                     needs_loco=unit_type["needsLoco"],
@@ -532,9 +573,10 @@ class ScenarioGenerator:
                     back_norm_time=unit_type["backNormTime"] if "backNormTime" in unit_type else 0,
                     back_addition_time=unit_type["backAdditionTime"] if "backAdditionTime" in unit_type else 0,
                     travel_speed=10,
-                    start_up_time=0
+                    start_up_time=0,
                 )
             )
+
 
 class SolverScenarioGenerator(ScenarioGenerator):
     def __init__(self, standard_scenario_generator: ScenarioGenerator):
@@ -548,9 +590,7 @@ class SolverScenarioGenerator(ScenarioGenerator):
         # See ScenarioGenerator.save_scenario_json: scenario_solver is also
         # built by list mutation (create_solver_format_scenario appends to
         # its in_/out/in_standing/out_standing), so force validation here too.
-        self.scenario_solver = type(self.scenario_solver).model_validate(
-            self.scenario_solver.model_dump(by_alias=True)
-        )
+        self.scenario_solver = type(self.scenario_solver).model_validate(self.scenario_solver.model_dump(by_alias=True))
         json_data = self.scenario_solver.to_dict()
         with open(file_name, "w") as f:
             json.dump(json_data, f, indent=4)

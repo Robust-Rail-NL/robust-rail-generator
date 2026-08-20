@@ -53,10 +53,7 @@ class SchemaVersioned(RailModel):
     @model_validator(mode="after")
     def _warn_on_schema_version_mismatch(self) -> "SchemaVersioned":
         if "schema_version" not in self.model_fields_set:
-            logging.warning(
-                f"{type(self).__name__}: schemaVersion is missing; "
-                f"assuming {EXPECTED_SCHEMA_VERSION}."
-            )
+            logging.warning(f"{type(self).__name__}: schemaVersion is missing; assuming {EXPECTED_SCHEMA_VERSION}.")
         elif self.schema_version != EXPECTED_SCHEMA_VERSION:
             logging.warning(
                 f"{type(self).__name__}: schemaVersion {self.schema_version} "

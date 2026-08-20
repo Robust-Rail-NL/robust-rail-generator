@@ -11,8 +11,27 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "ruff>=0.16.3",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# Deliberately the classic pyflakes/pycodestyle-error/import-sort set, not
+# ruff's full default (which now also pulls in bugbear, flake8-simplify,
+# flake8-logging, pyupgrade, ...) — that broader set flags ~270 pre-existing
+# findings across this codebase, and fixing those is a separate effort from
+# turning formatting/linting on.
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# `check_config`/`check_matching` are imported with `import *` on purpose here;
+# untangling that is a separate refactor, not part of enabling linting.
+"src/main.py" = ["F403", "F405"]
+# sys.path must be extended before the src-relative imports below it.
+"scripts/export_schema.py" = ["E402"]

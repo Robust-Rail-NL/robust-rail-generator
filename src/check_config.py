@@ -1,10 +1,9 @@
-import os
 import json
 import logging
+import os
 import random
 
 from __init__ import DATA_DIR
-
 from models.location import Location, TrackPartType
 
 
@@ -36,11 +35,20 @@ def check_configuration_file(config, location_path):
         logging.error("Not defined: 'trains_given'.")
         return False, config
     if not config["use_default_material"]:
-        if config["trains_given"] or "custom_train_units" in config or "custom_trains" in config or "custom_servicing_tasks" in config:
-            logging.error("Cannot specify custom train units, trains, and servicing tasks for randomly generated material.")
+        if (
+            config["trains_given"]
+            or "custom_train_units" in config
+            or "custom_trains" in config
+            or "custom_servicing_tasks" in config
+        ):
+            logging.error(
+                "Cannot specify custom train units, trains, and servicing tasks for randomly generated material."
+            )
             return False, config
         if "number_of_train_unit_types" not in config:
-            logging.error("No 'number_of_train_unit_types' defined while train unit types should be generated ('use_default_material' is false)")
+            logging.error(
+                "No 'number_of_train_unit_types' defined while train unit types should be generated ('use_default_material' is false)"
+            )
             return False, config
         if "custom_train_unit_types" not in config:
             logging.error("No default material used and no `custom_train_unit_types` defined.")
@@ -54,28 +62,40 @@ def check_configuration_file(config, location_path):
         return False, config
     if "number_of_trains" not in config:
         if not config["trains_given"]:
-            logging.error("No 'number_of_trains' defined while trains and train units should be generated ('trains_given' is false).")
+            logging.error(
+                "No 'number_of_trains' defined while trains and train units should be generated ('trains_given' is false)."
+            )
             return False, config
         else:
-            config["number_of_trains"] = len([train for train in config["custom_trains"] if "arrival_track" in train or "start_at_track" in train])
+            config["number_of_trains"] = len(
+                [train for train in config["custom_trains"] if "arrival_track" in train or "start_at_track" in train]
+            )
     if not config["trains_given"] and "train_unit_distribution" in config:
         if "units_per_composition" not in config["train_unit_distribution"]:
-            logging.error("No 'units_per_composition' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
+            logging.error(
+                "No 'units_per_composition' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false)."
+            )
             return False, config
         if "super_type_ratio" not in config["train_unit_distribution"]:
-            logging.error("No 'super_type_ratio' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false).")
+            logging.error(
+                "No 'super_type_ratio' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false)."
+            )
             return False, config
         if "train_unit_types" in config["train_unit_distribution"]:
             if not config["use_default_material"] and not config["custom_train_unit_types"]:
-                logging.error("Defined 'train_unit_types' in the 'train_unit_distribution' while 'use_default_material' was false, cannot specify specify unit types for randomly generated unit types.")
+                logging.error(
+                    "Defined 'train_unit_types' in the 'train_unit_distribution' while 'use_default_material' was false, cannot specify specify unit types for randomly generated unit types."
+                )
                 return False, config
             for t in config["train_unit_distribution"]["train_unit_types"]:
                 if t not in train_unit_names:
-                    logging.error(f"Defined 'train_unit_distribution' and 'train_unit_types' with an unknown train unit type {t}.")
+                    logging.error(
+                        f"Defined 'train_unit_distribution' and 'train_unit_types' with an unknown train unit type {t}."
+                    )
                     return False, config
         if config["perform_servicing"]:
             if "servicing_ratio" not in config["train_unit_distribution"]:
-                logging.warning(f"Servicing actions enabled but no ratio on number of tasks specified, assuming 0.5.")
+                logging.warning("Servicing actions enabled but no ratio on number of tasks specified, assuming 0.5.")
                 config["train_unit_distribution"]["servicing_ratio"] = 0.5
             if "tasks_per_train_unit" not in config["train_unit_distribution"]:
                 config["train_unit_distribution"]["tasks_per_train_unit"] = 1
@@ -124,37 +144,23 @@ def check_configuration_file(config, location_path):
         logging.warning("No 'partial_matching' found")
     # TODO check other custom objects
     return True, config
-    
+
+
 def check_location_file(config):
     location = json.load(open(config["location_file"]))
     try:
         Location.model_validate(location)
     except Exception as e:
-        logging.error(f"Could not parse the location file {config['location_file']} to the correct Location format. Be careful not to use the `_solver` format, or use the converter.")
+        logging.error(
+            f"Could not parse the location file {config['location_file']} to the correct Location format. Be careful not to use the `_solver` format, or use the converter."
+        )
         logging.error(e)
         return False, config
     config["track_id_map"] = {int(t["id"]): t for t in location["trackParts"]}
     if len(config["track_id_map"]) != max(config["track_id_map"].keys()):
-        logging.info(f"The ids of the tracks are not set to be increasing by one and unique.")
-        return True, config
-        # Code to overwrite the ids, not working yet, probably not needed
-        logging.error(f"The ids will be adjusted and the file will be recreated starting at the minimum {min(map_tracks.keys())} with max id {len(map_tracks) + min(map_tracks.keys()) - 1}")
-        new_ids = {}
-        max_ids = sorted(list(map_tracks.keys()), reverse=True)
-        for i in range(min(map_tracks.keys()), len(map_tracks) + min(map_tracks.keys())):
-            if i not in map_tracks.keys():
-                new_ids[max_ids.pop(0)] = i
-        for old, new in new_ids.items():
-            for j in range(len(location["trackParts"])):
-                if location["trackParts"][j]["id"] == old:
-                    location["trackParts"][j]["id"] == new
-                location["trackParts"][j]["aSide"] = [new if a == old else a for a in location["trackParts"][j]["aSide"]]
-                location["trackParts"][j]["bSide"] = [new if b == old else b for b in location["trackParts"][j]["bSide"]]
-            for j in range(len(location["trackParts"])):
-                if location["trackParts"][j]["id"] == old:
-                    location["trackParts"][j]["id"] = new
-        json.dump(location, open(config["location_file"].replace(".json", "_fixedIDs.json"), "w"), indent=4)
+        logging.info("The ids of the tracks are not set to be increasing by one and unique.")
     return True, config
+
 
 def check_train_details_file(config, location: Location):
     if "track_ids_used" not in config:
@@ -174,12 +180,23 @@ def check_train_details_file(config, location: Location):
         defined_servicing_tasks = {t["name"]: t for t in config["custom_servicing_tasks"]}
         for service_task in t["services"]:
             if service_task not in defined_servicing_tasks:
-                logging.error(f"Service task {service_task} of train unit {t['id']} not specified in 'custom_servicing_tasks'")
+                logging.error(
+                    f"Service task {service_task} of train unit {t['id']} not specified in 'custom_servicing_tasks'"
+                )
                 return False, config
-            if "name" not in defined_servicing_tasks[service_task] or "type" not in defined_servicing_tasks[service_task] or "duration" not in defined_servicing_tasks[service_task] or "required_skills" not in defined_servicing_tasks[service_task]:
-                logging.error(f"Incorrectly specified service {service_task} of train unit {t['id']}: missing name, type, duration or required_skills parameter")
+            if (
+                "name" not in defined_servicing_tasks[service_task]
+                or "type" not in defined_servicing_tasks[service_task]
+                or "duration" not in defined_servicing_tasks[service_task]
+                or "required_skills" not in defined_servicing_tasks[service_task]
+            ):
+                logging.error(
+                    f"Incorrectly specified service {service_task} of train unit {t['id']}: missing name, type, duration or required_skills parameter"
+                )
             if defined_servicing_tasks[service_task]["type"] not in [f.type for f in location.facilities]:
-                logging.error(f"Service task {service_task} has type {defined_servicing_tasks[service_task]['type']} which is not present in the location's facilities")
+                logging.error(
+                    f"Service task {service_task} has type {defined_servicing_tasks[service_task]['type']} which is not present in the location's facilities"
+                )
     train_units_check_arrival = {u["id"]: u["type"] for u in config["custom_train_units"]}
     train_units_check_departure = [u["type"] for u in config["custom_train_units"]]
     track_names_to_ids = {track.name: int(track.id) for track in location.track_parts}
@@ -192,68 +209,109 @@ def check_train_details_file(config, location: Location):
                 logging.error(f"Incorrectly specified the {i}th custom train: missing members or member_types")
                 return False, config
             if "member_types" in train and "members" in train:
-                logging.error(f"Both 'members' and 'member_types' defined for train {train['id']}, only one should be defined")
+                logging.error(
+                    f"Both 'members' and 'member_types' defined for train {train['id']}, only one should be defined"
+                )
                 return False, config
             if "members" in train and ("departure_track" in train or "end_at_track" in train):
-                logging.error(f"Outgoing or outstanding train {train['id']} has members defined, but should have member_types defined for the train request instead of specific member id")
+                logging.error(
+                    f"Outgoing or outstanding train {train['id']} has members defined, but should have member_types defined for the train request instead of specific member id"
+                )
                 return False, config
             if "member_types" in train and ("arrival_track" in train or "start_at_track" in train):
-                logging.error(f"Incoming or standing train {train['id']} has member_types defined, but should have members defined for the specific train members")
+                logging.error(
+                    f"Incoming or standing train {train['id']} has member_types defined, but should have members defined for the specific train members"
+                )
                 return False, config
             if "members" in train:
                 member_type_check = set()
                 for u in train["members"]:
                     if u not in train_units_check_arrival:
-                        logging.error(f"Train {train['id']} has member {u} that is not defined or already used in a different train composition")
+                        logging.error(
+                            f"Train {train['id']} has member {u} that is not defined or already used in a different train composition"
+                        )
                         return False, config
                     member_type_check.add(train_units_check_arrival[u].split("-")[0])
                     train_units_check_arrival.pop(u)
                 if len(member_type_check) > 1:
-                    logging.warning(f"Train {train['id']} has members from different train unit types: {member_type_check}")
+                    logging.warning(
+                        f"Train {train['id']} has members from different train unit types: {member_type_check}"
+                    )
             if "member_types" in train:
                 for u in train["member_types"]:
                     if u not in train_units_check_departure:
-                        logging.error(f"Train {train['id']} has member {u} that is not defined or already used in a different train composition")
+                        logging.error(
+                            f"Train {train['id']} has member {u} that is not defined or already used in a different train composition"
+                        )
                         return False, config
                     train_units_check_departure.remove(u)
                 member_type_check = set([mem.split("-")[0] for mem in train["member_types"]])
                 if len(member_type_check) > 1:
-                    logging.warning(f"Train {train['id']} has members from different train unit types: {member_type_check}")
-            if "departure_track" not in train and "end_at_track" not in train and "arrival_track" not in train and "start_at_track" not in train:
-                logging.warning(f"No 'departure_track' or 'end_at_track' or 'arrival_track' or 'start_at_track' defined for train {train['id']}, picking random gateway track part")
+                    logging.warning(
+                        f"Train {train['id']} has members from different train unit types: {member_type_check}"
+                    )
+            if (
+                "departure_track" not in train
+                and "end_at_track" not in train
+                and "arrival_track" not in train
+                and "start_at_track" not in train
+            ):
+                logging.warning(
+                    f"No 'departure_track' or 'end_at_track' or 'arrival_track' or 'start_at_track' defined for train {train['id']}, picking random gateway track part"
+                )
             if "arrival_track" in train and "start_at_track" in train:
-                logging.error(f"Both 'arrival_track' (train should arrive) and 'start_at_track' (train is already in yard) defined for train {train['id']}, only one should be defined")
+                logging.error(
+                    f"Both 'arrival_track' (train should arrive) and 'start_at_track' (train is already in yard) defined for train {train['id']}, only one should be defined"
+                )
             if "arrival_track" in train and "end_at_track" in train:
-                logging.error(f"Both 'arrival_track' and 'end_at_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+                logging.error(
+                    f"Both 'arrival_track' and 'end_at_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)"
+                )
             if "arrival_track" in train and "departure_track" in train:
-                logging.error(f"Both 'arrival_track' and 'departure_track' defined for train {train['id']},only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+                logging.error(
+                    f"Both 'arrival_track' and 'departure_track' defined for train {train['id']},only one should be defined (create separate objects for in(standing) and out(standing) trains)"
+                )
             if "departure_track" in train and "end_at_track" in train:
-                logging.error(f"Both 'departure_track' (train should depart) and 'end_at_track' (train should remain in yard) defined for train {train['id']}, only one should be defined")
+                logging.error(
+                    f"Both 'departure_track' (train should depart) and 'end_at_track' (train should remain in yard) defined for train {train['id']}, only one should be defined"
+                )
             if "departure_track" in train and "start_at_track" in train:
-                logging.error(f"Both 'departure_track' and 'start_at_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+                logging.error(
+                    f"Both 'departure_track' and 'start_at_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)"
+                )
                 return False, config
             if "departure_track" in train and "arrival_track" in train:
-                logging.error(f"Both 'departure_track' and 'arrival_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)")
+                logging.error(
+                    f"Both 'departure_track' and 'arrival_track' defined for train {train['id']}, only one should be defined (create separate objects for in(standing) and out(standing) trains)"
+                )
                 return False, config
             # Check if tracks exist in the location
             # Add the parking track parts: the track defined in the file is the actual track (used as parking track), but we also need the connected bumper
-            correct, config = check_track_part_in_train(config, train, "arrival_track", track_names_to_ids, location, i, True)
+            correct, config = check_track_part_in_train(
+                config, train, "arrival_track", track_names_to_ids, location, i, True
+            )
             if not correct:
                 return False, config
-            correct, config = check_track_part_in_train(config, train, "departure_track", track_names_to_ids, location, i, True)
+            correct, config = check_track_part_in_train(
+                config, train, "departure_track", track_names_to_ids, location, i, True
+            )
             if not correct:
                 return False, config
-            correct, config = check_track_part_in_train(config, train, "end_at_track", track_names_to_ids, location, i, False)
+            correct, config = check_track_part_in_train(
+                config, train, "end_at_track", track_names_to_ids, location, i, False
+            )
             if not correct:
                 return False, config
-            correct, config = check_track_part_in_train(config, train, "start_at_track", track_names_to_ids, location, i, False)
+            correct, config = check_track_part_in_train(
+                config, train, "start_at_track", track_names_to_ids, location, i, False
+            )
             if not correct:
                 return False, config
     return True, config
 
 
 def check_track_part_in_train(config, train, track_name, track_names_to_ids, location, i, arrival_departure):
-    """Checks the train's track part defined for arrival and departure. It has to be a track_part in the location file, that can be seen as the """
+    """Checks the train's track part defined for arrival and departure. It has to be a track_part in the location file, that can be seen as the"""
     if track_name in train:
         if arrival_departure and track_name.replace("track", "time") not in train:
             logging.error(f"No '{track_name}' given for train {train['id']}")
@@ -276,19 +334,29 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
                 if train["side_track_part"] in track_names_to_ids:
                     side_id = track_names_to_ids[train["side_track_part"]]
                 else:
-                    logging.error(f"Track 'side_track_part' {train['side_track_part']} of {track_name} for train {train['id']} not found in location {config['location']}")
+                    logging.error(
+                        f"Track 'side_track_part' {train['side_track_part']} of {track_name} for train {train['id']} not found in location {config['location']}"
+                    )
                     return False, config
         else:
             try:
-                bumper_a = [location.track_parts[a].id
-                            for a in location.track_parts[track_id].a_side
-                            if location.track_parts[a].type == TrackPartType.BUMPER]
-                bumper_b = [location.track_parts[a].id
-                            for a in location.track_parts[track_id].b_side
-                            if location.track_parts[a].type == TrackPartType.BUMPER]
+                bumper_a = [
+                    location.track_parts[a].id
+                    for a in location.track_parts[track_id].a_side
+                    if location.track_parts[a].type == TrackPartType.BUMPER
+                ]
+                bumper_b = [
+                    location.track_parts[a].id
+                    for a in location.track_parts[track_id].b_side
+                    if location.track_parts[a].type == TrackPartType.BUMPER
+                ]
                 if len(bumper_a + bumper_b) != 1:
-                    logging.warning(f"No bumper found for '{track_name}' for train {train['id']}, picking random 'side_track_part' to determine direction of standing train")
-                    sides = [location.track_parts[a].id for a in location.track_parts[track_id].a_side] + [location.track_parts[a].id for a in location.track_parts[track_id].b_side]
+                    logging.warning(
+                        f"No bumper found for '{track_name}' for train {train['id']}, picking random 'side_track_part' to determine direction of standing train"
+                    )
+                    sides = [location.track_parts[a].id for a in location.track_parts[track_id].a_side] + [
+                        location.track_parts[a].id for a in location.track_parts[track_id].b_side
+                    ]
                     side_id = random.choice(sides)
                 else:
                     side_id = (bumper_a + bumper_b)[0]
@@ -297,7 +365,8 @@ def check_track_part_in_train(config, train, track_name, track_names_to_ids, loc
                 return False, config
         config["custom_trains"][i][f"{track_name}_side"] = side_id
     return True, config
-        
+
+
 def check_gateways(config, location, gateways):
     track_per_ids = {int(t.id): t for t in location.track_parts}
     if "arrival" in config["gateway"]:
@@ -321,12 +390,8 @@ def check_gateways(config, location, gateways):
             # Assert that the JSON is well-formed
             assert all(int(a) == a for a in arrive.a_side), "aSide must be represented as int, not string"
             assert all(int(b) == b for b in arrive.b_side), "bSide must be represented as int, not string"
-            bumper_a = [track_per_ids[a]
-                        for a in arrive.a_side 
-                        if track_per_ids[a].type == TrackPartType.BUMPER]
-            bumper_b = [track_per_ids[b]
-                    for b in arrive.b_side 
-                    if track_per_ids[b].type == TrackPartType.BUMPER]
+            bumper_a = [track_per_ids[a] for a in arrive.a_side if track_per_ids[a].type == TrackPartType.BUMPER]
+            bumper_b = [track_per_ids[b] for b in arrive.b_side if track_per_ids[b].type == TrackPartType.BUMPER]
             if len(bumper_a) == 1:
                 gateways["arrival"].append((arrive, bumper_a[0]))
             elif len(bumper_b) == 1:
@@ -342,7 +407,7 @@ def check_gateways(config, location, gateways):
                 return False, config
             if depart.type != TrackPartType.RAILROAD:
                 print(f"ERROR: departure gateway {depart_id} is not a railroad")
-                return False, config        
+                return False, config
             if depart.parking_allowed:
                 print(f"ERROR: departure gateway {depart_id} does allow parking")
                 return False, config
@@ -355,12 +420,8 @@ def check_gateways(config, location, gateways):
             # Assert that the JSON is well-formed
             assert all(int(a) == a for a in depart.a_side), "aSide must be represented as int, not string"
             assert all(int(b) == b for b in depart.b_side), "bSide must be represented as int, not string"
-            bumper_a = [track_per_ids[a]
-                        for a in depart.a_side 
-                        if track_per_ids[a].type == TrackPartType.BUMPER]
-            bumper_b = [track_per_ids[b] 
-                    for b in depart.b_side 
-                    if track_per_ids[b].type == TrackPartType.BUMPER]
+            bumper_a = [track_per_ids[a] for a in depart.a_side if track_per_ids[a].type == TrackPartType.BUMPER]
+            bumper_b = [track_per_ids[b] for b in depart.b_side if track_per_ids[b].type == TrackPartType.BUMPER]
             if len(bumper_a) == 1:
                 gateways["departure"].append((depart, bumper_a[0]))
             elif len(bumper_b) == 1:

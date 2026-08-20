@@ -3,6 +3,7 @@ import os
 from __init__ import DATA_DIR, REPO_DIR
 from main import create_scenario_from_config
 
+
 def default_example_given_trains():
     # Use the example scenario. Give path, location name, and scenario name
     print("\nCreating scenario with given trains")
@@ -11,7 +12,8 @@ def default_example_given_trains():
     location_filename = "example_location.json"
     scenario_file = "scenario_trains_given.json"
     create_scenario_from_config(config_file, path, scenario_file, location_filename)
- 
+
+
 def default_example_random_full_paths():
     # Use the example random configuration. Give full location path and scenario file path
     print("\nCreating scenario with random trains")
@@ -20,19 +22,24 @@ def default_example_random_full_paths():
     scenario_file = os.path.join(DATA_DIR, "scenarios", "scenario_trains_random.json")
     create_scenario_from_config(config_file, scenario_file=scenario_file, location_file=location_filename)
 
+
 def default_using_scenario_planning_KleineBinckhorst():
     # Use the example from the scenario-planning-inputs rpo and the default paths there
     print("\nCreating scenario using scenario planning inputs for Kleine Binckhorst")
     config_file = "scenario_config_example1"
     create_scenario_from_config(config_file)
 
+
 def default_using_scenario_planning_otherLocation():
     # Use the example from scenario-planning-inputs with custom path and scenario file name
-    print("\nCreating scenario using scenario planning inputs for other location.\n>>>Requires scenario-planning-inputs repo at same level as robust-rail-generator<<<")
+    print(
+        "\nCreating scenario using scenario planning inputs for other location.\n>>>Requires scenario-planning-inputs repo at same level as robust-rail-generator<<<"
+    )
     config_file = "scenario_config_train_cleaning_late.json"
     path = os.path.join(REPO_DIR, "scenario-planning-inputs", "Location_SimpleService")
     scenario_file = "scenario_train_cleaning_late"
     create_scenario_from_config(config_file, path=path, scenario_file=scenario_file)
+
 
 def relative_path():
     print("\nCreating scenario, run from robust-rail-generator/data directory")
@@ -41,6 +48,7 @@ def relative_path():
     location_file = "example_location.json"
     scenario_file = "example_scenario.json"
     create_scenario_from_config(config_file, path=".", location_file=location_file, scenario_file=scenario_file)
+
 
 if __name__ == "__main__":
     default_example_given_trains()

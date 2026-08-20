@@ -98,8 +98,12 @@ class TestCreateSolverFormatScenarioPropagatesStandingIndex:
         gen.add_train_unit_type(TrainUnitType(type_prefix="SLT", carriages=4))
         member = TrainUnit(type_prefix="SLT", carriages=4, id=1)
         train = gen.create_train(
-            side_track_part=1, track_part=5, time=0, id=1,
-            members=[member], standing_index=0,
+            side_track_part=1,
+            track_part=5,
+            time=0,
+            id=1,
+            members=[member],
+            standing_index=0,
         )
         gen.add_in_standing_train(train)
         gen.create_solver_format_scenario()
@@ -110,8 +114,12 @@ class TestCreateSolverFormatScenarioPropagatesStandingIndex:
         gen.add_train_unit_type(TrainUnitType(type_prefix="SLT", carriages=4))
         unit = gen.create_train_unit_unmatched_members(type_prefix="SLT", carriages=4)
         train = gen.create_train(
-            side_track_part=1, track_part=5, time=1000, id=1,
-            members=[unit], standing_index=0,
+            side_track_part=1,
+            track_part=5,
+            time=1000,
+            id=1,
+            members=[unit],
+            standing_index=0,
         )
         gen.add_out_standing_train(train)
         gen.create_solver_format_scenario()
@@ -132,8 +140,12 @@ class TestSaveScenarioJsonValidatesStandingOrder:
         for i in (1, 2):
             member = TrainUnit(type_prefix="SLT", carriages=4, id=i)
             train = gen.create_train(
-                side_track_part=1, track_part=5, time=0, id=i,
-                members=[member], standing_index=standing_index,
+                side_track_part=1,
+                track_part=5,
+                time=0,
+                id=i,
+                members=[member],
+                standing_index=standing_index,
             )
             gen.add_in_standing_train(train)
         return gen
@@ -157,8 +169,12 @@ class TestSaveScenarioJsonValidatesStandingOrder:
         for i, idx in ((1, 0), (2, 1)):
             member = TrainUnit(type_prefix="SLT", carriages=4, id=i)
             train = gen.create_train(
-                side_track_part=1, track_part=5, time=0, id=i,
-                members=[member], standing_index=idx,
+                side_track_part=1,
+                track_part=5,
+                time=0,
+                id=i,
+                members=[member],
+                standing_index=idx,
             )
             gen.add_in_standing_train(train)
         solver_gen = make_solver_generator(gen)

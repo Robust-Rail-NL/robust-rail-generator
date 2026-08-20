@@ -6,7 +6,6 @@ import logging
 import re
 
 import pytest
-
 from pydantic import TypeAdapter, ValidationError
 
 from models.scenario import (
@@ -25,9 +24,7 @@ from models.scenario_config import (
     TrainUnitDistribution,
 )
 
-DATA_DIR = __import__("os").path.join(
-    __import__("os").path.dirname(__file__), "..", "data"
-)
+DATA_DIR = __import__("os").path.join(__import__("os").path.dirname(__file__), "..", "data")
 
 
 class TestTrainUnitType:
@@ -95,8 +92,7 @@ class TestDefaultTrainUnitTypesData:
             data = json.load(f)
         for entry in data:
             assert re.fullmatch(r"[A-Z]+", entry["typePrefix"]), (
-                f"typePrefix {entry['typePrefix']!r} for {entry['name']!r} "
-                "is not all-uppercase"
+                f"typePrefix {entry['typePrefix']!r} for {entry['name']!r} is not all-uppercase"
             )
 
 
@@ -108,15 +104,19 @@ def _scenario(**overrides):
 
 def _incoming(track, standing_index, id_):
     return IncomingTrain(
-        entry_track_part=1, first_parking_track_part=track,
-        id=id_, standing_index=standing_index,
+        entry_track_part=1,
+        first_parking_track_part=track,
+        id=id_,
+        standing_index=standing_index,
     )
 
 
 def _request(track, standing_index, id_):
     return TrainRequest(
-        leave_track_part=1, last_parking_track_part=track,
-        id=id_, standing_index=standing_index,
+        leave_track_part=1,
+        last_parking_track_part=track,
+        id=id_,
+        standing_index=standing_index,
     )
 
 
@@ -184,28 +184,48 @@ class TestScenarioConfig:
     part of that gap the model closes."""
 
     def test_trains_given_selects_the_custom_form(self):
-        config = TypeAdapter(ScenarioConfig).validate_python({
-            "location": "loc", "start_time": 0, "end_time": 3600,
-            "use_default_material": True, "perform_servicing": False,
-            "trains_given": True, "custom_trains": [], "custom_train_units": [],
-        })
+        config = TypeAdapter(ScenarioConfig).validate_python(
+            {
+                "location": "loc",
+                "start_time": 0,
+                "end_time": 3600,
+                "use_default_material": True,
+                "perform_servicing": False,
+                "trains_given": True,
+                "custom_trains": [],
+                "custom_train_units": [],
+            }
+        )
         assert isinstance(config, CustomTrainsConfig)
 
     def test_trains_given_false_selects_the_generated_form(self):
-        config = TypeAdapter(ScenarioConfig).validate_python({
-            "location": "loc", "start_time": 0, "end_time": 3600,
-            "use_default_material": True, "perform_servicing": False,
-            "trains_given": False, "number_of_trains": 4, "seed": 1,
-        })
+        config = TypeAdapter(ScenarioConfig).validate_python(
+            {
+                "location": "loc",
+                "start_time": 0,
+                "end_time": 3600,
+                "use_default_material": True,
+                "perform_servicing": False,
+                "trains_given": False,
+                "number_of_trains": 4,
+                "seed": 1,
+            }
+        )
         assert isinstance(config, GeneratedTrainsConfig)
 
     def test_a_mistyped_optional_key_is_rejected(self):
         with pytest.raises(ValidationError):
-            TypeAdapter(ScenarioConfig).validate_python({
-                "location": "loc", "start_time": 0, "end_time": 3600,
-                "use_default_material": True, "perform_servicing": False,
-                "trains_given": False, "min_time_in_yards": 600,
-            })
+            TypeAdapter(ScenarioConfig).validate_python(
+                {
+                    "location": "loc",
+                    "start_time": 0,
+                    "end_time": 3600,
+                    "use_default_material": True,
+                    "perform_servicing": False,
+                    "trains_given": False,
+                    "min_time_in_yards": 600,
+                }
+            )
 
     def test_the_camelcase_standing_ratios_are_rejected(self):
         """scenario_config_test.json carried inStanding_ratio/outStanding_ratio,
@@ -214,11 +234,16 @@ class TestScenarioConfig:
             TrainUnitDistribution(train_unit_types=["VIRM-4"], inStanding_ratio=0.3)
 
     def test_intent_is_a_declared_field_not_a_tolerated_extra(self):
-        config = TypeAdapter(ScenarioConfig).validate_python({
-            "location": "loc", "start_time": 0, "end_time": 3600,
-            "use_default_material": True, "perform_servicing": False,
-            "trains_given": False,
-            "intent": {"designed_for": "domain", "notes": ["a", "b"]},
-        })
+        config = TypeAdapter(ScenarioConfig).validate_python(
+            {
+                "location": "loc",
+                "start_time": 0,
+                "end_time": 3600,
+                "use_default_material": True,
+                "perform_servicing": False,
+                "trains_given": False,
+                "intent": {"designed_for": "domain", "notes": ["a", "b"]},
+            }
+        )
         assert config.intent.designed_for == "domain"
         assert config.intent.notes == ["a", "b"]

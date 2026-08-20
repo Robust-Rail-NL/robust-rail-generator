@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, Type
+from typing import Callable, Optional
 
 from pydantic import Field, NonNegativeInt, model_validator
 
@@ -96,11 +96,9 @@ class IncomingTrainUnit(TrainUnit):
     """A TrainUnit as part of an incoming train, with an id and associated tasks."""
 
     @classmethod
-    def from_train_unit(cls,
-                        other: TrainUnit) -> IncomingTrainUnit:
-       # noinspection PyArgumentList
-       return cls(type_prefix=other.type_prefix, carriages=other.carriages,
-                   id=other.id, tasks=other.tasks or [])
+    def from_train_unit(cls, other: TrainUnit) -> IncomingTrainUnit:
+        # noinspection PyArgumentList
+        return cls(type_prefix=other.type_prefix, carriages=other.carriages, id=other.id, tasks=other.tasks or [])
 
     id: int
     tasks: list[TaskSpec] = Field(default_factory=list)
@@ -172,7 +170,7 @@ class Train(RailModel):
     members: list[TrainUnit] = Field(default_factory=list)
     standing_index: Optional[NonNegativeInt] = Field(None, alias="standingIndex")
     can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
-    minimum_duration: Optional[str] =  Field(None, alias="minimumDuration")
+    minimum_duration: Optional[str] = Field(None, alias="minimumDuration")
 
 
 class ShuntingUnit(RailModel):
@@ -317,14 +315,10 @@ def _validate_standing_group(
             )
 
     if unordered_tracks == 1:
-        logging.info(
-            f"{list_name}: 1 track has multiple standing trains with no "
-            "order specified."
-        )
+        logging.info(f"{list_name}: 1 track has multiple standing trains with no order specified.")
     elif unordered_tracks > 1:
         logging.info(
-            f"{list_name}: {unordered_tracks} tracks each have multiple "
-            "standing trains with no order specified."
+            f"{list_name}: {unordered_tracks} tracks each have multiple standing trains with no order specified."
         )
 
 
@@ -363,12 +357,8 @@ class Scenario(SchemaVersioned):
     end_time: int = Field(alias="endTime")
 
     # Optional: generator/evaluator only.
-    non_service_traffic: list[NonServiceTraffic] = Field(
-        default_factory=list, alias="nonServiceTraffic"
-    )
-    disabled_track_parts: list[DisabledTrackPart] = Field(
-        default_factory=list, alias="disabledTrackPart"
-    )
+    non_service_traffic: list[NonServiceTraffic] = Field(default_factory=list, alias="nonServiceTraffic")
+    disabled_track_parts: list[DisabledTrackPart] = Field(default_factory=list, alias="disabledTrackPart")
     workers: list[MemberOfStaff] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -411,9 +401,7 @@ class EvaluatorScenario(SchemaVersioned):
     def to_json(self, **kwargs) -> str:
         return self.model_dump_json(by_alias=True, exclude_unset=False, **kwargs)
 
-    train_unit_types: list[TrainUnitType] = Field(
-        default_factory=list, alias="trainUnitTypes"
-    )
+    train_unit_types: list[TrainUnitType] = Field(default_factory=list, alias="trainUnitTypes")
 
     in_: list[Train] = Field(default_factory=list, alias="in")
     in_standing: list[Train] = Field(default_factory=list, alias="inStanding")
@@ -424,12 +412,8 @@ class EvaluatorScenario(SchemaVersioned):
     end_time: int = Field(alias="endTime")
 
     # Optional: generator/evaluator only.
-    non_service_traffic: list[NonServiceTraffic] = Field(
-        default_factory=list, alias="nonServiceTraffic"
-    )
-    disabled_track_parts: list[DisabledTrackPart] = Field(
-        default_factory=list, alias="disabledTrackPart"
-    )
+    non_service_traffic: list[NonServiceTraffic] = Field(default_factory=list, alias="nonServiceTraffic")
+    disabled_track_parts: list[DisabledTrackPart] = Field(default_factory=list, alias="disabledTrackPart")
     workers: list[MemberOfStaff] = Field(default_factory=list)
 
     @model_validator(mode="after")

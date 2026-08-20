@@ -31,8 +31,8 @@ All models inherit from `RailModel`. Do not use `BaseModel` directly.
 Every model has two helper methods inherited from `RailModel`:
 
 ```python
-obj.to_dict()   # → dict, camelCase keys, unset fields omitted
-obj.to_json()   # → str, same conventions; accepts indent=2 for debug output
+obj.to_dict()  # → dict, camelCase keys, unset fields omitted
+obj.to_json()  # → str, same conventions; accepts indent=2 for debug output
 ```
 
 Always use these for output. Never call `model_dump()` or `model_dump_json()`
