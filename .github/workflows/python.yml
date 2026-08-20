@@ -65,3 +65,26 @@ jobs:
         uv run --frozen python scripts/export_schema.py
         git diff --exit-code schema/ \
           || { echo "::error::schema/ is stale — run 'python scripts/export_schema.py' and commit the result"; exit 1; }
+
+  examples:
+    runs-on: ubuntu-latest
+    name: Example output freshness
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v5
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+    - name: Install dependencies
+      run: uv sync --frozen
+
+    # data/example_scenario.json and data/scenarios/*.json are generated
+    # output checked in for browsing, not hand-maintained. Nothing else
+    # regenerates them, so they can silently rot out of sync with the
+    # generator (this happened for months before it was caught by hand).
+    - name: Check the example output matches the generator
+      run: |
+        uv run --frozen python scripts/regenerate_examples.py
+        git diff --exit-code data/ \
+          || { echo "::error::data/ example output is stale — run 'python scripts/regenerate_examples.py' and commit the result"; exit 1; }
