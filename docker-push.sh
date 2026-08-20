@@ -11,10 +11,11 @@
 # host contains amd64-only native code and either fails or runs under slow
 # QEMU emulation on arm64 hosts (e.g. Apple Silicon, AWS Graviton).
 #
-# :latest is applied unconditionally for now — this repo doesn't yet have a
-# prerelease/stable branch split like robust-rail-solver's dev/noproto.
-# Revisit this (gate :latest behind a version-shape regex, as solver does)
-# once a prerelease line exists here.
+# :latest is only applied to final, non-prerelease versions (no -rc./-beta./
+# -alpha. suffix) — same reasoning as robust-rail-solver's docker-push.sh:
+# :latest is what someone gets when they ask for the image without thinking
+# about it, and that should never silently become a prerelease build partway
+# through a release's rc/beta line.
 #
 # Requires a buildx builder using the "docker-container" driver with
 # network=host. The default driver runs the BuildKit container in an
@@ -35,7 +36,10 @@ BUILDER_NAME="robust-rail-builder"
 VERSION=$(sed -n 's:^version = "\(.*\)"$:\1:p' pyproject.toml)
 [[ -n "$VERSION" ]] || { echo "Could not read version from pyproject.toml" >&2; exit 1; }
 
-TAGS=(-t "$IMAGE:$VERSION" -t "$IMAGE:latest")
+TAGS=(-t "$IMAGE:$VERSION")
+if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    TAGS+=(-t "$IMAGE:latest")
+fi
 
 if ! docker buildx inspect "$BUILDER_NAME" >/dev/null 2>&1; then
     docker buildx create --name "$BUILDER_NAME" --driver docker-container --driver-opt network=host
