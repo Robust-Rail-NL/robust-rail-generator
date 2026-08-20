@@ -1,11 +1,17 @@
 # Unified Schema Design
 
-Working document for the migration away from Protobuf to a single Pydantic-defined
+Design record for the migration away from Protobuf to a single Pydantic-defined
 schema consumed by all three projects (generator, solver, evaluator).
 
-**Status:** Draft, derived from the existing `.proto` files and reconciled
-against the in-progress C# records. Several decisions remain open; see the
-"C# reconciliation notes" section and the per-concept open questions.
+**Status: historical.** The migration this document planned is complete: the
+schema is frozen and implemented across all five Robust-Rail-NL repos, shipped
+as part of the 2.0.0 release (see `../scenario-planning-inputs/docs/roadmap-2.0.0.md`
+for the release record). Kept as a record of *why* the schema looks the way it
+does — most "Decision" entries below are still accurate descriptions of the
+shipped models. A handful of "Open question" entries were never closed out
+before the freeze; those are called out as such rather than removed, since the
+underlying ambiguity in the code is real (see each for the corresponding TODO,
+if any). None of them blocks 2.0.0.
 
 ## Guiding principles
 
@@ -41,10 +47,12 @@ with the evaluator/generator-specific fields, all optional.
   these; the evaluator uses them for shunting time and walking distance
   calculations.
 
-**Open question:** are the three movement coefficients (`movementConstant`,
-`movementTrackCoefficient`, `movementSwitchCoefficient`) truly per-`Location`
-or are they actually global constants that happen to be transported via the
-Location message? If global, they belong somewhere else.
+**Open question, unresolved at freeze:** are the three movement coefficients
+(`movementConstant`, `movementTrackCoefficient`, `movementSwitchCoefficient`)
+truly per-`Location` or are they actually global constants that happen to be
+transported via the Location message? Shipped as per-`Location` fields for
+2.0.0 either way; revisit if a second location's values are ever observed to
+differ from the first, which would settle it empirically.
 
 ### `TrackPart`
 
@@ -257,10 +265,9 @@ Scenario:
   trainUnitTypes: list[TrainUnitType]           # was on Scenario in non-HIP only
 ```
 
-**Open question:** where does `trainUnitTypes` belong? The non-HIP `Scenario`
-has it; the HIP `Scenario` does not (HIP embeds `TrainUnitType` directly
-inside `TrainUnit`). Putting it on `Scenario` and referring to it by name from
-`TrainUnit` is more normalized. Confirm that's the right call.
+**Resolved:** `trainUnitTypes` stays on `Scenario`, referenced by name from
+`TrainUnit` — see the "Settled — decisions still in force" table in the
+roadmap.
 
 **Decision: `standingIndex` appears on both `IncomingTrain` and
 `TrainRequest`.** TORS reads it for both incoming standing and outgoing
@@ -271,8 +278,9 @@ local `HIP_Scenario.proto`; generator and design doc should match.
 (`inStanding` / `outStanding`)" after the `IncomingTrain` / `TrainRequest`
 section.
 
-**Open question:** where does `Train.minimumDuration` (non-HIP) go in the
-unified model, and what does it mean?
+**Open question, unresolved at freeze:** `minimumDuration` (non-HIP) landed on
+the shipped `Train` model as `Optional[str]` without its meaning being pinned
+down — no consumer reads it yet.
 
 ### `IncomingTrain` / `TrainRequest`
 
@@ -293,8 +301,11 @@ unified model, and what does it mean?
   "any train unit of this type")
 - `standingIndex`
 
-**Open question:** the non-HIP `Train` has `canDepartFromAnyTrack` (for
-outstanding trains). HIP has no equivalent. Add it to `TrainRequest`?
+**Open question, unresolved at freeze:** the non-HIP `Train` has
+`canDepartFromAnyTrack` (for outstanding trains); HIP has no equivalent. It
+shipped on `TrainRequest` (and on the legacy `Train` shape) as
+`Optional[bool]`, still carrying a `# TODO: confirm...` comment in
+`src/models/scenario.py` — no consumer reads it yet either.
 
 ### Standing order (`inStanding` / `outStanding`)
 
@@ -463,17 +474,15 @@ Several things worth deciding for the unified model:
   the wire. HIP should stop emitting it; it is absent from the unified schema.
 - **`Action.shuntingUnit` embeds a full `ShuntingUnit`** rather than
   referencing by ID. This is inconsistent with the "reference, don't embed"
-  direction the rest of the document argues for. **Decision pending** —
-  switching to ID reference is cleaner but requires the evaluator to have
-  access to the same `ShuntingUnit` registry the solver used.
+  direction the rest of the document argues for. **Unresolved at freeze** —
+  shipped embedded; switching to ID reference is cleaner but requires the
+  evaluator to have access to the same `ShuntingUnit` registry the solver
+  used.
 
-**Open question:** is there a canonical proto file for `Plan` somewhere not
-yet shared, or is the C# code the most authoritative version? If a proto
-exists, worth comparing.
-
-**Open question:** does the evaluator's expected input format match `Plan`
-as it appears in the C# code, or does it expect something different? This
-matters for sizing the C++ work.
+Both remaining open questions below are moot now that protobuf is gone
+entirely: there is no proto file for `Plan`, canonical or otherwise, and the
+plain-vs-assert pipeline re-verification recorded in the roadmap (rc.1 and
+later) confirms the evaluator parses and executes what the solver emits.
 
 ## C# reconciliation notes
 
@@ -570,7 +579,11 @@ for the migration:
 5. **Schema location and distribution.** Where does the exported JSON Schema
    live? Checked into each project, or published as an artifact (npm package /
    NuGet / a tagged GitHub release)? This affects how the C# and C++ projects
-   pick up changes.
+   pick up changes. **Shipped for 2.0.0 as checked-in `schema/*.json`, read by
+   `validate-fixtures.yml` off the branch named `release/2.0.0`.** Still
+   genuinely open long-term — see "Where the exported schemas should live" in
+   the roadmap for the known problem with the branch-name approach and the
+   proposed fix (publish keyed by `schemaVersion`).
 
 6. **Hashability and equality.** Pydantic v2 makes models hashable only with
    `frozen=True` and only if all contents are hashable (no `list`s, etc.).
@@ -582,55 +595,38 @@ for the migration:
    neither. As a starting heuristic: leaf value types (`TimeInterval`,
    `TrainUnitType` identity, `TaskType`) want both; collection-holding
    container types (`Plan`, `Scenario`, `Location`) want neither.
+   **Resolved by default, not by decision:** no Pydantic model in
+   `src/models/` sets `frozen=True`, so nothing is hashable. `TrainUnitType`
+   gets its `(typePrefix, carriages)` identity via explicit `__eq__`/`__hash__`
+   overrides instead of `frozen=True` (see `CLAUDE_CODE_CONTEXT.md`). No other
+   model has needed equality or hashing so far.
 
-## Next steps
+## What actually happened
 
-1. ~~Reconcile this document against the C# records~~ — done; see "C#
-   reconciliation notes" section above.
-2. Resolve the open questions (collected at the end of this document for
-   convenience).
-3. Decide on `Plan` scope: same schema or separate, and what to do about
-   `Plan.trackParts` and `Action.shuntingUnit` embedding.
-4. Draft the Pydantic models in a `models/` package, one file per concept
-   group (`location.py`, `scenario.py`, `train.py`, `plan.py`,
-   `utilities.py`).
-5. Generate JSON Schema from the Pydantic models and check the output
-   against a sample of existing generator output (semantic diff, not byte
-   diff).
-6. Wire the generator's output path through Pydantic; verify byte-identical
-   or semantically-identical JSON against the current protobuf-based output
-   for a regression suite of scenarios.
-7. Coordinate with the C# side on the small set of breaking changes
-   (`displayName` no longer includes carriage count; `priority` dropped;
-   `TrainUnit.type` dropped in favor of `typeDisplayName`; `ShuntingUnit.members`
-   dropped in favor of `memberIDs`; `standingType` dropped). Update the C#
-   readers to handle the new shape *before* switching the generator's
-   output.
-8. Cut over the generator; remove protobuf dependency.
-9. Move on to the C++ evaluator using the now-stable JSON Schema as the
-   contract.
+The numbered plan this section used to lay out (reconcile with C#, draft the
+Pydantic models, generate JSON Schema, cut the generator over, coordinate the
+breaking changes with C# and C++, move on to the evaluator) is done — that is
+what shipped as the 2.0.0 interchange schema. For the detailed, dated account
+of how the migration actually went (including the parts that didn't go
+according to this plan), see `git log -p unified-schema-design.md` and the
+roadmap's "Settled — what was done" section.
 
-## Collected open questions
+## Open questions still unresolved at freeze
 
-For convenience, the open questions scattered through the document above:
+Everything scattered through the document above that shipped without being
+pinned down, gathered here for convenience. None of these blocked 2.0.0; they
+are latent ambiguity in the shipped schema, not missing features.
 
 - Are the three `Location` movement coefficients per-location or actually
   global constants?
 - Are `Walking`, `Break`, `NonService` task types ever present in JSON the
-  solver reads? If so, verify the C# deserializer handles them gracefully
-  once the enum is extended to include these plus `StandIn`/`StandOut`.
-- ~~Confirm the `displayName` cleanup ("SLT" + carriages=4 instead of "SLT4").~~ **Resolved** — see `TrainUnitType` section; `displayName` renamed to `typePrefix`, derived `typeDisplayName()` is `typePrefix + "-" + carriages`.
-- ~~Does `trainUnitTypes` belong on `Scenario` (referenced by name) or embedded into each `TrainUnit`?~~ **Resolved: on `Scenario`, referenced by `(typePrefix, carriages)` from `TrainUnit`** — see `TrainUnit` section.
-- Where does `Train.minimumDuration` (non-HIP) belong in the unified model,
-  and what does it mean?
-- ~~Should `standingIndex` apply to `IncomingTrain` as well as `TrainRequest`?~~ **Resolved: yes, both** — see `IncomingTrain / TrainRequest` section.
-- ~~Should `standingIndex` be required, and what should a null value mean?~~ **Resolved:** `Optional[NonNegativeInt]`; required and mutually distinct within `inStanding` groups sharing a track (a given fact), left optional within `outStanding` (a terminal requirement that may be left unconstrained) — see "Standing order" section.
-- Should `canDepartFromAnyTrack` (non-HIP only) be added to `TrainRequest`?
-- ~~`TaskSpec.priority` → `optional: bool` — see `TaskSpec` section above.~~ **Resolved** — see `TaskSpec` section.
-- `Resource`: **resolved** — see `Resource` section above.
-- Is there a canonical proto for `Plan` somewhere?
-- Does the evaluator's expected `Plan` input format match what the C# code
-  produces?
-- The cross-cutting questions: naming conventions, schema distribution,
-  hashability per model. (Schema versioning, forward-compatibility policy,
-  and ID types are resolved — see cross-cutting section above.)
+  solver reads? If so, verify the C# deserializer handles them gracefully.
+- What does `Train.minimumDuration` (non-HIP) mean? Shipped as
+  `Optional[str]`; no consumer reads it.
+- What does `canDepartFromAnyTrack` mean, and should the solver honour it?
+  Shipped as `Optional[bool]` with an unresolved `# TODO` in
+  `src/models/scenario.py`; no consumer reads it.
+- Should `Action.shuntingUnit` reference a `ShuntingUnit` by ID instead of
+  embedding it? Shipped embedded.
+- Where should the exported schemas live long-term? See "Where the exported
+  schemas should live" in the roadmap.
