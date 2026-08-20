@@ -25,7 +25,9 @@ def default_example_random_full_paths():
 
 def default_using_scenario_planning_KleineBinckhorst():
     # Use the example from the scenario-planning-inputs rpo and the default paths there
-    print("\nCreating scenario using scenario planning inputs for Kleine Binckhorst")
+    print(
+        "\nCreating scenario using scenario planning inputs for Kleine Binckhorst.\n>>>Requires scenario-planning-inputs repo at same level as robust-rail-generator<<<"
+    )
     config_file = "scenario_config_example1"
     create_scenario_from_config(config_file)
 
@@ -37,8 +39,7 @@ def default_using_scenario_planning_otherLocation():
     )
     config_file = "scenario_config_train_cleaning_late.json"
     path = os.path.join(REPO_DIR, "scenario-planning-inputs", "Location_SimpleService")
-    scenario_file = "scenario_train_cleaning_late"
-    create_scenario_from_config(config_file, path=path, scenario_file=scenario_file)
+    create_scenario_from_config(config_file, path=path)
 
 
 def relative_path():
@@ -50,9 +51,21 @@ def relative_path():
     create_scenario_from_config(config_file, path=".", location_file=location_file, scenario_file=scenario_file)
 
 
-if __name__ == "__main__":
+def self_contained_examples():
+    """Examples that only read/write this repo's own data/ — no sibling
+    checkout required. CI runs this (see scripts/regenerate_examples.py) to
+    catch stale checked-in example output."""
     default_example_given_trains()
     default_example_random_full_paths()
+    relative_path()
+
+
+def cross_repo_examples():
+    """Examples that read from the sibling scenario-planning-inputs repo."""
     default_using_scenario_planning_KleineBinckhorst()
     default_using_scenario_planning_otherLocation()
-    relative_path()
+
+
+if __name__ == "__main__":
+    self_contained_examples()
+    cross_repo_examples()
