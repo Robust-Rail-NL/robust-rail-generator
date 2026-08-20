@@ -174,6 +174,9 @@ def check_train_details_file(config, location: Location):
         if "id" not in t or "type" not in t or "services" not in t:
             logging.error(f"Incorrectly specified the {i}th custom train unit: missing id, type or service parameter")
             return False, config
+        if not t["id"].isdigit():
+            logging.error(f"ID of train unit must be integer, not {t['id']}")
+            return False, config
         if t["type"] not in train_unit_names:
             logging.error(f"Custom train unit with id {t['id']} has unknown type {t['type']}")
             return False, config
@@ -193,6 +196,8 @@ def check_train_details_file(config, location: Location):
                 logging.error(
                     f"Incorrectly specified service {service_task} of train unit {t['id']}: missing name, type, duration or required_skills parameter"
                 )
+            if "optional" not in service_task:
+                defined_servicing_tasks[service_task]["optional"] = False
             if defined_servicing_tasks[service_task]["type"] not in [f.type for f in location.facilities]:
                 logging.error(
                     f"Service task {service_task} has type {defined_servicing_tasks[service_task]['type']} which is not present in the location's facilities"
@@ -204,6 +209,9 @@ def check_train_details_file(config, location: Location):
         for i, train in enumerate(config["custom_trains"]):
             if "id" not in train:
                 logging.error(f"Incorrectly specified the {i}th custom train: missing id")
+                return False, config
+            if not train["id"].isdigit():
+                logging.error(f"ID of train unit must be integer, not {train['id']}")
                 return False, config
             if "members" not in train and "member_types" not in train:
                 logging.error(f"Incorrectly specified the {i}th custom train: missing members or member_types")
