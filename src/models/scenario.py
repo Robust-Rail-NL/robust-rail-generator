@@ -38,7 +38,6 @@ class TrainUnitType(RailModel):
 
     # Optional: generator/evaluator only.
     travel_speed: Optional[int] = Field(None, alias="travelSpeed")
-    # TODO: confirm whether travelSpeed is per-TrainUnitType or per-location.
     start_up_time: Optional[int] = Field(None, alias="startUpTime")
     needs_loco: bool = Field(False, alias="needsLoco")
     is_loco: bool = Field(False, alias="isLoco")
@@ -188,10 +187,6 @@ class ShuntingUnit(RailModel):
     """
 
     id: Optional[int] = None
-    # TODO: decide whether these should stay IDs (current decision) or become
-    # embedded TrainUnit objects (as in the HIP proto and C# mid-migration
-    # state). The Plan proto embeds a full ShuntingUnit in each Action, so if
-    # Action references ShuntingUnit by ID instead, a registry is needed.
     member_ids: list[int] = Field(default_factory=list, alias="memberIDs")
     parent_ids: list[int] = Field(default_factory=list, alias="parentIDs")
     child_ids: list[int] = Field(default_factory=list, alias="childIDs")

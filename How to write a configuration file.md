@@ -57,6 +57,6 @@ The configuration file is a JSON file with the following parameters defined in t
 - `custom_servicing_tasks` (list): if `perform_servicing` is true and `trains_given` is true, this is a list of servicing task objects with the following parameters:
   - `name` (string): name of servicing task specification (used in train unit's services).
   - `type` (string): type of servicing task.
-  - `optional` (int): priority of the servicing task (lower is more important).
+  - `optional` (bool): whether the servicing task is optional; default False (required).
   - `duration` (int): time to execute servicing task.
   - `required_skills` (list): list of strings giving the required skills to perform a servicing task, must be compatible with `custom_worker_skills`.

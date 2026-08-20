@@ -126,8 +126,8 @@ class Location(SchemaVersioned):
     task_types: list[TaskType] = Field(default_factory=list, alias="taskTypes")
 
     # Optional: evaluator/generator only. Used for shunting time calculations.
-    # TODO: confirm whether these are truly per-location or global constants
-    # that happen to be transported via this message.
+    # These constants/coefficients are nominally global, but individual
+    # locations might differ.
     movement_constant: Optional[int] = Field(None, alias="movementConstant")
     movement_track_coefficient: Optional[int] = Field(None, alias="movementTrackCoefficient")
     movement_switch_coefficient: Optional[int] = Field(None, alias="movementSwitchCoefficient")
