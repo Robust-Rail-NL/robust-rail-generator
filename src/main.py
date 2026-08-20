@@ -128,7 +128,11 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
                     task_type, service["duration"], service["required_skills"]
                 )
                 service_tasks[service["name"]] = service_obj
-                usage_count_per_service_type[service["name"]] = [fl.simultaneous_usage_count for fl in scenario_generator.location.facilities if fl.type == service_obj.type.other][0]
+                usage_count_per_service_type[service["name"]] = [
+                    fl.simultaneous_usage_count
+                    for fl in scenario_generator.location.facilities
+                    if fl.type == service_obj.type.other
+                ][0]
             estimated_servicing_time = sum(
                 [
                     service_tasks[service_type].duration / usage_count_per_service_type[service_type]
