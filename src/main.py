@@ -121,15 +121,17 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     estimated_servicing_time = 0
     if config["perform_servicing"]:
         if "custom_servicing_tasks" in config:
+            usage_count_per_service_type = {}
             for service in config["custom_servicing_tasks"]:
                 task_type = scenario_generator.create_task_type(None, service["type"])
                 service_obj = scenario_generator.create_task_spec(
                     task_type, service["duration"], service["required_skills"]
                 )
                 service_tasks[service["name"]] = service_obj
+                usage_count_per_service_type[service["name"]] = [fl.simultaneous_usage_count for fl in scenario_generator.location.facilities if fl.type == service_obj.type.other][0]
             estimated_servicing_time = sum(
                 [
-                    service_tasks[service_type].duration
+                    service_tasks[service_type].duration / usage_count_per_service_type[service_type]
                     for train_unit in config["custom_train_units"]
                     for service_type in train_unit["services"]
                 ]
