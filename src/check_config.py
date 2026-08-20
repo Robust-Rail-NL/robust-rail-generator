@@ -174,7 +174,7 @@ def check_train_details_file(config, location: Location):
         if "id" not in t or "type" not in t or "services" not in t:
             logging.error(f"Incorrectly specified the {i}th custom train unit: missing id, type or service parameter")
             return False, config
-        if not t["id"].isdigit():
+        if not isinstance(t["id"], int):
             logging.error(f"ID of train unit must be integer, not {t['id']}")
             return False, config
         if t["type"] not in train_unit_names:
@@ -210,7 +210,7 @@ def check_train_details_file(config, location: Location):
             if "id" not in train:
                 logging.error(f"Incorrectly specified the {i}th custom train: missing id")
                 return False, config
-            if not train["id"].isdigit():
+            if not isinstance(train["id"], int):
                 logging.error(f"ID of train unit must be integer, not {train['id']}")
                 return False, config
             if "members" not in train and "member_types" not in train:
