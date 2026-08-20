@@ -9,7 +9,7 @@ from __init__ import DATA_DIR
 from models import IncomingTrainUnit, PredefinedTaskType, TrainRequest
 
 # Import standard protos (Scenario, Location, TrainUnitTypes, Utilities)
-from models.location import Location, TaskType, TrackPartType
+from models.location import Location, TaskType
 from models.scenario import (
     DisabledTrackPart,
     EvaluatorScenario,
@@ -39,7 +39,6 @@ class ScenarioGenerator:
 
         # Location where the scenario happens
         self.location = None
-        self.location_solver = None
 
     def save_scenario_json(self, file_name: str):
         # add_in_standing_train() and friends build self.scenario by mutating
@@ -500,35 +499,6 @@ class ScenarioGenerator:
             json_location = json.load(f)
         logging.info(f"Loading location from {file_name}")
         self.location = Location.model_validate(json_location)
-
-    def convert_location_to_solver_format(self, file_name):
-        # Converts a standard location into a solver compatible location file format
-        # Check if self.location is not empty
-        if self.location.ListFields():
-            track_parts = self.location.track_parts
-            # Add each track part to the location
-            for track_part in track_parts:
-                if track_part.type == TrackPartType.BUILDING:
-                    logging.warning("'Building' type cannot be added to Solver format, skipping this track part")
-                else:
-                    self.location_solver.track_parts.append(track_part)
-
-            # Add each facility to the location
-            facilities = self.location.facilities
-            for facility in facilities:
-                self.location_solver.facilities.append(facility)
-
-            task_types = self.location.task_types
-            for task_type in task_types:
-                self.location_solver.task_types.append(task_type)
-
-            # Create a json location file - this one is compatible with the solver format
-            json_data = self.location_solver.to_dict()
-            with open(file_name, "w") as f:
-                json.dump(json_data, f, indent=4)
-            logging.info(f"Successfully converted location to Solver format and saved to {file_name}")
-        else:
-            logging.warning("No location file was loaded")
 
     def add_default_train_unit_types(self):
         """Creates the default train unit types from the `data/default_train_unit_types.json` data."""
