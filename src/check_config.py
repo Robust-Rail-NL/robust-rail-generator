@@ -387,7 +387,7 @@ def check_gateways(config, location, gateways):
                 print(f"ERROR: arrival gateway {arrive_id} is not a railroad")
                 return False, config
             if arrive.parking_allowed:
-                print(f"ERROR: arrival gateway {arrive_id} does allow parking")
+                print(f"ERROR: arrival gateway {arrive_id} allows parking, but should not")
                 return False, config
             if not arrive.saw_movement_allowed:
                 print(f"ERROR: arrival gateway {arrive_id} does not allow saw movements")
@@ -417,7 +417,7 @@ def check_gateways(config, location, gateways):
                 print(f"ERROR: departure gateway {depart_id} is not a railroad")
                 return False, config
             if depart.parking_allowed:
-                print(f"ERROR: departure gateway {depart_id} does allow parking")
+                print(f"ERROR: departure gateway {depart_id} allows parking but should not")
                 return False, config
             if not depart.saw_movement_allowed:
                 print(f"ERROR: departure gateway {depart_id} does not allow saw movements")
