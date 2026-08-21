@@ -44,17 +44,23 @@ class SchemaVersioned(RailModel):
     see SCHEMA_CHANGELOG.md for what changed at each version. schemaVersion
     is always emitted on serialisation, even by subclasses that otherwise
     omit fields that were never explicitly set. A missing or unexpected
-    value on read produces a logged warning; parsing proceeds regardless
-    (warn-and-continue, no hard reject).
+    value when reading external JSON produces a logged warning; parsing
+    proceeds regardless (warn-and-continue, no hard reject). Objects built
+    directly in Python (rather than parsed from a dict) are always assumed
+    current and never warn, so callers don't need to pass schema_version.
     """
 
     schema_version: int = Field(EXPECTED_SCHEMA_VERSION, alias="schemaVersion")
 
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        if isinstance(obj, dict) and "schemaVersion" not in obj and "schema_version" not in obj:
+            logging.warning(f"{cls.__name__}: schemaVersion is missing; assuming {EXPECTED_SCHEMA_VERSION}.")
+        return super().model_validate(obj, **kwargs)
+
     @model_validator(mode="after")
     def _warn_on_schema_version_mismatch(self) -> "SchemaVersioned":
-        if "schema_version" not in self.model_fields_set:
-            logging.warning(f"{type(self).__name__}: schemaVersion is missing; assuming {EXPECTED_SCHEMA_VERSION}.")
-        elif self.schema_version != EXPECTED_SCHEMA_VERSION:
+        if self.schema_version != EXPECTED_SCHEMA_VERSION:
             logging.warning(
                 f"{type(self).__name__}: schemaVersion {self.schema_version} "
                 f"does not match expected {EXPECTED_SCHEMA_VERSION}."
