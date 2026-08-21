@@ -258,7 +258,6 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
                     time=train["departure_time"],
                     track_part=train["departure_track"],
                     side_track_part=train["departure_track_side"],
-                    can_depart_from_any_track=train["depart_any_track"] if "depart_any_track" in train else False,
                 )
             )
         if "start_at_track" in train:

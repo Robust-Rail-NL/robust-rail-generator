@@ -1016,18 +1016,6 @@
           ],
           "default": null,
           "title": "Standingindex"
-        },
-        "canDepartFromAnyTrack": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Candepartfromanytrack"
         }
       },
       "required": [
@@ -1107,18 +1095,6 @@
           ],
           "default": null,
           "title": "Length"
-        },
-        "reversalDuration": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Reversalduration"
         },
         "combineDuration": {
           "anyOf": [

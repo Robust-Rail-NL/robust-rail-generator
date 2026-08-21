@@ -212,7 +212,6 @@ class ScenarioGenerator:
         time: int,
         id: str,
         members: List[TrainUnit],
-        can_depart_from_any_track: bool = True,
         standing_index: Optional[int] = None,
         minimum_duration: str = "60",
     ) -> Train:
@@ -227,7 +226,6 @@ class ScenarioGenerator:
             time (int): Arrival/Departure on the track, (and departure from the bumper), times are in seconds since the epoch
             id (str): unique identifier of the Train
             members (List[TrainUnit]): train units in the train
-            can_depart_from_any_track (bool): For outstanding trains: set to true to allow departures from any track, instead of just the parking_track_part (TORS required, not used)
             standing_index (Optional[int]): if train is in- or outstanding and there are multiple trains on one track, use this to determine the index of the train on the track, with lower indices at the A-side of the track. Leave unset if there is no preference (or only one train stands on the track).
             minimum_duration (str): minimum duration on the track part where the train arrives/departs
 
@@ -243,8 +241,6 @@ class ScenarioGenerator:
 
         # Merge all the members a.k.a TrainUnit(s) with the existing members if there are
         train.members.extend(members)
-        if can_depart_from_any_track:
-            train.can_depart_from_any_track = can_depart_from_any_track
         if standing_index is not None:
             train.standing_index = standing_index
         if minimum_duration:

@@ -60,7 +60,6 @@ The configuration file is a JSON file with the following parameters defined in t
     - Option 1: train departs from scenario (called `out` train), you must specify:
       - `departure_track` (int): track (id or name) from which train leaves the scenario. This must be a gateway track, which has sufficient length, can be parked on and made saw movements on.
       - `departure_time` (int/string): time at which train start moving toward departure track.
-      - `depart_any_track` (bool) (optional): whether train can depart from any track or only the departure track.
     - Option 2: train remains in shunting yard (called `out_standing` train), you must specify:
       - `end_at_track` (int/string): track (id or name) at which train is parked at the end of the scenario.
       - `parking_index` (int) (optional): if multiple trains park at same track as outstanding, define index for the other of the trains (lower index is Aside).

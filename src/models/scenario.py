@@ -27,10 +27,6 @@ class TrainUnitType(RailModel):
 
     # Optional: all consumers may omit these if not relevant.
     length: Optional[float] = None
-    reversal_duration: Optional[int] = Field(None, alias="reversalDuration")
-    # TODO: clarify whether reversal_duration is computed from
-    # back_norm_time + carriages * back_addition_time, or is a separate
-    # concept. If computed, drop it from the schema.
     combine_duration: Optional[int] = Field(None, alias="combineDuration")
     split_duration: Optional[int] = Field(None, alias="splitDuration")
     back_norm_time: Optional[int] = Field(None, alias="backNormTime")
@@ -146,9 +142,6 @@ class TrainRequest(RailModel):
     # Optional within outStanding: null means no preference. See the
     # "Standing order" decision in unified-schema-design.md.
     standing_index: Optional[NonNegativeInt] = Field(None, alias="standingIndex")
-    # TODO: confirm whether can_depart_from_any_track (non-HIP only) should
-    # be added here for outstanding trains.
-    can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
 
 
 class Train(RailModel):
@@ -168,7 +161,6 @@ class Train(RailModel):
     id: Optional[int] = None
     members: list[TrainUnit] = Field(default_factory=list)
     standing_index: Optional[NonNegativeInt] = Field(None, alias="standingIndex")
-    can_depart_from_any_track: Optional[bool] = Field(None, alias="canDepartFromAnyTrack")
     minimum_duration: Optional[str] = Field(None, alias="minimumDuration")
 
 
