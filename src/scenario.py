@@ -52,6 +52,7 @@ class ScenarioGenerator:
         json_data = self.scenario.to_dict()
         with open(file_name, "w") as f:
             json.dump(json_data, f, indent=4)
+            f.write("\n")
         logging.info(f"Scenario saved to {file_name}")
 
     def load_scenario(self, file_name):
@@ -560,3 +561,4 @@ class SolverScenarioGenerator(ScenarioGenerator):
         json_data = self.scenario_solver.to_dict()
         with open(file_name, "w") as f:
             json.dump(json_data, f, indent=4)
+            f.write("\n")
