@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Bump the generator version in pyproject.toml's [project] version field —
 # the single source of truth used by docker-push.sh for the image tag and
-# label.
+# label. Re-locks uv.lock so its mirrored version field stays in sync.
 #
 # Also commits the change and creates a local, annotated git tag (vX.Y.Z),
 # the same convention as `npm version`. Nothing is pushed — push the commit
@@ -51,8 +51,9 @@ case "$1" in
 esac
 
 sed -i "s#^version = \"$CURRENT\"\$#version = \"$NEW\"#" "$PYPROJECT"
+uv lock
 
-git add "$PYPROJECT"
+git add "$PYPROJECT" uv.lock
 git commit -m "Bump version to $NEW"
 git tag -a "v$NEW" -m "v$NEW"
 
