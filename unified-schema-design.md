@@ -230,9 +230,13 @@ it locally; it does not appear in the unified schema.
   of the `displayName` overloading — identity is type + count, not the
   concatenated string. Good signal that the direction is right; the
   remaining work is making the wire format match.
-- The C# code keeps both `ReversalDuration` *and* `BackNormTime`/`BackAdditionTime`
-  as fields. Doesn't tell us whether `reversalDuration` is computed or separate,
-  but does mean the question is still open in code, not just on paper.
+- The C# code's `ShuntTrain.ReversalDuration` is a computed property (sum of
+  `VariableReversalDuration` across units plus the first unit's
+  `BaseReversalDuration`), and those in turn are populated straight from
+  `BackNormTime`/`BackAdditionTime` when building `TrainType`s
+  (`ProblemInstance.cs`). The standalone `ReversalDuration` field that used to
+  sit on the interchange DTO (`Interchange/Scenario.cs`) was never read
+  anywhere and has been removed — confirming the decision above.
 
 ### `Scenario` and the train shapes — the structural divergence
 
@@ -301,11 +305,13 @@ down — no consumer reads it yet.
   "any train unit of this type")
 - `standingIndex`
 
-**Open question, unresolved at freeze:** the non-HIP `Train` has
-`canDepartFromAnyTrack` (for outstanding trains); HIP has no equivalent. It
-shipped on `TrainRequest` (and on the legacy `Train` shape) as
-`Optional[bool]`, still carrying a `# TODO: confirm...` comment in
-`src/models/scenario.py` — no consumer reads it yet either.
+**Resolved: `canDepartFromAnyTrack` is dropped from the wire format.** The
+non-HIP `Train` shipped it (for outstanding trains) as `Optional[bool]`; HIP
+has no equivalent. Traced every consumer: the generator only ever wrote it,
+TORS's C++ serializer hardcoded `false` on output regardless of the input
+value and never read it back for any decision, and the solver's only former
+consumer (`Converter.cs`) had already been deleted. Zero behavioral effect
+anywhere, so it's removed rather than kept as dead weight.
 
 ### Standing order (`inStanding` / `outStanding`)
 
@@ -623,9 +629,6 @@ are latent ambiguity in the shipped schema, not missing features.
   solver reads? If so, verify the C# deserializer handles them gracefully.
 - What does `Train.minimumDuration` (non-HIP) mean? Shipped as
   `Optional[str]`; no consumer reads it.
-- What does `canDepartFromAnyTrack` mean, and should the solver honour it?
-  Shipped as `Optional[bool]` with an unresolved `# TODO` in
-  `src/models/scenario.py`; no consumer reads it.
 - Should `Action.shuntingUnit` reference a `ShuntingUnit` by ID instead of
   embedding it? Shipped embedded.
 - Where should the exported schemas live long-term? See "Where the exported

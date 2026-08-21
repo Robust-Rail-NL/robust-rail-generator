@@ -117,10 +117,7 @@ refactored, re-run and diff against the baseline. Expected differences:
 
 These are noted in the models as `TODO` comments. Leave them as-is:
 
-- Is `reversalDuration` computed from `backNormTime`/`backAdditionTime` or
-  separate?
 - Is `travelSpeed` per-type or per-location?
-- Should `canDepartFromAnyTrack` be on `TrainRequest`?
 - Should `standingIndex` be on `IncomingTrain` as well as `TrainRequest`?
 - Should `Action.shunting_unit` be an ID reference rather than an embedded
   object?
