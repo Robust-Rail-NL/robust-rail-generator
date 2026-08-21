@@ -9,7 +9,7 @@ import pytest
 from pydantic import ValidationError
 
 from models.scenario import TrainUnit, TrainUnitType
-from scenario import ScenarioGenerator, SolverScenarioGenerator
+from scenario_generator import ScenarioGenerator, SolverScenarioGenerator
 
 
 def make_generator() -> ScenarioGenerator:

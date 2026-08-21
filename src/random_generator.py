@@ -4,7 +4,7 @@ import random
 from copy import deepcopy
 
 from models.location import TrackPartType
-from scenario import ScenarioGenerator
+from scenario_generator import ScenarioGenerator
 
 
 class RandomGenerator:

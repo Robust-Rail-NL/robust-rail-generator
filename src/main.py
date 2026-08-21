@@ -6,7 +6,7 @@ from __init__ import DATA_DIR, REPO_DIR, VERSION
 from check_config import *
 from check_matching import *
 from random_generator import RandomGenerator
-from scenario import ScenarioGenerator, SolverScenarioGenerator
+from scenario_generator import ScenarioGenerator, SolverScenarioGenerator
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
