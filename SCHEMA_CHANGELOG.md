@@ -9,6 +9,36 @@ bump their local `EXPECTED_SCHEMA_VERSION` together when it does.
 Mismatch behaviour is warn-and-continue: a missing or unexpected
 `schemaVersion` produces a logged warning, not a hard reject.
 
+## Unversioned — 2026-08-21
+
+`reversalDuration` (on `TrainUnitType`) and `canDepartFromAnyTrack` (on
+outStanding trains) are dropped from the wire format entirely — not narrowed,
+removed. Both were `Optional` fields carrying unresolved `# TODO`s since the
+schema was first frozen. Traced every consumer across all three repos before
+removing:
+
+- `reversalDuration`: the solver's real computation
+  (`ShuntTrain.ReversalDuration`) derives it from `BackNormTime` +
+  `Carriages * BackAdditionTime`; the standalone wire field was declared on
+  the interchange DTO but never read by anything.
+- `canDepartFromAnyTrack`: the generator only ever wrote it, TORS's C++
+  serializer hardcoded `false` on output regardless of input and never read
+  it back, and the solver's only former consumer (`Converter.cs`) had
+  already been deleted.
+
+**Not a version bump** — zero behavioral effect anywhere, same test as the
+entries below: no consumer's runtime behavior changes, so `hip` and `tors`
+need no code change and no rebuild.
+
+Unlike the entries below, though, this one **is not free for the existing
+fixture corpus**: `RailModel`'s `extra="forbid"` means every fixture that
+still carries either key (even `null`-valued) now fails validation outright,
+rather than silently continuing to pass. Every occurrence across
+`scenario-planning-inputs` was `null` — neither field was ever set to a real
+value — so removing the two keys is a mechanical, value-preserving edit, not
+a data loss; downstream repos still need to make that edit before fixture
+validation (and `extra="forbid"` deserialization generally) passes again.
+
 ## Unversioned — 2026-08-19
 
 `Scenario.standingIndex` (in/outStanding trains) changed from
