@@ -47,6 +47,14 @@ against the pre-migration shape needs to account for:
 - **`trackParts`, `actions` and `trainUnitTypes` are now required**, not
   merely conventionally present — see `SCHEMA_CHANGELOG.md`'s "Unversioned —
   2026-08-12" entry for why this didn't need a `schemaVersion` bump.
+- **`reversalDuration` and `canDepartFromAnyTrack` are dropped from the wire
+  format entirely.** Traced every consumer first: the solver's real
+  computation (`ShuntTrain.ReversalDuration`) derives it from `BackNormTime`
+  + `Carriages * BackAdditionTime`; TORS's serializer hardcoded
+  `canDepartFromAnyTrack` to `false` on output and never read it back; the
+  solver's only former consumer of it (`Converter.cs`) was already gone.
+  Zero behavioral effect anywhere. See `SCHEMA_CHANGELOG.md`'s
+  "Unversioned — 2026-08-21" entry.
 
 `schemaVersion: 1` is carried on `Location`, `Scenario`, and `Plan`; a
 mismatch is a logged warning, never a hard reject (see `SCHEMA_CHANGELOG.md`).
@@ -69,27 +77,12 @@ that consume its output:
 Both were deferred deliberately rather than blocking 2.0.0. If you're running
 the full pipeline and see these two fail, this is why.
 
-### Two more schema-adjacent changes after the initial cut
-
-Landed after this file was first written, neither changing any tool's
-runtime behavior but both requiring a new rc and updates to committed
-fixtures:
-
-- **`reversalDuration` and `canDepartFromAnyTrack` are dropped from the wire
-  format entirely.** Traced every consumer first: the solver's real
-  computation (`ShuntTrain.ReversalDuration`) derives it from `BackNormTime`
-  + `Carriages * BackAdditionTime`; TORS's serializer hardcoded
-  `canDepartFromAnyTrack` to `false` on output and never read it back; the
-  solver's only former consumer of it (`Converter.cs`) was already gone.
-  Zero behavioral effect anywhere. See `SCHEMA_CHANGELOG.md`'s
-  "Unversioned — 2026-08-21" entry.
-- **Generated scenario JSON now always ends with a trailing newline**
-  (`save_scenario_json`), matching `scripts/export_schema.py`'s existing
-  behavior. No content change, byte-only — every generated file's bytes
-  differ, which is why this got its own rc rather than landing silently.
-
 ### Repo hygiene
 
+- Generated scenario JSON (`save_scenario_json`) now always ends with a
+  trailing newline, matching `scripts/export_schema.py`'s existing
+  behavior. No content change, byte-only — every generated file's bytes
+  differ as a result.
 - `README.md`'s setup instructions now match reality (`uv sync`, `uv run`)
   instead of describing the conda-based world that predates `pyproject.toml`.
 - `unified-schema-design.md` is marked historical — the migration it planned
@@ -105,7 +98,7 @@ fixtures:
 The generator image is versioned from `pyproject.toml`'s `[project] version`
 and pushed to `ghcr.io/robust-rail-nl/generator` via `./docker-push.sh`
 (multi-arch: `linux/amd64`, `linux/arm64`). The `generator:2.0.0` tag points
-at the same image digest already verified as `2.0.0-rc.2` — re-tagged, not
+at the same image digest already verified as `2.0.0-rc.4` — re-tagged, not
 rebuilt, so the tag names exactly the bytes that were tested. `:latest` moves
 to `2.0.0` as the first stable tag of the release; it does not move for
 `-rc.*`/`-beta.*` builds.
