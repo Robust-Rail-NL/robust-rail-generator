@@ -69,13 +69,27 @@ that consume its output:
 Both were deferred deliberately rather than blocking 2.0.0. If you're running
 the full pipeline and see these two fail, this is why.
 
+### Two more schema-adjacent changes after the initial cut
+
+Landed after this file was first written, neither changing any tool's
+runtime behavior but both requiring a new rc and updates to committed
+fixtures:
+
+- **`reversalDuration` and `canDepartFromAnyTrack` are dropped from the wire
+  format entirely.** Traced every consumer first: the solver's real
+  computation (`ShuntTrain.ReversalDuration`) derives it from `BackNormTime`
+  + `Carriages * BackAdditionTime`; TORS's serializer hardcoded
+  `canDepartFromAnyTrack` to `false` on output and never read it back; the
+  solver's only former consumer of it (`Converter.cs`) was already gone.
+  Zero behavioral effect anywhere. See `SCHEMA_CHANGELOG.md`'s
+  "Unversioned — 2026-08-21" entry.
+- **Generated scenario JSON now always ends with a trailing newline**
+  (`save_scenario_json`), matching `scripts/export_schema.py`'s existing
+  behavior. No content change, byte-only — every generated file's bytes
+  differ, which is why this got its own rc rather than landing silently.
+
 ### Repo hygiene
 
-- Generated scenario JSON (`save_scenario_json`) now always ends with a
-  trailing newline, matching `scripts/export_schema.py`'s existing
-  behavior. No consumer's JSON parsing is affected, but every generated
-  file's bytes change, which is why this landed as its own rc rather than
-  silently.
 - `README.md`'s setup instructions now match reality (`uv sync`, `uv run`)
   instead of describing the conda-based world that predates `pyproject.toml`.
 - `unified-schema-design.md` is marked historical — the migration it planned
