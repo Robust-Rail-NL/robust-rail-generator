@@ -1,24 +1,27 @@
 """Regression tests for the two dead-parameter bugs found while implementing
 the typePrefix/carriages rename (see unified-schema-design.md, TrainUnitType
 section): create_train_unit_type silently dropped type_prefix, and
-add_custom_train_unit_types read the wrong (snake_case) config key."""
+add_custom_train_unit_types read the wrong (snake_case) config key.
+
+Also covers ScenarioGenerator building Scenario/IncomingTrain/TrainRequest
+directly (see unified-schema-design.md, "Next steps" item 6, and issue #12) --
+create_incoming_train/create_train_request replaced the old
+create_train + create_solver_format_scenario two-step, so the standing-index
+and standing-order-validation checks that used to exercise that conversion
+now exercise direct construction instead.
+"""
 
 import json
 
 import pytest
 from pydantic import ValidationError
 
-from models.scenario import TrainUnit, TrainUnitType
-from scenario_generator import ScenarioGenerator, SolverScenarioGenerator
+from models.scenario import IncomingTrainUnit, TrainUnitType
+from scenario_generator import ScenarioGenerator
 
 
 def make_generator() -> ScenarioGenerator:
     return ScenarioGenerator(start=0, end=1000)
-
-
-def make_solver_generator(gen: ScenarioGenerator) -> SolverScenarioGenerator:
-    gen.create_solver_format_scenario()
-    return SolverScenarioGenerator(gen)
 
 
 class TestCreateTrainUnitType:
@@ -87,17 +90,82 @@ class TestCreateTrainUnitUnmatchedMembers:
         assert unit.id is None
 
 
-class TestCreateSolverFormatScenarioPropagatesStandingIndex:
-    """create_solver_format_scenario() rebuilds IncomingTrain/TrainRequest
-    from the flat Train shape; it used to drop standing_index entirely,
-    silently discarding real order data before the file the solver and
-    evaluator actually read was ever written."""
+class TestCreateIncomingTrain:
+    def test_maps_side_and_track_part_to_entry_and_first_parking(self):
+        gen = make_generator()
+        member = IncomingTrainUnit(type_prefix="SLT", carriages=4, id=1)
+        train = gen.create_incoming_train(
+            side_track_part=1,
+            track_part=5,
+            time=100,
+            id=1,
+            members=[member],
+        )
+        assert train.entry_track_part == 1
+        assert train.first_parking_track_part == 5
+        assert train.arrival == 100
+        assert train.departure == 100
+        assert train.id == 1
+        assert train.members == [member]
+        assert train.standing_index is None
 
-    def test_in_standing_index_survives_conversion(self):
+    def test_standing_index_is_set_when_given(self):
+        gen = make_generator()
+        train = gen.create_incoming_train(
+            side_track_part=1,
+            track_part=5,
+            time=0,
+            id=1,
+            members=[],
+            standing_index=0,
+        )
+        assert train.standing_index == 0
+
+
+class TestCreateTrainRequest:
+    def test_maps_side_and_track_part_to_leave_and_last_parking(self):
+        gen = make_generator()
+        unit = gen.create_train_unit_unmatched_members(type_prefix="SLT", carriages=4)
+        train = gen.create_train_request(
+            side_track_part=2,
+            track_part=6,
+            time=900,
+            id=1,
+            members=[unit],
+        )
+        assert train.leave_track_part == 2
+        assert train.last_parking_track_part == 6
+        assert train.arrival == 900
+        assert train.departure == 900
+        assert train.id == 1
+        assert train.train_units == [unit]
+        assert train.standing_index is None
+
+    def test_standing_index_is_set_when_given(self):
+        gen = make_generator()
+        train = gen.create_train_request(
+            side_track_part=2,
+            track_part=6,
+            time=1000,
+            id=1,
+            members=[],
+            standing_index=0,
+        )
+        assert train.standing_index == 0
+
+
+class TestAddInStandingAndOutStandingTrainsPropagateStandingIndex:
+    """The old create_train + create_solver_format_scenario conversion used
+    to drop standing_index entirely, silently discarding real order data
+    before the file the solver and evaluator actually read was ever written.
+    Now that ScenarioGenerator builds IncomingTrain/TrainRequest directly,
+    this covers the same guarantee at the construction site."""
+
+    def test_in_standing_index_survives_construction(self):
         gen = make_generator()
         gen.add_train_unit_type(TrainUnitType(type_prefix="SLT", carriages=4))
-        member = TrainUnit(type_prefix="SLT", carriages=4, id=1)
-        train = gen.create_train(
+        member = IncomingTrainUnit(type_prefix="SLT", carriages=4, id=1)
+        train = gen.create_incoming_train(
             side_track_part=1,
             track_part=5,
             time=0,
@@ -106,14 +174,13 @@ class TestCreateSolverFormatScenarioPropagatesStandingIndex:
             standing_index=0,
         )
         gen.add_in_standing_train(train)
-        gen.create_solver_format_scenario()
-        assert gen.scenario_solver.in_standing[0].standing_index == 0
+        assert gen.scenario.in_standing[0].standing_index == 0
 
-    def test_out_standing_index_survives_conversion(self):
+    def test_out_standing_index_survives_construction(self):
         gen = make_generator()
         gen.add_train_unit_type(TrainUnitType(type_prefix="SLT", carriages=4))
         unit = gen.create_train_unit_unmatched_members(type_prefix="SLT", carriages=4)
-        train = gen.create_train(
+        train = gen.create_train_request(
             side_track_part=1,
             track_part=5,
             time=1000,
@@ -122,24 +189,23 @@ class TestCreateSolverFormatScenarioPropagatesStandingIndex:
             standing_index=0,
         )
         gen.add_out_standing_train(train)
-        gen.create_solver_format_scenario()
-        assert gen.scenario_solver.out_standing[0].standing_index == 0
+        assert gen.scenario.out_standing[0].standing_index == 0
 
 
 class TestSaveScenarioJsonValidatesStandingOrder:
-    """ScenarioGenerator/SolverScenarioGenerator build their scenario by
-    appending to list fields (add_in_standing_train et al.), which bypasses
-    Pydantic's model_validator entirely -- it only runs at construction, not
-    on list mutation. save_scenario_json must force re-validation before
-    writing, or the standing-order checks never actually run for any
-    scenario assembled this way (i.e. every real scenario)."""
+    """ScenarioGenerator builds its scenario by appending to list fields
+    (add_in_standing_train et al.), which bypasses Pydantic's model_validator
+    entirely -- it only runs at construction, not on list mutation.
+    save_scenario_json must force re-validation before writing, or the
+    standing-order checks never actually run for any scenario assembled this
+    way (i.e. every real scenario)."""
 
     def _two_instanding_on_one_track(self, standing_index=None):
         gen = make_generator()
         gen.add_train_unit_type(TrainUnitType(type_prefix="SLT", carriages=4))
         for i in (1, 2):
-            member = TrainUnit(type_prefix="SLT", carriages=4, id=i)
-            train = gen.create_train(
+            member = IncomingTrainUnit(type_prefix="SLT", carriages=4, id=i)
+            train = gen.create_incoming_train(
                 side_track_part=1,
                 track_part=5,
                 time=0,
@@ -155,20 +221,12 @@ class TestSaveScenarioJsonValidatesStandingOrder:
         with pytest.raises(ValidationError):
             gen.save_scenario_json(str(tmp_path / "scenario.json"))
 
-    def test_solver_format_output_rejects_unresolved_instanding_collision(self, tmp_path):
-        """This is the file main.py actually writes -- the one the solver
-        and evaluator read -- so this is the path that matters most."""
-        gen = self._two_instanding_on_one_track()
-        solver_gen = make_solver_generator(gen)
-        with pytest.raises(ValidationError):
-            solver_gen.save_scenario_json(str(tmp_path / "scenario.json"))
-
     def test_accepts_and_writes_a_resolved_collision(self, tmp_path):
         gen = make_generator()
         gen.add_train_unit_type(TrainUnitType(type_prefix="SLT", carriages=4))
         for i, idx in ((1, 0), (2, 1)):
-            member = TrainUnit(type_prefix="SLT", carriages=4, id=i)
-            train = gen.create_train(
+            member = IncomingTrainUnit(type_prefix="SLT", carriages=4, id=i)
+            train = gen.create_incoming_train(
                 side_track_part=1,
                 track_part=5,
                 time=0,
@@ -177,8 +235,7 @@ class TestSaveScenarioJsonValidatesStandingOrder:
                 standing_index=idx,
             )
             gen.add_in_standing_train(train)
-        solver_gen = make_solver_generator(gen)
         path = tmp_path / "scenario.json"
-        solver_gen.save_scenario_json(str(path))
+        gen.save_scenario_json(str(path))
         written = json.loads(path.read_text())
         assert [t["standingIndex"] for t in written["inStanding"]] == [0, 1]
