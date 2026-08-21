@@ -12,13 +12,11 @@ from models import IncomingTrainUnit, PredefinedTaskType, TrainRequest
 from models.location import Location, TaskType
 from models.scenario import (
     DisabledTrackPart,
-    EvaluatorScenario,
     IncomingTrain,
     MemberOfStaff,
     NonServiceTraffic,
     Scenario,
     TaskSpec,
-    Train,
     TrainUnit,
     TrainUnitType,
 )
@@ -28,14 +26,11 @@ from models.utilities import TimeInterval
 class ScenarioGenerator:
     def __init__(self, start: int, end: int):
         """Initialize the scenario generator, which creates a JSON file according to the unified Scenario schema (see models/scenario.py). The 'hip' file structure is specialized for the robust-rail-solver."""
-        self.scenario = EvaluatorScenario(start_time=start, end_time=end)
-        self.scenario_in: List[Train] = []
-        self.scenario_out: List[Train] = []
+        # train_unit_types is required on Scenario, so it has to be passed here
+        # even though add_train_unit_type populates it later.
+        self.scenario = Scenario(start_time=start, end_time=end, train_unit_types=[])
 
         self.scenario_train_unit_types: List[TrainUnitType] = []
-        # train_unit_types is required on Scenario, so it has to be passed here
-        # even though create_solver_format_scenario overwrites it later.
-        self.scenario_solver = Scenario(start_time=start, end_time=end, train_unit_types=[])
 
         # Location where the scenario happens
         self.location = None
@@ -58,135 +53,24 @@ class ScenarioGenerator:
     def load_scenario(self, file_name):
         with open(file_name, "r") as f:
             json_scenario = json.load(f)
-        self.scenario = EvaluatorScenario.model_validate(json_scenario)
+        self.scenario = Scenario.model_validate(json_scenario)
         self.scenario_train_unit_types = [TrainUnitType.model_validate(t) for t in json_scenario["trainUnitTypes"]]
 
-    def create_solver_format_scenario(self, use_scenario=True):
-        """Create the solver format of the scenario file. The default source
-        to use is `self.scenario['<attr>']` (use_scenario=True), otherwise we
-        use 'self.scenario_in' and 'self.scenario_out'.
-
-        TODO: this whole function exists to bridge EvaluatorScenario (flat
-        Train-based, what self.scenario accumulates into) and Scenario
-        (IncomingTrain/TrainRequest-based, what's actually written out). It's
-        a manual field-by-field copy that has to be kept in sync with both
-        models by hand -- see the TODO on EvaluatorScenario. It goes away
-        once ScenarioGenerator builds Scenario directly instead of via this
-        conversion step.
-        """
-        if use_scenario:
-            incoming_trains_scenario = self.scenario.in_
-            outgoing_trains_scenario = self.scenario.out
-            logging.info("Using `self.scenario.attribute` as the source of the train information")
-        else:
-            incoming_trains_scenario = self.scenario_in
-            outgoing_trains_scenario = self.scenario_out
-            logging.info("Using `self.scenario_<attr>` as the source of the train information")
-        self.scenario_solver.start_time = self.scenario.start_time
-        self.scenario_solver.end_time = self.scenario.end_time
-        logging.info("Copy the start and end time from self.scenario")
-
-        self.scenario_solver.train_unit_types = self.scenario.train_unit_types[:]
-
-        # Create the incoming train objects
-        incoming_trains = self.scenario_solver.in_
-        for train_standard in incoming_trains_scenario:
-            train = IncomingTrain(
-                entry_track_part=train_standard.side_track_part,
-                first_parking_track_part=train_standard.parking_track_part,
-                arrival=train_standard.time,
-                departure=train_standard.time,
-                id=train_standard.id,
-                standing_index=train_standard.standing_index,
-            )
-            incoming_trains.append(train)
-
-            # Collect information of the train unit members of the current train
-            for member in train_standard.members:
-                train_member = IncomingTrainUnit.from_train_unit(member)
-                train.members.append(train_member)
-
-        # Create the outgoing train objects
-        outgoing_train_requests = self.scenario_solver.out
-        for train_standard in outgoing_trains_scenario:
-            train = TrainRequest(
-                leave_track_part=train_standard.side_track_part,
-                last_parking_track_part=train_standard.parking_track_part,
-                arrival=train_standard.time,
-                departure=train_standard.time,
-                id=train_standard.id,
-                standing_index=train_standard.standing_index,
-            )
-            outgoing_train_requests.append(train)
-
-            # Collect information of the train unit members of the current train
-            for member in train_standard.members:
-                train_unit = TrainUnit(type_prefix=member.type_prefix, carriages=member.carriages)
-                train.train_units.append(train_unit)
-
-        # Create the in-standing train objects (train that are already in the yard at the start of the scenario)
-        in_standing_trains = self.scenario_solver.in_standing
-        _in_standing_trains = self.scenario.in_standing
-        for train_standard in _in_standing_trains:
-            train = IncomingTrain(
-                entry_track_part=train_standard.side_track_part,
-                first_parking_track_part=train_standard.parking_track_part,
-                arrival=train_standard.time,
-                departure=train_standard.time,
-                id=train_standard.id,
-                standing_index=train_standard.standing_index,
-            )
-            in_standing_trains.append(train)
-
-            # Collect information of the train unit members of the current train
-            for member in train_standard.members:
-                train_member = IncomingTrainUnit.from_train_unit(member)
-                train.members.append(train_member)
-
-                # Add the information about service tasks for the individual train units
-                for task_standard in member.tasks or []:
-                    task = TaskSpec(
-                        type=task_standard.type,
-                        duration=task_standard.duration,
-                    )
-                    train_member.tasks.append(task)
-
-        # Create the outstanding train requests: trains that remain in the yard at the end of the scenario
-        out_standing_train_requests = self.scenario_solver.out_standing
-        _out_standing_trains = self.scenario.out_standing
-        for train_standard in _out_standing_trains:
-            train = TrainRequest(
-                leave_track_part=train_standard.side_track_part,
-                last_parking_track_part=train_standard.parking_track_part,
-                arrival=train_standard.time,
-                departure=train_standard.time,
-                id=train_standard.id,
-                standing_index=train_standard.standing_index,
-            )
-            out_standing_train_requests.append(train)
-
-            # Collect information of the train unit members of the current train
-            for member in train_standard.members:
-                train_unit = TrainUnit(type_prefix=member.type_prefix, carriages=member.carriages)
-                train.train_units.append(train_unit)
-
     # Add outgoing train to the scenario
-    def add_outgoing_train(self, out_train: Train):
+    def add_outgoing_train(self, out_train: TrainRequest):
         # Add outgoing train to the scenario
         self.scenario.out.append(out_train)
-        self.scenario_out.append(out_train)
 
-    def add_incoming_train(self, in_train: Train):
-        # Add incoming Train to the scenario
+    def add_incoming_train(self, in_train: IncomingTrain):
+        # Add incoming train to the scenario
         self.scenario.in_.append(in_train)
-        self.scenario_in.append(in_train)
 
-    def add_in_standing_train(self, in_standing_train: Train):
-        # Add in_standing Train to the scenario
+    def add_in_standing_train(self, in_standing_train: IncomingTrain):
+        # Add in_standing train to the scenario
         self.scenario.in_standing.append(in_standing_train)
 
-    def add_out_standing_train(self, out_standing_train: Train):
-        # Add out_standing Train to the scenario
+    def add_out_standing_train(self, out_standing_train: TrainRequest):
+        # Add out_standing train to the scenario
         self.scenario.out_standing.append(out_standing_train)
 
     def add_non_service_traffic(self, non_service_traffic: NonServiceTraffic):
@@ -207,46 +91,70 @@ class ScenarioGenerator:
         self.scenario_train_unit_types.append(train_unit_type)
 
     @staticmethod
-    def create_train(
+    def create_incoming_train(
+        side_track_part: int,
+        track_part: int,
+        time: int,
+        id: str,
+        members: List[IncomingTrainUnit],
+        standing_index: Optional[int] = None,
+    ) -> IncomingTrain:
+        """Create an incoming train object, added as either an in- or in-standing train.
+
+        Args:
+            side_track_part (int): side of the railroad track part that identifies the end of the track, used to claim space on a track (often a bumper, or the next part connected to the railroad)
+            track_part (int): railroad track part where this train first parks
+            time (int): Arrival on the track (and departure from the bumper), in seconds since the epoch
+            id (str): unique identifier of the Train
+            members (List[IncomingTrainUnit]): train units in the train
+            standing_index (Optional[int]): if train is instanding and there are multiple trains on one track, use this to determine the index of the train on the track, with lower indices at the A-side of the track. Leave unset if there is no preference (or only one train stands on the track).
+
+        Returns:
+            IncomingTrain: arriving or already-standing train
+        """
+        return IncomingTrain(
+            entry_track_part=side_track_part,
+            first_parking_track_part=track_part,
+            arrival=time,
+            departure=time,
+            id=id,
+            members=list(members),
+            standing_index=standing_index,
+        )
+
+    @staticmethod
+    def create_train_request(
         side_track_part: int,
         track_part: int,
         time: int,
         id: str,
         members: List[TrainUnit],
         standing_index: Optional[int] = None,
-        minimum_duration: str = "60",
-    ) -> Train:
-        """_summary_
-        Method used to create train objects that are added either as an in- or an out-going train.
+    ) -> TrainRequest:
+        """Create a train request object, added as either an out- or out-standing train.
 
-        For outgoing train with train_units with only a type and no ID, enter the train unit objects that are created with create_TrainUnitUnmatchedMembers()
+        For a request with train units that have only a type and no ID, enter the train unit objects created with create_train_unit_unmatched_members().
 
         Args:
-            track_part (int): railroad that this train arrives/departs at
             side_track_part (int): side of the railroad track part that identifies the end of the track, used to claim space on a track (often a bumper, or the next part connected to the railroad)
-            time (int): Arrival/Departure on the track, (and departure from the bumper), times are in seconds since the epoch
+            track_part (int): railroad track part where this train parks until it leaves
+            time (int): Departure from the track (and arrival at the bumper), in seconds since the epoch
             id (str): unique identifier of the Train
-            members (List[TrainUnit]): train units in the train
-            standing_index (Optional[int]): if train is in- or outstanding and there are multiple trains on one track, use this to determine the index of the train on the track, with lower indices at the A-side of the track. Leave unset if there is no preference (or only one train stands on the track).
-            minimum_duration (str): minimum duration on the track part where the train arrives/departs
+            members (List[TrainUnit]): requested train units
+            standing_index (Optional[int]): if train is outstanding and there are multiple trains on one track, use this to determine the index of the train on the track, with lower indices at the A-side of the track. Leave unset if there is no preference (or only one train stands on the track).
 
         Returns:
-            Train: incoming/leaving train or a train which stays on the location
+            TrainRequest: departing or remaining-standing train request
         """
-        train = Train(
-            side_track_part=side_track_part,
-            parking_track_part=track_part,
+        return TrainRequest(
+            leave_track_part=side_track_part,
+            last_parking_track_part=track_part,
+            arrival=time,
+            departure=time,
+            id=id,
+            train_units=list(members),
+            standing_index=standing_index,
         )
-        train.time = time
-        train.id = id
-
-        # Merge all the members a.k.a TrainUnit(s) with the existing members if there are
-        train.members.extend(members)
-        if standing_index is not None:
-            train.standing_index = standing_index
-        if minimum_duration:
-            train.minimum_duration = minimum_duration
-        return train
 
     @staticmethod
     def create_task_spec(task_type: TaskType, duration: int, required_skills: List[str]) -> TaskSpec:
@@ -543,22 +451,3 @@ class ScenarioGenerator:
                     start_up_time=0,
                 )
             )
-
-
-class SolverScenarioGenerator(ScenarioGenerator):
-    def __init__(self, standard_scenario_generator: ScenarioGenerator):
-        super().__init__(
-            start=standard_scenario_generator.scenario.start_time,
-            end=standard_scenario_generator.scenario.end_time,
-        )
-        self.scenario_solver = standard_scenario_generator.scenario_solver
-
-    def save_scenario_json(self, file_name: str):
-        # See ScenarioGenerator.save_scenario_json: scenario_solver is also
-        # built by list mutation (create_solver_format_scenario appends to
-        # its in_/out/in_standing/out_standing), so force validation here too.
-        self.scenario_solver = type(self.scenario_solver).model_validate(self.scenario_solver.model_dump(by_alias=True))
-        json_data = self.scenario_solver.to_dict()
-        with open(file_name, "w") as f:
-            json.dump(json_data, f, indent=4)
-            f.write("\n")
