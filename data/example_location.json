@@ -125,7 +125,7 @@
             "length": 100.0,
             "name": "rail_5",
             "sawMovementAllowed": true,
-            "parkingAllowed": true,
+            "parkingAllowed": false,
             "isElectrified": true
         },
         {
