@@ -71,6 +71,11 @@ the full pipeline and see these two fail, this is why.
 
 ### Repo hygiene
 
+- Generated scenario JSON (`save_scenario_json`) now always ends with a
+  trailing newline, matching `scripts/export_schema.py`'s existing
+  behavior. No consumer's JSON parsing is affected, but every generated
+  file's bytes change, which is why this landed as its own rc rather than
+  silently.
 - `README.md`'s setup instructions now match reality (`uv sync`, `uv run`)
   instead of describing the conda-based world that predates `pyproject.toml`.
 - `unified-schema-design.md` is marked historical — the migration it planned
