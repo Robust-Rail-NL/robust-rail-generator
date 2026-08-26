@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-p",
     "--path",
-    help="Specifies the directory where all data relevant to a given location resides. Defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/ (relative to this Python script). Use . for the current working directory.",
+    help="Specifies the directory where all data relevant to a given location resides. Defaults to ../../robust-rail-general/Location_KleineBinckhorst/ (relative to this Python script). Use . for the current working directory.",
     required=False,
     default=None,
 )
@@ -51,9 +51,9 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     # Use the path if specified, otherwise check at default location for configuration file
     if ".json" not in config_file:
         config_file += ".json"
-    # Path defaults to ../../scenario-planning-inputs/Location_KleineBinckhorst/
+    # Path defaults to ../../robust-rail-general/Location_KleineBinckhorst/
     if path is None:
-        path = os.path.join(REPO_DIR, "scenario-planning-inputs", "Location_KleineBinckhorst")
+        path = os.path.join(REPO_DIR, "robust-rail-general", "Location_KleineBinckhorst")
     elif path == ".":
         # Use current working directory as path
         path = os.getcwd()

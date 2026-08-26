@@ -24,21 +24,21 @@ def default_example_random_full_paths():
 
 
 def default_using_scenario_planning_KleineBinckhorst():
-    # Use the example from the scenario-planning-inputs rpo and the default paths there
+    # Use the example from the robust-rail-general repo and the default paths there
     print(
-        "\nCreating scenario using scenario planning inputs for Kleine Binckhorst.\n>>>Requires scenario-planning-inputs repo at same level as robust-rail-generator<<<"
+        "\nCreating scenario using scenario planning inputs for Kleine Binckhorst.\n>>>Requires robust-rail-general repo at same level as robust-rail-generator<<<"
     )
     config_file = "scenario_config_example1"
     create_scenario_from_config(config_file)
 
 
 def default_using_scenario_planning_otherLocation():
-    # Use the example from scenario-planning-inputs with custom path and scenario file name
+    # Use the example from robust-rail-general with custom path and scenario file name
     print(
-        "\nCreating scenario using scenario planning inputs for other location.\n>>>Requires scenario-planning-inputs repo at same level as robust-rail-generator<<<"
+        "\nCreating scenario using scenario planning inputs for other location.\n>>>Requires robust-rail-general repo at same level as robust-rail-generator<<<"
     )
     config_file = "scenario_config_train_cleaning_late.json"
-    path = os.path.join(REPO_DIR, "scenario-planning-inputs", "Location_SimpleService")
+    path = os.path.join(REPO_DIR, "robust-rail-general", "Location_SimpleService")
     create_scenario_from_config(config_file, path=path)
 
 
@@ -61,7 +61,7 @@ def self_contained_examples():
 
 
 def cross_repo_examples():
-    """Examples that read from the sibling scenario-planning-inputs repo."""
+    """Examples that read from the sibling robust-rail-general repo."""
     default_using_scenario_planning_KleineBinckhorst()
     default_using_scenario_planning_otherLocation()
 
