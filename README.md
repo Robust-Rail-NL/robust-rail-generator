@@ -21,21 +21,21 @@ uv run pre-commit install
 # How to use?
 
 The scenario generation can be done by using configuration files. These files specify the details, which can be very elaborate or leave some choices to a random generator. For more information on how to structure such a file, see [How to write a configuration file?](./How%20to%20write%20a%20configuration%20file.md).
-We have also included one example in this repo in the `data` [folder](data/README.md), for more examples see the [scenario-planning-input repository](https://github.com/Robust-Rail-NL/scenario-planning-inputs). The example can be accessed through [example.py](src/example.py).
+We have also included one example in this repo in the `data` [folder](data/README.md), for more examples see the [robust-rail-general](https://github.com/Robust-Rail-NL/robust-rail-general) repository. The example can be accessed through [example.py](src/example.py).
 
-By default, the [Kleine Binckhorst location](../scenario-planning-inputs/Location_KleineBinckhorst/README.md) is used, which is a shunting yard in the Netherlands. By giving a configuration file name, the location is loaded automatically:
+By default, the [Kleine Binckhorst location](../robust-rail-general/Location_KleineBinckhorst/README.md) is used, which is a shunting yard in the Netherlands. By giving a configuration file name, the location is loaded automatically:
 ```bash
 uv run python src/main.py --config "scenario_config_example1.json"
 ```
 
-Alternatively, a different `path` parameter can be given to load a configuration file from a different location folder in the scenario-planning-inputs.
+Alternatively, a different `path` parameter can be given to load a configuration file from a different location folder in the robust-rail-general.
 ```bash
-uv run python src/main.py --config "scenario_config_train_cleaning_late.json" --path "../scenario-planning-inputs/Location_SimpleService"
+uv run python src/main.py --config "scenario_config_train_cleaning_late.json" --path "../robust-rail-general/Location_SimpleService"
 ```
 
 Finally, you can also specifically enter a different location filename and name of the scenario file to be created, the location filename will be retrieved from the `path`directory, and the scenario will be created in the `path/scenarios/` directory unless a complete path is specified.
 ```bash
-uv run python src/main.py --config "scenario_config_train_cleaning_late.json" --path "../scenario-planning-inputs/Location_SimpleService" --scenario-file "scenario_result_name.json" --location "location.json"
+uv run python src/main.py --config "scenario_config_train_cleaning_late.json" --path "../robust-rail-general/Location_SimpleService" --scenario-file "scenario_result_name.json" --location "location.json"
 ```
 
 # Repository Structure

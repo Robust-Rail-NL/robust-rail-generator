@@ -1,7 +1,7 @@
 """Model for the generator's input configuration files.
 
 These are the `scenario_config_*.json` files under a location's
-`configurations/` directory in scenario-planning-inputs. Unlike Location,
+`configurations/` directory in robust-rail-general. Unlike Location,
 Scenario and Plan, they are not interchange: nothing downstream reads them,
 and they are the only inputs in the pipeline written by hand rather than
 generated. That is precisely why they are worth a schema — a mistyped optional

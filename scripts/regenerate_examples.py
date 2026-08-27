@@ -10,7 +10,7 @@ Run this yourself after a change that affects generator output:
 
 This only covers the self-contained examples (src/example.py's
 self_contained_examples()) — the ones that read from the sibling
-scenario-planning-inputs repo are out of scope for CI since that repo isn't
+robust-rail-general repo are out of scope for CI since that repo isn't
 checked out here.
 """
 

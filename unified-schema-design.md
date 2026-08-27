@@ -5,7 +5,7 @@ schema consumed by all three projects (generator, solver, evaluator).
 
 **Status: historical.** The migration this document planned is complete: the
 schema is frozen and implemented across all five Robust-Rail-NL repos, shipped
-as part of the 2.0.0 release (see `../scenario-planning-inputs/docs/roadmap-2.0.0.md`
+as part of the 2.0.0 release (see `../robust-rail-general/docs/roadmap-2.0.0.md`
 for the release record). Kept as a record of *why* the schema looks the way it
 does — most "Decision" entries below are still accurate descriptions of the
 shipped models. A handful of "Open question" entries were never closed out
