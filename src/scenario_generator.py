@@ -11,16 +11,12 @@ from models import IncomingTrainUnit, PredefinedTaskType, TrainRequest
 # Import standard protos (Scenario, Location, TrainUnitTypes, Utilities)
 from models.location import Location, TaskType
 from models.scenario import (
-    DisabledTrackPart,
     IncomingTrain,
-    MemberOfStaff,
-    NonServiceTraffic,
     Scenario,
     TaskSpec,
     TrainUnit,
     TrainUnitType,
 )
-from models.utilities import TimeInterval
 
 
 class ScenarioGenerator:
@@ -72,18 +68,6 @@ class ScenarioGenerator:
     def add_out_standing_train(self, out_standing_train: TrainRequest):
         # Add out_standing train to the scenario
         self.scenario.out_standing.append(out_standing_train)
-
-    def add_non_service_traffic(self, non_service_traffic: NonServiceTraffic):
-        # Add non_service_traffic to the scenario
-        self.scenario.non_service_traffic.append(non_service_traffic)
-
-    def add_disabled_track_part(self, disabled_track_part: DisabledTrackPart):
-        # Add disabled_track_part to the scenario
-        self.scenario.disabled_track_parts.append(disabled_track_part)
-
-    def add_workers(self, workers: MemberOfStaff):
-        # Add MemberOfStaff to the scenario
-        self.scenario.workers.append(workers)
 
     def add_train_unit_type(self, train_unit_type: TrainUnitType):
         # Add TrainUnitType to scenario
@@ -222,124 +206,6 @@ class ScenarioGenerator:
             TaskType: Specifies the task type - PredefinedTaskType {Move, Split, Combine, Wait, Arrive, Exit, Walking, Break, NonService, BeginMove, EndMove}
         """
         return TaskType(predefined=predefined_task_type, other=other)
-
-    @staticmethod
-    def create_non_service_traffic(members: List[int], arrival: int, departure: int, id: str) -> NonServiceTraffic:
-        # TODO: what is this used for
-        """_summary_
-
-        Args:
-            members (List[int]): reserved part of the location send in track parts
-            arrival (int): Arrival on the track (Times are in seconds since the epoch)
-            departure (int):  departure from the track (Times are in seconds since the epoch)
-            id (str): unique identifier
-
-        Returns:
-            NonServiceTraffic: Traffic without service
-        """
-        non_service_traffic = NonServiceTraffic()
-        non_service_traffic.members.extend(members)
-        non_service_traffic.arrival = arrival
-        non_service_traffic.departure = departure
-        non_service_traffic.id = id
-        return non_service_traffic
-
-    @staticmethod
-    def create_disabled_track_part(
-        track_part: int = None, arrival: int = None, departure: int = None
-    ) -> DisabledTrackPart:
-        # Create and incoming magic train
-        # TODO : what is this used for
-        """_summary_
-
-        Args:
-            track_part (int, optional): TrackPart ID of the location this train fetches wizards from, using 9.75 as default doesn't work.. Defaults to None.
-            arrival (int, optional):  Arrival on the track. Defaults to None.
-            departure (int, optional): departure from the track. Defaults to None.
-
-        Returns:
-            DisabledTrackPart: An incoming magic train
-
-        """
-        disabled_trackpart = DisabledTrackPart()
-        if track_part:
-            disabled_trackpart.track_part = track_part
-        if arrival:
-            disabled_trackpart.arrival = arrival
-        if departure:
-            disabled_trackpart.departure = departure
-        return disabled_trackpart
-
-    @staticmethod
-    def create_time_interval(start: float, end: float) -> TimeInterval:
-        """_summary_
-        Create the time interval of the scenario.
-        Args:
-            start (float, optional):  Start of the interval in seconds since the epoch. Defaults to None.
-            end (float, optional): End of the interval in seconds since the epoch. Defaults to None.
-
-        Returns:
-            TimeInterval: representing a single time interval.
-        """
-        return TimeInterval(start=start, end=end)
-
-    @staticmethod
-    def create_member_of_staff(
-        id: int = None,
-        type: str = None,
-        skills: List[str] = None,
-        shifts: List[TimeInterval] = None,
-        break_windows: List[TimeInterval] = None,
-        break_duration: float = None,
-        start_location_id: int = None,
-        end_location_id: int = None,
-        can_move_trains: bool = None,
-        name: str = None,
-        break_location_id: int = None,
-    ) -> MemberOfStaff:
-        """_summary_
-        Create Member of Staff which is a human that is able to perform various tasks at the facility
-
-        Args:
-            id (int, optional): unique ID which is referenced by other messages. Defaults to None.
-            type (str, optional): type of staff, e.g. engineer, cleaning team, etc.. Defaults to None.
-            skills (List[str], optional): the member of staff possesses. Defaults to None.
-            shifts (List[TimeInterval], optional):  intervals during which the member of staff is present. Defaults to None.
-            break_windows (List[TimeInterval], optional): intervals in which breaks must take place. Defaults to None.
-            break_duration (float, optional): duration of the break in seconds. duration of the break in seconds to None.
-            start_location_id (int, optional): location (trackpart) of the member of staff at the start of the shift. Defaults to None.
-            end_location_id (int, optional): location (trackpart) of the member of staff at the end of the shift. Defaults to None.
-            can_move_trains (bool, optional): Indicates whether the member of staff can move trains. Defaults to None.
-            name (str, optional): name of the staff member. Defaults to None.
-            break_location_id (int, optional): location (trackpart) of the member of staff during breaks. Defaults to None.
-
-        Returns:
-            MemberOfStaff: a human that is able to perform various tasks at the facility
-        """
-        member_of_staff = MemberOfStaff()
-        if id:
-            member_of_staff.id = id
-        if type:
-            member_of_staff.type = type
-        if skills:
-            member_of_staff.skills = skills
-        if shifts:
-            member_of_staff.shifts = shifts
-        if break_windows:
-            member_of_staff.break_windows = break_windows
-        if break_duration:
-            member_of_staff.break_duration = break_duration
-        if start_location_id:
-            member_of_staff.start_location_id = start_location_id
-        if end_location_id:
-            member_of_staff.end_location_id = end_location_id
-        if can_move_trains:
-            member_of_staff.can_move_trains = can_move_trains
-        if name:
-            member_of_staff.name = name
-        if break_location_id:
-            member_of_staff.break_location_id = break_location_id
-        return member_of_staff
 
     @staticmethod
     def create_train_unit_type(
