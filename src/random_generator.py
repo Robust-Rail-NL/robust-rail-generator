@@ -543,10 +543,3 @@ class RandomGenerator:
                 f"Not all train units were assigned to trains, {sum([len(in_units[t]) for t in in_units])} incoming and {sum([len(out_units[t]) for t in out_units])} outgoing units left"
             )
         return in_trains, out_trains
-
-    def resample_arrival_departure_times(self, scenario, distribution_config):
-        arrival_times, departure_times = self.assign_arrival_departure_times(distribution_config)
-        for train in getattr(scenario, "in"):
-            train.time = arrival_times[int(train.id)]
-        for train in getattr(scenario, "out"):
-            train.time = departure_times[int(train.id) - distribution_config["number_trains_in"]]
