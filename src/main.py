@@ -173,9 +173,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     # Add the trains when specified
     if config["trains_given"]:
         create_trains(scenario_generator, config, service_tasks)
-        matching_possible = check_matching(
-            scenario_generator, config["use_default_material"], config["min_time_in_yard"]
-        )
+        matching_possible = check_matching(scenario_generator, config["use_default_material"])
         if not matching_possible:
             logging.error(
                 "The specified incoming and outgoing trains do not match. Please check the configuration file."
@@ -185,16 +183,12 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         # Generate random trains if none are specified
         random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
         # Check matching of incoming and outgoing trains
-        matching_possible = check_matching(
-            scenario_generator, config["use_default_material"], config["min_time_in_yard"]
-        )
+        matching_possible = check_matching(scenario_generator, config["use_default_material"])
         while not matching_possible:
             logging.warning("The generated incoming and outgoing trains do not match. Regenerating train compositions.")
             random_generator.reset()
             random_generator.generate_train_compositions(config, scenario_generator)
-            matching_possible = check_matching(
-                scenario_generator, config["use_default_material"], config["min_time_in_yard"]
-            )
+            matching_possible = check_matching(scenario_generator, config["use_default_material"])
 
     if scenario_file is None:
         # If no name is given, generate it

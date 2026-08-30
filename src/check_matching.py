@@ -1,7 +1,7 @@
 import logging
 
 
-def check_matching(scenario_generator, use_default_material=True, minimal_yard_time=600):
+def check_matching(scenario_generator, use_default_material=True):
     valid = check_train_lengths(scenario_generator, use_default_material)
     if not valid:
         return False
@@ -36,7 +36,12 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
         logging.warning("Types of incoming train units do not match types of outgoing train unit requests.")
         return False
     for in_train, unit, _ in train_units:
-        # Primitive matching does not use minimum yard time, because trains can also be delayed
+        # This primitive matching only checks that *some* feasible pairing of
+        # incoming units to outgoing requests exists, using arrival time +
+        # task duration as the earliest possible departure. A configured
+        # minimum yard time doesn't fit that model: trains can be delayed
+        # past it for other reasons, so enforcing it here would reject
+        # scenarios that are still schedulable, just not by this shortcut.
         matching_departures = [
             (req_unit, out_train.departure, typ)
             for out_train, req_unit, typ in train_unit_requests
