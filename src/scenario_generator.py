@@ -46,12 +46,6 @@ class ScenarioGenerator:
             f.write("\n")
         logging.info(f"Scenario saved to {file_name}")
 
-    def load_scenario(self, file_name):
-        with open(file_name, "r") as f:
-            json_scenario = json.load(f)
-        self.scenario = Scenario.model_validate(json_scenario)
-        self.scenario_train_unit_types = [TrainUnitType.model_validate(t) for t in json_scenario["trainUnitTypes"]]
-
     # Add outgoing train to the scenario
     def add_outgoing_train(self, out_train: TrainRequest):
         # Add outgoing train to the scenario
