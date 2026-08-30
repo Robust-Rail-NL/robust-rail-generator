@@ -16,7 +16,8 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from models.scenario import IncomingTrainUnit, TrainUnitType
+from models.location import TaskType
+from models.scenario import IncomingTrainUnit, TaskSpec, TrainUnitType
 from scenario_generator import ScenarioGenerator
 
 
@@ -190,6 +191,46 @@ class TestAddInStandingAndOutStandingTrainsPropagateStandingIndex:
         )
         gen.add_out_standing_train(train)
         assert gen.scenario.out_standing[0].standing_index == 0
+
+
+class TestInStandingTrainUnitTasksSurviveConstruction:
+    """create_solver_format_scenario() used to rebuild IncomingTrainUnit from
+    scratch for in-standing trains specifically, re-copying each TaskSpec by
+    hand -- the one place the old flat Train shape carried tasks at all.
+    create_incoming_train has no equivalent step: it trusts that the
+    IncomingTrainUnit members it's handed (built via
+    create_incoming_train_unit, which takes tasks directly) already carry
+    their tasks. This checks that trust is warranted, all the way through to
+    the JSON actually written out."""
+
+    def test_tasks_survive_into_the_written_scenario(self, tmp_path):
+        gen = make_generator()
+        gen.add_train_unit_type(TrainUnitType(type_prefix="SLT", carriages=4))
+        task = TaskSpec(type=TaskType(other="cleaning"), duration=300)
+        member = gen.create_incoming_train_unit(id=1, type_prefix="SLT", carriages=4, tasks=[task])
+        train = gen.create_incoming_train(
+            side_track_part=1,
+            track_part=5,
+            time=0,
+            id=1,
+            members=[member],
+        )
+        gen.add_in_standing_train(train)
+
+        assert gen.scenario.in_standing[0].members[0].tasks == [task]
+
+        path = tmp_path / "scenario.json"
+        gen.save_scenario_json(str(path))
+        written = json.loads(path.read_text())
+        written_tasks = written["inStanding"][0]["members"][0]["tasks"]
+        assert written_tasks == [
+            {
+                "type": {"predefined": None, "other": "cleaning"},
+                "duration": 300,
+                "requiredSkills": [],
+                "optional": False,
+            }
+        ]
 
 
 class TestSaveScenarioJsonValidatesStandingOrder:
