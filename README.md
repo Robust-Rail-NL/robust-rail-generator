@@ -41,8 +41,8 @@ uv run python src/main.py --config "scenario_config_train_cleaning_late.json" --
 # Repository Structure
 This gives an overview of the file structure in this repository. The `data` folder stores only a few example files and should not be used for file storage. It also contains two default information files.
 
-The interchange format is defined by the Pydantic models under `src/models`. JSON Schema for these models is exported to `schema/` via `python3 scripts/export_schema.py`; regenerate it after any change to a model's wire shape.
-The `src/models` folder includes the format of a Location, a Scenario, a TrainUnitType and the Utilities of a scenario. The `src` folder contains the main generation files: `main.py` is the main method to call, which uses the `check_config.py` to check the configuration and the `check_matching` to make sure that the generated files are feasible. `scenario.py` houses the main structure of the scenario along with the encoding into Pydantic models. The `random_generator.py` contains all the code for randomly generating scenarios. Finally, `example.py` gives an example for the possible parameters.
+The interchange format (Location, Scenario, Plan) is defined by Pydantic models in the `robust_rail_models` package, published from `robust-rail-general` (see that repo's `src/robust_rail_models/` and `scripts/export_schema.py`) and consumed here as a dependency. This repo no longer owns or exports the schema — see `robust-rail-generator#14`.
+The `src` folder contains the main generation files: `main.py` is the main method to call, which uses the `check_config.py` to check the configuration and the `check_matching` to make sure that the generated files are feasible. `scenario.py` houses the main structure of the scenario along with the encoding into Pydantic models. The `random_generator.py` contains all the code for randomly generating scenarios. Finally, `example.py` gives an example for the possible parameters.
 ```
 📦robust-rail-generator
  ┣ 📂data
@@ -52,13 +52,9 @@ The `src/models` folder includes the format of a Location, a Scenario, a TrainUn
  ┃ ┣ 📜default_servicing_tasks.json
  ┃ ┣ 📜default_train_unit_types.json
  ┃ ┗ 📜location.json
- ┣ 📂schema
- ┃ ┗ 📜 (JSON Schema exported from src/models, see below)
  ┣ 📂scripts
- ┃ ┗ 📜export_schema.py
+ ┃ ┗ 📜regenerate_examples.py
  ┣ 📂src
- ┃ ┣ 📂models
- ┃ ┃ ┗ 📜 (the Pydantic models — the source of truth for the interchange format)
  ┃ ┣ 📜__init__.py
  ┃ ┣ 📜check_config.py
  ┃ ┣ 📜check_matching.py

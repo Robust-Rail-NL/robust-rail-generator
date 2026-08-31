@@ -42,30 +42,6 @@ jobs:
     - name: Ruff check
       run: uv run --frozen ruff check .
 
-  schema:
-    runs-on: ubuntu-latest
-    name: Schema freshness
-    timeout-minutes: 15
-    steps:
-    - uses: actions/checkout@v5
-    - name: Set up uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        enable-cache: true
-    - name: Install dependencies
-      run: uv sync --frozen
-
-    # schema/*.json is the interchange contract the solver and the evaluator
-    # validate against, and it is generated from the Pydantic models rather
-    # than written by hand. If a model changes and the export is not re-run,
-    # everything downstream keeps validating against the old contract and
-    # reports success — which is worse than not validating at all.
-    - name: Check the exported schemas match the models
-      run: |
-        uv run --frozen python scripts/export_schema.py
-        git diff --exit-code schema/ \
-          || { echo "::error::schema/ is stale — run 'python scripts/export_schema.py' and commit the result"; exit 1; }
-
   examples:
     runs-on: ubuntu-latest
     name: Example output freshness

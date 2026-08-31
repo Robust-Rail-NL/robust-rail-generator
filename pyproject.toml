@@ -6,7 +6,15 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2",
+    "robust-rail-general",
 ]
+
+[tool.uv.sources]
+# TODO: swap for a tag-pinned git source once robust-rail-general is pushed
+# and tagged — { git = "https://github.com/Robust-Rail-NL/robust-rail-general.git", tag = "..." }.
+# Local path for now, to develop and verify this cutover against the
+# not-yet-published move-models-prep branch.
+robust-rail-general = { path = "../robust-rail-general" }
 
 [dependency-groups]
 dev = [
@@ -33,5 +41,3 @@ select = ["E4", "E7", "E9", "F", "I"]
 # `check_config`/`check_matching` are imported with `import *` on purpose here;
 # untangling that is a separate refactor, not part of enabling linting.
 "src/main.py" = ["F403", "F405"]
-# sys.path must be extended before the src-relative imports below it.
-"scripts/export_schema.py" = ["E402"]

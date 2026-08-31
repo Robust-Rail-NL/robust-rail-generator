@@ -15,9 +15,9 @@ import json
 
 import pytest
 from pydantic import ValidationError
+from robust_rail_models.location import TaskType
+from robust_rail_models.scenario import IncomingTrainUnit, TaskSpec, TrainUnitType
 
-from models.location import TaskType
-from models.scenario import IncomingTrainUnit, TaskSpec, TrainUnitType
 from scenario_generator import ScenarioGenerator
 
 

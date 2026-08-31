@@ -5,12 +5,11 @@ import logging
 import os
 from typing import List, Optional
 
-from __init__ import DATA_DIR
-from models import IncomingTrainUnit, PredefinedTaskType, TrainRequest
+from robust_rail_models import IncomingTrainUnit, PredefinedTaskType, TrainRequest
 
 # Import standard protos (Scenario, Location, TrainUnitTypes, Utilities)
-from models.location import Location, TaskType
-from models.scenario import (
+from robust_rail_models.location import Location, TaskType
+from robust_rail_models.scenario import (
     IncomingTrain,
     Scenario,
     TaskSpec,
@@ -18,10 +17,12 @@ from models.scenario import (
     TrainUnitType,
 )
 
+from __init__ import DATA_DIR
+
 
 class ScenarioGenerator:
     def __init__(self, start: int, end: int):
-        """Initialize the scenario generator, which creates a JSON file according to the unified Scenario schema (see models/scenario.py)."""
+        """Initialize the scenario generator, which creates a JSON file according to the unified Scenario schema (see robust_rail_models.scenario, in robust-rail-general)."""
         # train_unit_types is required on Scenario, so it has to be passed here
         # even though add_train_unit_type populates it later.
         self.scenario = Scenario(start_time=start, end_time=end, train_unit_types=[])
