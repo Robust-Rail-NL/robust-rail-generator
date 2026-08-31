@@ -164,19 +164,10 @@ wheels = [
 
 [[package]]
 name = "robust-rail-general"
-version = "0.1.0"
-source = { directory = "../robust-rail-general" }
+version = "0.1.1"
+source = { git = "https://github.com/Robust-Rail-NL/robust-rail-general.git?tag=v0.1.1#08f69cdab6ba16b0a9ecc25a9197fc9723161779" }
 dependencies = [
     { name = "pydantic" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "pydantic", specifier = ">=2" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "ruff", specifier = ">=0.16.3" },
 ]
 
 [[package]]
@@ -197,7 +188,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = ">=2" },
-    { name = "robust-rail-general", directory = "../robust-rail-general" },
+    { name = "robust-rail-general", git = "https://github.com/Robust-Rail-NL/robust-rail-general.git?tag=v0.1.1" },
 ]
 
 [package.metadata.requires-dev]

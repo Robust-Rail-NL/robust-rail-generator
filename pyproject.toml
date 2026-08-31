@@ -10,11 +10,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-# TODO: swap for a tag-pinned git source once robust-rail-general is pushed
-# and tagged — { git = "https://github.com/Robust-Rail-NL/robust-rail-general.git", tag = "..." }.
-# Local path for now, to develop and verify this cutover against the
-# not-yet-published move-models-prep branch.
-robust-rail-general = { path = "../robust-rail-general" }
+robust-rail-general = { git = "https://github.com/Robust-Rail-NL/robust-rail-general.git", tag = "v0.1.1" }
 
 [dependency-groups]
 dev = [
