@@ -21,7 +21,7 @@ from models.scenario import (
 
 class ScenarioGenerator:
     def __init__(self, start: int, end: int):
-        """Initialize the scenario generator, which creates a JSON file according to the unified Scenario schema (see models/scenario.py). The 'hip' file structure is specialized for the robust-rail-solver."""
+        """Initialize the scenario generator, which creates a JSON file according to the unified Scenario schema (see models/scenario.py)."""
         # train_unit_types is required on Scenario, so it has to be passed here
         # even though add_train_unit_type populates it later.
         self.scenario = Scenario(start_time=start, end_time=end, train_unit_types=[])
