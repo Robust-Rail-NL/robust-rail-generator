@@ -336,7 +336,7 @@ class RandomGenerator:
         for i, train_units in enumerate(distribution_in):
             ### Incoming train
             if i in standing_trains["instanding"]:
-                train_in = self.scenario_generator.create_train(
+                train_in = self.scenario_generator.create_incoming_train(
                     id=i,
                     time=self.scenario_generator.scenario.start_time,
                     members=train_units,
@@ -344,18 +344,16 @@ class RandomGenerator:
                     if len(config["track_id_map"][standing_trains["instanding"][i].a_side[0]].a_side) == 0
                     else standing_trains["instanding"][i].b_side[0],
                     track_part=standing_trains["instanding"][i].id,
-                    minimum_duration="60",
                 )
                 self.scenario_generator.add_in_standing_train(train_in)
             else:
                 gateway, side = random.choice(self.gateways["arrival"])
-                train_in = self.scenario_generator.create_train(
+                train_in = self.scenario_generator.create_incoming_train(
                     id=i,
                     time=arrival_times[i],
                     members=train_units,
                     side_track_part=side.id,
                     track_part=gateway.id,
-                    minimum_duration="60",
                 )
                 self.scenario_generator.add_incoming_train(train_in)
             self.trains.append(train_in)
@@ -369,7 +367,7 @@ class RandomGenerator:
                 for train_unit in train_units
             ]
             if i + id_offset in standing_trains["outstanding"]:
-                train_out = self.scenario_generator.create_train(
+                train_out = self.scenario_generator.create_train_request(
                     id=i + id_offset,
                     time=self.scenario_generator.scenario.end_time,
                     members=unmatched_train_units,
@@ -377,18 +375,16 @@ class RandomGenerator:
                     if len(config["track_id_map"][standing_trains["outstanding"][i + id_offset].a_side[0]].a_side) == 0
                     else standing_trains["outstanding"][i + id_offset].b_side[0],
                     track_part=standing_trains["outstanding"][i + id_offset].id,
-                    minimum_duration="60",
                 )
                 self.scenario_generator.add_out_standing_train(train_out)
             else:
                 gateway, side = random.choice(self.gateways["departure"])
-                train_out = self.scenario_generator.create_train(
+                train_out = self.scenario_generator.create_train_request(
                     id=i + id_offset,
                     time=departure_times[i],
                     members=unmatched_train_units,
                     side_track_part=side.id,
                     track_part=gateway.id,
-                    minimum_duration="60",
                 )
                 self.scenario_generator.add_outgoing_train(train_out)
             self.trains.append(train_out)
@@ -547,10 +543,3 @@ class RandomGenerator:
                 f"Not all train units were assigned to trains, {sum([len(in_units[t]) for t in in_units])} incoming and {sum([len(out_units[t]) for t in out_units])} outgoing units left"
             )
         return in_trains, out_trains
-
-    def resample_arrival_departure_times(self, scenario, distribution_config):
-        arrival_times, departure_times = self.assign_arrival_departure_times(distribution_config)
-        for train in getattr(scenario, "in"):
-            train.time = arrival_times[int(train.id)]
-        for train in getattr(scenario, "out"):
-            train.time = departure_times[int(train.id) - distribution_config["number_trains_in"]]

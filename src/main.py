@@ -6,7 +6,7 @@ from __init__ import DATA_DIR, REPO_DIR, VERSION
 from check_config import *
 from check_matching import *
 from random_generator import RandomGenerator
-from scenario_generator import ScenarioGenerator, SolverScenarioGenerator
+from scenario_generator import ScenarioGenerator
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -173,9 +173,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     # Add the trains when specified
     if config["trains_given"]:
         create_trains(scenario_generator, config, service_tasks)
-        matching_possible = check_matching(
-            scenario_generator, config["use_default_material"], config["min_time_in_yard"]
-        )
+        matching_possible = check_matching(scenario_generator, config["use_default_material"])
         if not matching_possible:
             logging.error(
                 "The specified incoming and outgoing trains do not match. Please check the configuration file."
@@ -185,20 +183,12 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         # Generate random trains if none are specified
         random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
         # Check matching of incoming and outgoing trains
-        matching_possible = check_matching(
-            scenario_generator, config["use_default_material"], config["min_time_in_yard"]
-        )
+        matching_possible = check_matching(scenario_generator, config["use_default_material"])
         while not matching_possible:
             logging.warning("The generated incoming and outgoing trains do not match. Regenerating train compositions.")
             random_generator.reset()
             random_generator.generate_train_compositions(config, scenario_generator)
-            matching_possible = check_matching(
-                scenario_generator, config["use_default_material"], config["min_time_in_yard"]
-            )
-
-    # Also generate the format of the solver
-    scenario_generator.create_solver_format_scenario()
-    solver_scenario_generator = SolverScenarioGenerator(scenario_generator)
+            matching_possible = check_matching(scenario_generator, config["use_default_material"])
 
     if scenario_file is None:
         # If no name is given, generate it
@@ -217,7 +207,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     else:
         output_filepath = os.path.join(path, "scenarios", scenario_file)
     # Write unified scenario file (HIP field names, consumed by both solver and evaluator)
-    solver_scenario_generator.save_scenario_json(output_filepath)
+    scenario_generator.save_scenario_json(output_filepath)
     print(f"Scenario file created: {output_filepath}")
 
 
@@ -236,7 +226,7 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
     for train in config["custom_trains"]:
         if "arrival_track" in train:
             scenario_generator.add_incoming_train(
-                scenario_generator.create_train(
+                scenario_generator.create_incoming_train(
                     id=train["id"],
                     members=[created_train_units[i] for i in train["members"]],
                     time=train["arrival_time"],
@@ -252,7 +242,7 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
                 for train_unit in train["member_types"]
             ]
             scenario_generator.add_outgoing_train(
-                scenario_generator.create_train(
+                scenario_generator.create_train_request(
                     id=train["id"],
                     members=unmatched_train_units,
                     time=train["departure_time"],
@@ -262,7 +252,7 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
             )
         if "start_at_track" in train:
             scenario_generator.add_in_standing_train(
-                scenario_generator.create_train(
+                scenario_generator.create_incoming_train(
                     id=train["id"],
                     time=0,
                     members=[created_train_units[i] for i in train["members"]],
@@ -279,7 +269,7 @@ def create_trains(scenario_generator: ScenarioGenerator, config, services):
                 for train_unit in train["member_types"]
             ]
             scenario_generator.add_out_standing_train(
-                scenario_generator.create_train(
+                scenario_generator.create_train_request(
                     id=train["id"],
                     time=0,
                     members=unmatched_train_units,

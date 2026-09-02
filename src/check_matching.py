@@ -1,7 +1,7 @@
 import logging
 
 
-def check_matching(scenario_generator, use_default_material=True, minimal_yard_time=600):
+def check_matching(scenario_generator, use_default_material=True):
     valid = check_train_lengths(scenario_generator, use_default_material)
     if not valid:
         return False
@@ -9,20 +9,22 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
         (train, unit, "incoming") for train in scenario_generator.scenario.in_ for unit in (train.members)
     ] + [(train, unit, "instanding") for train in scenario_generator.scenario.in_standing for unit in train.members]
     train_unit_requests = [
-        (train, unit, "outgoing") for train in scenario_generator.scenario.out for unit in train.members
-    ] + [(train, unit, "outstanding") for train in scenario_generator.scenario.out_standing for unit in train.members]
+        (train, unit, "outgoing") for train in scenario_generator.scenario.out for unit in train.train_units
+    ] + [
+        (train, unit, "outstanding") for train in scenario_generator.scenario.out_standing for unit in train.train_units
+    ]
     if len(train_units) != len(train_unit_requests):
         logging.warning(
             f"Number of incoming train units ({len(train_units)}) does not match number of outgoing train unit requests ({len(train_unit_requests)})."
         )
         return False
     # Check for duplicate times
-    if len(set([train.time for train in scenario_generator.scenario.in_])) != len(scenario_generator.scenario.in_):
+    if len(set([train.arrival for train in scenario_generator.scenario.in_])) != len(scenario_generator.scenario.in_):
         logging.warning(
             "There are duplicate arrival times among incoming trains, which is not supported in this primitive matching check."
         )
         return False
-    if len(set([train.time for train in scenario_generator.scenario.out])) != len(scenario_generator.scenario.out):
+    if len(set([train.departure for train in scenario_generator.scenario.out])) != len(scenario_generator.scenario.out):
         logging.warning(
             "There are duplicate departure times among outgoing trains, which is not supported in this primitive matching check."
         )
@@ -34,16 +36,21 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
         logging.warning("Types of incoming train units do not match types of outgoing train unit requests.")
         return False
     for in_train, unit, _ in train_units:
-        # Primitive matching does not use minimum yard time, because trains can also be delayed
+        # This primitive matching only checks that *some* feasible pairing of
+        # incoming units to outgoing requests exists, using arrival time +
+        # task duration as the earliest possible departure. A configured
+        # minimum yard time doesn't fit that model: trains can be delayed
+        # past it for other reasons, so enforcing it here would reject
+        # scenarios that are still schedulable, just not by this shortcut.
         matching_departures = [
-            (req_unit, out_train.time, typ)
+            (req_unit, out_train.departure, typ)
             for out_train, req_unit, typ in train_unit_requests
             if req_unit.type_display_name == unit.type_display_name
-            and (out_train.time > in_train.time + sum([t.duration for t in unit.tasks]) or typ == "outstanding")
+            and (out_train.departure > in_train.arrival + sum([t.duration for t in unit.tasks]) or typ == "outstanding")
         ]
         if not matching_departures:
             logging.warning(
-                f"No matching departure found for incoming train unit {unit.id} of type {unit.type_display_name} arriving at {in_train.time} with train {in_train.id}."
+                f"No matching departure found for incoming train unit {unit.id} of type {unit.type_display_name} arriving at {in_train.arrival} with train {in_train.id}."
             )
             return False
         # Remove the first matching departure to ensure one-to-one matching
@@ -54,7 +61,7 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
                     out_train
                     for out_train, req_unit, typ in train_unit_requests
                     if req_unit.type_display_name == first_departing_train[0].type_display_name
-                    and out_train.time == first_departing_train[1]
+                    and out_train.departure == first_departing_train[1]
                     and typ == first_departing_train[2]
                 ),
                 first_departing_train[0],
@@ -62,7 +69,7 @@ def check_matching(scenario_generator, use_default_material=True, minimal_yard_t
             )
         )
         logging.info(
-            f"Primitively matched incoming train unit {unit.id} of type {unit.type_display_name} of train {in_train.id} arriving at {in_train.time} with departure at {first_departing_train[1]}."
+            f"Primitively matched incoming train unit {unit.id} of type {unit.type_display_name} of train {in_train.id} arriving at {in_train.arrival} with departure at {first_departing_train[1]}."
         )
     if len(train_unit_requests) > 0:
         logging.warning(
