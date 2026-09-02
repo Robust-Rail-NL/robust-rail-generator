@@ -3,8 +3,9 @@ import logging
 import os
 import random
 
+from robust_rail_models.location import Location, TrackPartType
+
 from __init__ import DATA_DIR
-from models.location import Location, TrackPartType
 
 
 def _type_display_names(train_unit_type_entries):

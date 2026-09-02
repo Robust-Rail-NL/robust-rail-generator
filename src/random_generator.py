@@ -3,7 +3,8 @@ import math
 import random
 from copy import deepcopy
 
-from models.location import TrackPartType
+from robust_rail_models.location import TrackPartType
+
 from scenario_generator import ScenarioGenerator
 
 

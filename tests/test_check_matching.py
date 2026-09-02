@@ -6,9 +6,10 @@ IncomingTrain (.arrival/.departure/.members) and TrainRequest
 leftover .time/.members reference on the TrainRequest side would fail loudly
 instead of silently matching zero requests."""
 
+from robust_rail_models.location import Location, TrackPart, TrackPartType
+from robust_rail_models.scenario import TrainUnitType
+
 from check_matching import check_matching
-from models.location import Location, TrackPart, TrackPartType
-from models.scenario import TrainUnitType
 from scenario_generator import ScenarioGenerator
 
 
