@@ -70,7 +70,6 @@ The `src` folder contains the main generation files: `main.py` is the main metho
  ┣ 📜How to write a configuration file.md
  ┣ 📜pyproject.toml
  ┣ 📜README.md
- ┣ 📜SCHEMA_CHANGELOG.md
  ┗ 📜uv.lock
 ```
 

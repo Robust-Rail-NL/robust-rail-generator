@@ -4,7 +4,7 @@
 and the generator runs on the Pydantic models in `models/`. Kept as a record
 of the original refactor plan; the "Key model notes" section below has been
 updated to match the current schema (see `unified-schema-design.md` and
-`SCHEMA_CHANGELOG.md` for what changed since).
+`robust-rail-general`'s `SCHEMA_CHANGELOG.md` for what changed since).
 
 ## What this work is
 

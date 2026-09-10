@@ -551,7 +551,8 @@ for the migration:
    `Scenario`, and `Plan` — one shared interchange version across all three.
    Each tool defines a local constant `EXPECTED_SCHEMA_VERSION = 1`; all three
    are updated together as part of a coordinated release when the version bumps.
-   A `SCHEMA_CHANGELOG.md` in this repo records what changed at each increment.
+   A `SCHEMA_CHANGELOG.md` (in `robust-rail-general` as of 2026-09-10, moved
+   there with the rest of `src/models/`) records what changed at each increment.
 
 2. **Forward compatibility policy.** **Decision:** warn-and-continue. If
    `schemaVersion` is missing or differs from the expected value, the consumer
