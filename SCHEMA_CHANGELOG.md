@@ -14,7 +14,7 @@ this mismatch warning.
 
 ## 2 — 2026-09-10
 
-Two related changes, landed together:
+Three related changes, landed together:
 
 - `PredefinedTaskType.Walking` renamed to `Setback`. `Walking` named a
   shunting-unit reversal action after the crew's part in it (walking to the
@@ -27,6 +27,16 @@ Two related changes, landed together:
   `Setback` action instead. A plan declaring `schemaVersion: 1` (or none)
   keeps evaluating exactly as before: still tolerated, with a deprecation
   warning.
+- `Plan` gains `feasibility` (`Feasibility` enum: `Feasible`/`Infeasible`/
+  `Unknown`, defaults to `Unknown`), and optional `producer` (free text,
+  e.g. `"robust-rail-solver 2.0.0-edge+20260826.a1b2c3d"`), `cost` (number),
+  and `costDetails` (free-form breakdown string, e.g. the solver's own
+  `SolutionCost.ToString()` output) fields. `feasibility` is a producer's own
+  verdict on whether *this specific submitted plan* satisfies all hard
+  constraints — not a claim about whether some other plan for the same
+  scenario exists. The evaluator additionally logs a line (not a reject) when
+  a plan's declared `feasibility` disagrees with its own actual pass/fail
+  verdict.
 
 Not free for existing producers, unlike most entries below: robust-rail-solver
 and robust-rail-planner currently only ever produce the embedded-reversal
@@ -39,8 +49,10 @@ opts into the stricter rule only once it bumps its own output to declare `2`.
 
 No real producer has ever emitted `"Walking"` as a value (see
 robust-rail-evaluator's `doc/known-issue-plan-type.md`), so the rename itself
-carries no migration cost - the version bump exists for the *behavioral*
-change (the reject), not the rename.
+carries no migration cost. `feasibility` defaulting to `Unknown` (rather than
+being strictly required with no default) means the new fields carry no
+migration cost either — the version bump exists for the *behavioral* change
+(the reversal reject), not for either schema addition.
 
 ## Unversioned — 2026-08-21
 
