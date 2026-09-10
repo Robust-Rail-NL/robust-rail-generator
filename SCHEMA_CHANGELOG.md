@@ -7,7 +7,40 @@ increments only on breaking changes to the wire format, and all three repos
 bump their local `EXPECTED_SCHEMA_VERSION` together when it does.
 
 Mismatch behaviour is warn-and-continue: a missing or unexpected
-`schemaVersion` produces a logged warning, not a hard reject.
+`schemaVersion` produces a logged warning, not a hard reject. That default
+loosens starting at version 2 (see below): one specific plan shape becomes a
+hard reject, gated on the plan's own declared `schemaVersion` rather than on
+this mismatch warning.
+
+## 2 — 2026-09-10
+
+Two related changes, landed together:
+
+- `PredefinedTaskType.Walking` renamed to `Setback`. `Walking` named a
+  shunting-unit reversal action after the crew's part in it (walking to the
+  other end, which is why it takes time) rather than what the action
+  represents. Moved out of the "Staff / facility" grouping into "Movement",
+  where it actually belongs.
+- A `Move` action whose route embeds an unflagged reversal (the same track
+  revisited two hops apart, e.g. `[..,X,Y,X,..]`) is no longer accepted for
+  a plan declaring `schemaVersion: 2` or later — it must use an explicit
+  `Setback` action instead. A plan declaring `schemaVersion: 1` (or none)
+  keeps evaluating exactly as before: still tolerated, with a deprecation
+  warning.
+
+Not free for existing producers, unlike most entries below: robust-rail-solver
+and robust-rail-planner currently only ever produce the embedded-reversal
+shape (they fold a reversal into a `Move`'s resource list rather than
+emitting a separate action), so both need to start emitting `Setback` before
+adopting `schemaVersion: 2`. The version gate exists specifically so this can
+happen on each producer's own timeline: nothing currently emitted anywhere
+regresses, since it all declares `schemaVersion: 1` today, and each producer
+opts into the stricter rule only once it bumps its own output to declare `2`.
+
+No real producer has ever emitted `"Walking"` as a value (see
+robust-rail-evaluator's `doc/known-issue-plan-type.md`), so the rename itself
+carries no migration cost - the version bump exists for the *behavioral*
+change (the reject), not the rename.
 
 ## Unversioned — 2026-08-21
 

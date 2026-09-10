@@ -82,9 +82,11 @@ objects.
 the task must be completed before the train may exit the yard; `True` means
 optional. Do not add `priority` back.
 
-**`PredefinedTaskType`** enum values: `Move`, `Split`, `Combine`, `Wait`,
-`Arrive`, `Exit`, `StandIn`, `StandOut`, `Walking`, `Break`, `NonService`.
+**`PredefinedTaskType`** enum values: `Move`, `Split`, `Combine`, `Setback`,
+`Wait`, `Arrive`, `Exit`, `StandIn`, `StandOut`, `Break`, `NonService`.
 `BeginMove` and `EndMove` are evaluator-internal and absent from the schema.
+(`Setback` was named `Walking` before schemaVersion 2 - a shunting-unit
+reversal, not a staff/facility concept.)
 
 **`Plan.track_parts`** — acknowledged technical debt; kept for now because
 the evaluator needs it. Do not remove it during this refactor.
