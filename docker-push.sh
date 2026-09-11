@@ -30,6 +30,8 @@
 # repo or Dockerfile.
 set -euo pipefail
 
+docker login ghcr.io
+
 IMAGE="ghcr.io/robust-rail-nl/generator"
 BUILDER_NAME="robust-rail-builder"
 
