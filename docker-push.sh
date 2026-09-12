@@ -28,12 +28,21 @@
 # robust-rail-evaluator, robust-rail-solver) that need the same
 # multi-arch/network=host setup — a buildx builder isn't tied to a specific
 # repo or Dockerfile.
+#
+# --cache-to/--cache-from push and pull the build cache through a dedicated
+# ":buildcache" tag on the same image (see robust-rail-planner's docker-push.sh
+# for the mechanism and its cost — free here too, ghcr.io/robust-rail-nl is
+# public). The builder stage's `uv sync` doesn't depend on VERSION at all, so
+# unlike the other siblings this repo needed no Dockerfile reordering for the
+# cache to actually pay off across releases — a version bump alone already
+# reuses it.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 docker login ghcr.io
 
 IMAGE="ghcr.io/robust-rail-nl/generator"
+CACHE_REF="$IMAGE:buildcache"
 BUILDER_NAME="robust-rail-builder"
 
 VERSION=$(sed -n 's:^version = "\(.*\)"$:\1:p' pyproject.toml)
@@ -53,5 +62,7 @@ docker buildx build \
     --platform linux/amd64,linux/arm64 \
     --build-arg "VERSION=$VERSION" \
     "${TAGS[@]}" \
+    --cache-to "type=registry,ref=$CACHE_REF,mode=max" \
+    --cache-from "type=registry,ref=$CACHE_REF" \
     --push \
     .
