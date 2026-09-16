@@ -103,6 +103,22 @@ class RandomGenerator:
                         logging.info(f"Found gateway track {gateway.name}")
         return gateways
 
+    def cap_composition_size(self, number_of_units, subtypes_in_composition):
+        """Allow a composition that holds a unit of 6 or more carriages 2 units instead of 3.
+
+        A 6-carriage unit is half again as long as a 4-carriage one, and more than two of them
+        in a single composition no longer fit the tracks a scenario has to park them on. The
+        longer types (ICR-7, ICNG-8, ICR-9) fit even worse, so the same limit applies to them.
+
+        `subtypes_in_composition` are the display names of the units the composition is made of,
+        so only a composition that really drew such a unit is shortened; one that drew shorter
+        units of the same super type keeps the size it was given.
+        """
+        carriages_per_subtype = {t.type_display_name: t.carriages for t in self.train_unit_types}
+        if any((carriages_per_subtype.get(sub) or 0) >= 6 for sub in subtypes_in_composition):
+            return min(number_of_units, 2)
+        return number_of_units
+
     def generate_train_compositions(self, config, scenario_generator, service_tasks):
         distribution_config = {
             "number_trains_in": config["number_of_trains"],
@@ -146,14 +162,25 @@ class RandomGenerator:
             ]
             random.shuffle(distribution_config["super_types_in_train"])
 
-            # Ensure that trains with subtypes of 6 carriages do not have more than 2 units
-            for i, t in enumerate(distribution_config["super_types_in_train"]):
-                super_type = list(self.train_units_subtypes.keys())[t]
-                if (
-                    f"{super_type}-6" in self.train_units_subtypes[super_type]
-                    and distribution_config["number_units_per_in_train"][i] > 2
-                ):
-                    distribution_config["number_units_per_in_train"][i] = 2
+            super_types = list(self.train_units_subtypes.keys())
+
+            # For each train, randomly sample the subtype for each unit from the supertype assigned to this train for the known number of units
+            drawn_subtypes_per_in_train = [
+                [
+                    random.choice(self.train_units_subtypes[super_types[t]])
+                    for _ in range(distribution_config["number_units_per_in_train"][j])
+                ]
+                for j, t in enumerate(distribution_config["super_types_in_train"])
+            ]
+            # Ensure that trains that drew a unit of 6 carriages do not have more than 2 units.
+            # The subtypes are drawn before the cap is applied so that a train of the same super
+            # type that drew only shorter units keeps every unit it was given.
+            distribution_config["subtypes_per_in_train"] = [
+                train[: self.cap_composition_size(len(train), train)] for train in drawn_subtypes_per_in_train
+            ]
+            distribution_config["number_units_per_in_train"] = [
+                len(train) for train in distribution_config["subtypes_per_in_train"]
+            ]
 
             # For each unit subtype we calculate the number of associated train units
             distribution_config["units_per_super_type"] = {
@@ -166,16 +193,6 @@ class RandomGenerator:
                 )
                 for t in range(different_types)
             }
-            super_types = list(self.train_units_subtypes.keys())
-
-            # For each train, randomly sample the subtype for each unit from the supertype assigned to this train for the known number of units
-            distribution_config["subtypes_per_in_train"] = [
-                [
-                    random.choice(self.train_units_subtypes[super_types[t]])
-                    for _ in range(distribution_config["number_units_per_in_train"][j])
-                ]
-                for j, t in enumerate(distribution_config["super_types_in_train"])
-            ]
             # Calculate the number of units per subtype
             distribution_config["number_subtype_units"] = {
                 sub: sum([1 for train in distribution_config["subtypes_per_in_train"] for u in train if u == sub])
@@ -202,6 +219,8 @@ class RandomGenerator:
                             num_units = random.choice(distribution_config["units_per_composition"])
                         else:
                             num_units = len(subtypes_per_super_type[sup_type])
+                        # Only the units that this train is about to take decide whether it is capped
+                        num_units = self.cap_composition_size(num_units, subtypes_per_super_type[sup_type][-num_units:])
                         new_train = []
                         for _ in range(num_units):
                             new_train.append(subtypes_per_super_type[sup_type].pop())
@@ -211,27 +230,14 @@ class RandomGenerator:
                 # Assume last in last out
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
                 distribution_config["subtypes_per_out_train"].reverse()
-        elif config["use_default_material"]:
-            # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange)
-            distribution_config.update(
-                {
-                    "unit_types_per_train": [
-                        (random.choice(self.train_unit_types), random.randrange(1, 4, 1))
-                        for _ in range(config["number_of_trains"])
-                    ]
-                }
-            )
-            number_train_units = sum([num for _, num in distribution_config["unit_types_per_train"]])
         else:
-            # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange)
-            distribution_config.update(
-                {
-                    "unit_types_per_train": [
-                        (random.choice(self.train_unit_types), random.randrange(1, 4, 1))
-                        for _ in range(config["number_of_trains"])
-                    ]
-                }
-            )
+            # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange), capped for 6-carriage types
+            unit_types_per_train = []
+            for _ in range(config["number_of_trains"]):
+                unit_type = random.choice(self.train_unit_types)
+                number_of_units = self.cap_composition_size(random.randrange(1, 4, 1), [unit_type.type_display_name])
+                unit_types_per_train.append((unit_type, number_of_units))
+            distribution_config.update({"unit_types_per_train": unit_types_per_train})
             number_train_units = sum([num for _, num in distribution_config["unit_types_per_train"]])
         self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config, service_tasks)
         self.generate_trains(config, distribution_config)
