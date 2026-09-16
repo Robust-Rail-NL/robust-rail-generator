@@ -8,6 +8,10 @@ from robust_rail_models.location import TrackPartType
 from scenario_generator import ScenarioGenerator
 
 
+class GenerationAttemptFailed(Exception):
+    """This particular draw could not be completed; another attempt may well succeed."""
+
+
 class RandomGenerator:
     def __init__(self, gen: ScenarioGenerator, config, location, gateways):
         """Initialize the random generator for a specific scenario generator."""
@@ -442,51 +446,47 @@ class RandomGenerator:
             ]
             for y in range(distribution_config["number_trains_out"]):
                 # Possible that there are more departing trains then arriving
-                try:
-                    if y >= len(arrival_times):
-                        departure_times.append(random.sample(possible_departure_times, 1)[0])
-                    else:
-                        # Make sure that the departure time is after the arrival time for at least one train
-                        departure_times.append(
-                            random.sample(
-                                [
-                                    x
-                                    for x in possible_departure_times
-                                    if x > arrival_times[y] + distribution_config["average_servicing_time"]
-                                ],
-                                1,
-                            )[0]
-                        )
-                    possible_departure_times.remove(departure_times[-1])
-                except Exception:
-                    logging.exception(
-                        f"Cannot sample departure time for train {y} from possible departure times after arrival time {arrival_times[y]} with min gap {distribution_config['min_gap_on_gateway']}. Possible departure times: {possible_departure_times}"
+                if y >= len(arrival_times):
+                    candidates = possible_departure_times
+                else:
+                    # Make sure that the departure time is after the arrival time for at least one train
+                    candidates = [
+                        x
+                        for x in possible_departure_times
+                        if x > arrival_times[y] + distribution_config["average_servicing_time"]
+                    ]
+                if not candidates:
+                    # Which slots are left depends on the arrival times drawn, so another draw may fit.
+                    raise GenerationAttemptFailed(
+                        f"No departure slot left for train {y} after "
+                        f"{arrival_times[y] if y < len(arrival_times) else 'its arrival'} plus "
+                        f"{distribution_config['average_servicing_time']}s of servicing, with "
+                        f"{len(possible_departure_times)} slots still free before 'end_time' "
+                        f"{self.scenario_generator.scenario.end_time}."
                     )
+                departure_times.append(random.sample(candidates, 1)[0])
+                possible_departure_times.remove(departure_times[-1])
         else:
             # Arrive in first half of total time
             halfway = math.floor(self.scenario_generator.scenario.end_time / 2)
-            try:
-                arrival_times = random.sample(
-                    range(
-                        self.scenario_generator.scenario.start_time, halfway, distribution_config["min_gap_on_gateway"]
-                    ),
-                    distribution_config["number_trains_in"],
-                )
-            except Exception:
-                logging.exception(
-                    f"Cannot sample {distribution_config['number_trains_in']} arrival times from range {self.scenario_generator.scenario.start_time} to {halfway} (end_time/2) with min gap {distribution_config['min_gap_on_gateway']}"
-                )
+            arrival_times = random.sample(
+                range(self.scenario_generator.scenario.start_time, halfway, distribution_config["min_gap_on_gateway"]),
+                distribution_config["number_trains_in"],
+            )
             # Depart in second half of total time
             start = max(halfway, max(arrival_times) + distribution_config["min_gap_on_gateway"])
-            try:
-                departure_times = random.sample(
-                    range(start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]),
-                    distribution_config["number_trains_out"],
+            departure_window = range(
+                start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]
+            )
+            if len(departure_window) < distribution_config["number_trains_out"]:
+                # `start` depends on the latest arrival drawn, so another draw may leave more room.
+                raise GenerationAttemptFailed(
+                    f"Only {len(departure_window)} departure slots at least "
+                    f"{distribution_config['min_gap_on_gateway']}s apart fit between {start} (the last arrival) "
+                    f"and 'end_time' {self.scenario_generator.scenario.end_time}, for "
+                    f"{distribution_config['number_trains_out']} departing trains."
                 )
-            except Exception:
-                logging.exception(
-                    f"Cannot sample {distribution_config['number_trains_out']} departure times from range {start} (end_time/2) to {self.scenario_generator.scenario.end_time} with min gap {distribution_config['min_gap_on_gateway']}"
-                )
+            departure_times = random.sample(departure_window, distribution_config["number_trains_out"])
         return arrival_times, departure_times
 
     def distribute_train_units(self, distribution_config):

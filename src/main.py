@@ -5,7 +5,7 @@ import sys
 from __init__ import DATA_DIR, REPO_DIR, VERSION
 from check_config import *
 from check_matching import *
-from random_generator import RandomGenerator
+from random_generator import GenerationAttemptFailed, RandomGenerator
 from scenario_generator import ScenarioGenerator
 
 parser = argparse.ArgumentParser()
@@ -190,7 +190,11 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
                     f"train compositions (attempt {attempt + 1} of {max_attempts})."
                 )
                 random_generator.reset()
-            random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
+            try:
+                random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
+            except GenerationAttemptFailed as e:
+                logging.warning(f"Attempt {attempt + 1} of {max_attempts} could not be completed: {e}")
+                continue
             if check_matching(scenario_generator, config["use_default_material"]):
                 break
         else:
