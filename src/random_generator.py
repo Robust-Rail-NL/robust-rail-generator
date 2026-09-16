@@ -107,6 +107,7 @@ class RandomGenerator:
             "min_gap_on_gateway": config["min_gap_on_gateway"],
             "mixed_traffic": config["mixed_traffic"],
             "matching": config["matching"],
+            "average_servicing_time": 0,
         }
         number_train_units = 0
         if "train_unit_distribution" in config:
