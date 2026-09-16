@@ -187,7 +187,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         while not matching_possible:
             logging.warning("The generated incoming and outgoing trains do not match. Regenerating train compositions.")
             random_generator.reset()
-            random_generator.generate_train_compositions(config, scenario_generator)
+            random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
             matching_possible = check_matching(scenario_generator, config["use_default_material"])
 
     if scenario_file is None:
