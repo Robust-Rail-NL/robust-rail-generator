@@ -180,15 +180,25 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
             )
             sys.exit(1)
     else:
-        # Generate random trains if none are specified
-        random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
-        # Check matching of incoming and outgoing trains
-        matching_possible = check_matching(scenario_generator, config["use_default_material"])
-        while not matching_possible:
-            logging.warning("The generated incoming and outgoing trains do not match. Regenerating train compositions.")
-            random_generator.reset()
+        # Generate random trains if none are specified, retrying until the incoming and outgoing
+        # trains match with a bounded number of retries. 
+        max_attempts = config.get("max_generation_attempts", 100)
+        for attempt in range(max_attempts):
+            if attempt:
+                logging.warning(
+                    f"The generated incoming and outgoing trains do not match. Regenerating "
+                    f"train compositions (attempt {attempt + 1} of {max_attempts})."
+                )
+                random_generator.reset()
             random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
-            matching_possible = check_matching(scenario_generator, config["use_default_material"])
+            if check_matching(scenario_generator, config["use_default_material"]):
+                break
+        else:
+            logging.error(
+                f"No scenario matching this configuration could be generated in {max_attempts} attempts. "
+                f"Rerun with --log-level WARNING reports why each attempt was rejected."
+            )
+            sys.exit(1)
 
     if scenario_file is None:
         # If no name is given, generate it
