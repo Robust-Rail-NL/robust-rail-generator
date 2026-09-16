@@ -290,48 +290,76 @@ class RandomGenerator:
         if self.number_of_train_units != number_train_units:
             logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
 
+    def train_length(self, train_units, type_lengths):
+        """Total length in meters of a composition, from the lengths of its unit types."""
+        return sum(type_lengths.get(unit.type_display_name) or 0.0 for unit in train_units)
+
+    def assign_standing_tracks(self, candidate_train_ids, compositions, number_standing, gateway_track_ids):
+        """Assign in- or outstanding trains to parking tracks that are long enough to hold them.
+
+        Both the candidates and the track each one gets are drawn at random, the latter from
+        whichever free tracks still fit the composition.
+
+        A composition that fits on no remaining track is not made standing at all; it stays an
+        ordinary arriving/departing train and another candidate is drawn in its place.
+        """
+        type_lengths = {t.type_display_name: t.length for t in self.scenario_generator.scenario.train_unit_types}
+        # Tracks with an unknown length are treated as fitting anything, so a location without
+        # length data behaves as before instead of ending up without any standing trains.
+        free_tracks = [
+            tr
+            for tr in self.scenario_generator.location.track_parts
+            if tr.parking_allowed and tr.id not in gateway_track_ids
+        ]
+        pool = list(candidate_train_ids)
+        random.shuffle(pool)
+        assignment = {}
+        while pool and len(assignment) < number_standing:
+            train_id = pool.pop()
+            length = self.train_length(compositions[train_id], type_lengths)
+            fitting_tracks = [tr for tr in free_tracks if tr.length is None or tr.length >= length]
+            if not fitting_tracks:
+                logging.info(
+                    f"Train {train_id} with length {length} does not fit on any remaining parking track, so it is not made standing."
+                )
+                continue
+            track = random.choice(fitting_tracks)
+            free_tracks.remove(track)
+            assignment[train_id] = track
+        if len(assignment) < number_standing:
+            logging.warning(
+                f"Only {len(assignment)} of the requested {number_standing} standing trains could be placed on a parking track that is long enough."
+            )
+        return assignment
+
     def generate_trains(self, config, distribution_config):
         distribution_in, distribution_out = self.distribute_train_units(distribution_config)
         arrival_times, departure_times = self.assign_arrival_departure_times(distribution_config)
+        id_offset = distribution_config["number_trains_in"]
         # Check for instanding and outstanding trains
-        instanding_train_ids = (
-            random.sample(
-                range(distribution_config["number_trains_in"]),
-                math.floor(distribution_config["number_trains_in"] * distribution_config.get("instanding_ratio")),
-            )
+        number_instanding = (
+            math.floor(distribution_config["number_trains_in"] * distribution_config["instanding_ratio"])
             if distribution_config and "instanding_ratio" in distribution_config
-            else []
+            else 0
         )
-        outstanding_train_ids = (
-            random.sample(
-                range(
-                    distribution_config["number_trains_in"],
-                    distribution_config["number_trains_in"] + distribution_config["number_trains_out"],
-                ),
-                math.floor(distribution_config["number_trains_out"] * distribution_config.get("outstanding_ratio")),
-            )
+        number_outstanding = (
+            math.floor(distribution_config["number_trains_out"] * distribution_config["outstanding_ratio"])
             if distribution_config and "outstanding_ratio" in distribution_config
-            else []
-        )
-        parking_tracks_instanding = random.sample(
-            [
-                tr
-                for tr in self.scenario_generator.location.track_parts
-                if tr.parking_allowed and tr.id not in self.gateways["arrival"]
-            ],
-            len(instanding_train_ids),
-        )
-        parking_tracks_outstanding = random.sample(
-            [
-                tr
-                for tr in self.scenario_generator.location.track_parts
-                if tr.parking_allowed and tr.id not in self.gateways["departure"]
-            ],
-            len(outstanding_train_ids),
+            else 0
         )
         standing_trains = {
-            "instanding": {id: parking_tracks_instanding[j] for j, id in enumerate(instanding_train_ids)},
-            "outstanding": {id: parking_tracks_outstanding[j] for j, id in enumerate(outstanding_train_ids)},
+            "instanding": self.assign_standing_tracks(
+                range(distribution_config["number_trains_in"]),
+                dict(enumerate(distribution_in)),
+                number_instanding,
+                {gateway.id for gateway, _ in self.gateways["arrival"]},
+            ),
+            "outstanding": self.assign_standing_tracks(
+                range(id_offset, id_offset + distribution_config["number_trains_out"]),
+                {i + id_offset: train_units for i, train_units in enumerate(distribution_out)},
+                number_outstanding,
+                {gateway.id for gateway, _ in self.gateways["departure"]},
+            ),
         }
         ### Create train objects
         for i, train_units in enumerate(distribution_in):
@@ -358,7 +386,6 @@ class RandomGenerator:
                 )
                 self.scenario_generator.add_incoming_train(train_in)
             self.trains.append(train_in)
-        id_offset = distribution_config["number_trains_in"]
         for i, train_units in enumerate(distribution_out):
             ### Outgoing train
             unmatched_train_units = [
