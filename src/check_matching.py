@@ -105,7 +105,11 @@ def check_train_lengths(scenario_generator, use_default_material):
                 return False
         if length > avg_track_length:
             long_trains.append((train, length))
-    long_trains.sort(key=lambda x: x[1])
+    # Longest train first: each train below claims the longest track still free, so pairing the
+    # longest train with the longest track is the assignment that succeeds whenever any assignment
+    # of these trains to these tracks does. Ascending order pairs the longest train with the
+    # shortest of the claimed tracks and rejects scenarios that are actually fine.
+    long_trains.sort(key=lambda x: x[1], reverse=True)
     for train, length in long_trains:
         longest_track = [
             (t, track_length)
