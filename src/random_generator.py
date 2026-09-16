@@ -533,38 +533,10 @@ class RandomGenerator:
                 for sub_type in sub_type_list:
                     out_trains[train_num].append(out_units[sub_type].pop())
         else:
-            # Without any prior knowledge, randomly distribute, though this is prone to vulnerabilities.
-            # Select number of trains per type
-            logging.info("Randomly sample a number of units per train and select a type for this train.")
-            for typ in in_units:
-                number_trains_of_type = random.randint(
-                    math.ceil(len(in_units[typ]) / 3),
-                    math.floor(distribution_config["number_trains_in"] / len(in_units)),
-                )
-                for _ in range(number_trains_of_type):
-                    in_trains.append([in_units[typ].pop()])
-
-            for unit_type in in_units:
-                trains_of_type = {i: t for i, t in enumerate(in_trains) if t[0].type_display_name == unit_type}
-                while in_units[unit_type]:
-                    idx = random.randint(0, len(trains_of_type) - 1)
-                    if len(trains_of_type[idx]) < 3:
-                        in_trains[idx].append(in_units[unit_type].pop())
-
-            # Do the same for outgoing trains
-            for typ in out_units:
-                number_trains_of_type = random.randint(
-                    math.ceil(len(out_units[typ]) / 3),
-                    math.floor(distribution_config["number_trains_out"] / len(out_units)),
-                )
-                for _ in range(number_trains_of_type):
-                    out_trains.append([out_units[typ].pop()])
-            for unit_type in out_units:
-                trains_of_type = {i: t for i, t in enumerate(out_trains) if t[0].type_display_name == unit_type}
-                while out_units[unit_type]:
-                    idx = random.randint(0, len(trains_of_type) - 1)
-                    if len(trains_of_type[idx]) < 3:
-                        out_trains[idx].append(out_units[unit_type].pop())
+            raise ValueError(
+                "No train composition plan to assign train units by: generate_train_compositions() must "
+                "set either 'unit_types_per_train' or 'subtypes_per_in_train' before the units are distributed."
+            )
         if sum([len(in_units[t]) for t in in_units]) != 0 or sum([len(out_units[t]) for t in out_units]) != 0:
             logging.error(
                 f"Not all train units were assigned to trains, {sum([len(in_units[t]) for t in in_units])} incoming and {sum([len(out_units[t]) for t in out_units])} outgoing units left"
