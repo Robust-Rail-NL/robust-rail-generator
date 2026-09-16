@@ -108,7 +108,7 @@ def check_train_lengths(scenario_generator, use_default_material):
         ]
         if length > longest_track[0][1]:
             logging.warning(
-                f"Train {train.id} has length {length}, which exceeds the longest available track {longest_track[0]} of length {longest_track[1]}."
+                f"Train {train.id} has length {length}, which exceeds the longest available track {longest_track[0][0]} of length {longest_track[0][1]}."
             )
             return False
         else:
