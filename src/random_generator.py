@@ -29,7 +29,6 @@ class RandomGenerator:
     def reset(self):
         """Reset the random generator to its initial state."""
         logging.info("Resetting the random generator to its initial state. Keeping the gateways the same.")
-        self.train_unit_types = []
         self.incoming_train_units = {}
         self.train_units_subtypes = {}
         self.number_of_train_units = 0
