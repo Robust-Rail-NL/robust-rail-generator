@@ -426,20 +426,29 @@ class RandomGenerator:
                 self.scenario_generator.add_outgoing_train(train_out)
             self.trains.append(train_out)
 
+    def _draw_arrival_times(self, distribution_config, window_end, window_description):
+        """random.sample() over the arrival window, raising GenerationAttemptFailed instead of
+        ValueError when there are fewer slots than trains to place."""
+        arrival_window = range(
+            self.scenario_generator.scenario.start_time, window_end, distribution_config["min_gap_on_gateway"]
+        )
+        if len(arrival_window) < distribution_config["number_trains_in"]:
+            raise GenerationAttemptFailed(
+                f"Only {len(arrival_window)} arrival slots at least "
+                f"{distribution_config['min_gap_on_gateway']}s apart fit between 'start_time' "
+                f"{self.scenario_generator.scenario.start_time} and {window_end} ({window_description}), for "
+                f"{distribution_config['number_trains_in']} arriving trains."
+            )
+        return random.sample(arrival_window, distribution_config["number_trains_in"])
+
     def assign_arrival_departure_times(self, distribution_config):
         arrival_times = []
         departure_times = []
         # Mixed traffic allows trains to depart before all trains have arrived
         if distribution_config["mixed_traffic"]:
             # Arrive in 2/3 of total time - generate
-            arrival_times = random.sample(
-                range(
-                    self.scenario_generator.scenario.start_time,
-                    math.floor(self.scenario_generator.scenario.end_time * 2 / 3),
-                    distribution_config["min_gap_on_gateway"],
-                ),
-                distribution_config["number_trains_in"],
-            )
+            two_thirds = math.floor(self.scenario_generator.scenario.end_time * 2 / 3)
+            arrival_times = self._draw_arrival_times(distribution_config, two_thirds, "2/3 of 'end_time'")
             possible_departure_times = [
                 t
                 for t in range(
@@ -474,10 +483,7 @@ class RandomGenerator:
         else:
             # Arrive in first half of total time
             halfway = math.floor(self.scenario_generator.scenario.end_time / 2)
-            arrival_times = random.sample(
-                range(self.scenario_generator.scenario.start_time, halfway, distribution_config["min_gap_on_gateway"]),
-                distribution_config["number_trains_in"],
-            )
+            arrival_times = self._draw_arrival_times(distribution_config, halfway, "halfway to 'end_time'")
             # Depart in second half of total time
             start = max(halfway, max(arrival_times) + distribution_config["min_gap_on_gateway"])
             departure_window = range(
