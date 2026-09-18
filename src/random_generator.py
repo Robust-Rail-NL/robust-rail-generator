@@ -34,7 +34,6 @@ class RandomGenerator:
         """Reset the random generator to its initial state."""
         logging.info("Resetting the random generator to its initial state. Keeping the gateways the same.")
         self.incoming_train_units = {}
-        self.train_units_subtypes = {}
         self.number_of_train_units = 0
         self.trains = []
         self.scenario_generator.scenario.in_ = []
