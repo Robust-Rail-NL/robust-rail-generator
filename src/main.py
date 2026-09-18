@@ -159,7 +159,13 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
                 / len(config["train_unit_distribution"]["units_per_composition"])
             )
             estimated_servicing_time = sum([avg_duration for _ in range(estimated_number_servicing_units)])
-            config["train_unit_distribution"]["average_servicing_time"] = avg_duration
+        # Whichever branch built service_tasks above, this is the one place that turns it into
+        # the value assign_arrival_departure_times() subtracts from each candidate departure
+        # time, so no future servicing-tasks branch can add itself here and forget to set it.
+        if "train_unit_distribution" in config:
+            config["train_unit_distribution"]["average_servicing_time"] = math.ceil(
+                max(task.duration for task in service_tasks.values()) / len(service_tasks)
+            )
 
     # Check if the time window is sufficient for servicing and parking all trains
     if (config["end_time"] - config["start_time"] - estimated_servicing_time) // config["min_gap_on_gateway"] < config[
@@ -181,7 +187,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
             sys.exit(1)
     else:
         # Generate random trains if none are specified, retrying until the incoming and outgoing
-        # trains match with a bounded number of retries. 
+        # trains match with a bounded number of retries.
         max_attempts = config.get("max_generation_attempts", 100)
         for attempt in range(max_attempts):
             if attempt:
