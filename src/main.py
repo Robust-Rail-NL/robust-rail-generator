@@ -151,7 +151,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
                         task_type, int(task_info["duration"]), task_info["requiredSkills"]
                     )
                     service_tasks[service] = service_obj
-            avg_duration = math.ceil(max([task.duration for _, task in service_tasks.items()]) / len(service_tasks))
+            avg_duration = compute_average_servicing_time(service_tasks)
             estimated_number_servicing_units = math.ceil(
                 config["train_unit_distribution"]["servicing_ratio"]
                 * config["number_of_trains"]
@@ -163,14 +163,10 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
         # the value assign_arrival_departure_times() subtracts from each candidate departure
         # time, so no future servicing-tasks branch can add itself here and forget to set it.
         if "train_unit_distribution" in config:
-            config["train_unit_distribution"]["average_servicing_time"] = math.ceil(
-                max(task.duration for task in service_tasks.values()) / len(service_tasks)
-            )
+            config["train_unit_distribution"]["average_servicing_time"] = compute_average_servicing_time(service_tasks)
 
     # Check if the time window is sufficient for servicing and parking all trains
-    if (config["end_time"] - config["start_time"] - estimated_servicing_time) // config["min_gap_on_gateway"] < config[
-        "number_of_trains"
-    ] * 2.1:
+    if not time_window_is_sufficient(config, estimated_servicing_time):
         logging.error(
             f"The specified time window from {config['start_time']} to {config['end_time']} with an estimated servicing time of {estimated_servicing_time} and `min_gap_on_gateway` {config['min_gap_on_gateway']} does not provide enough time for {config['number_of_trains']} trains to be parked and serviced."
         )
@@ -185,30 +181,8 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
                 "The specified incoming and outgoing trains do not match. Please check the configuration file."
             )
             sys.exit(1)
-    else:
-        # Generate random trains if none are specified, retrying until the incoming and outgoing
-        # trains match with a bounded number of retries.
-        max_attempts = config.get("max_generation_attempts", 100)
-        for attempt in range(max_attempts):
-            if attempt:
-                logging.warning(
-                    f"The generated incoming and outgoing trains do not match. Regenerating "
-                    f"train compositions (attempt {attempt + 1} of {max_attempts})."
-                )
-                random_generator.reset()
-            try:
-                random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
-            except GenerationAttemptFailed as e:
-                logging.warning(f"Attempt {attempt + 1} of {max_attempts} could not be completed: {e}")
-                continue
-            if check_matching(scenario_generator, config["use_default_material"]):
-                break
-        else:
-            logging.error(
-                f"No scenario matching this configuration could be generated in {max_attempts} attempts. "
-                f"Rerun with --log-level WARNING reports why each attempt was rejected."
-            )
-            sys.exit(1)
+    elif not generate_random_trains(random_generator, config, scenario_generator, service_tasks):
+        sys.exit(1)
 
     if scenario_file is None:
         # If no name is given, generate it
@@ -229,6 +203,47 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     # Write unified scenario file (HIP field names, consumed by both solver and evaluator)
     scenario_generator.save_scenario_json(output_filepath)
     print(f"Scenario file created: {output_filepath}")
+
+
+def compute_average_servicing_time(service_tasks) -> int:
+    """Average task duration across service_tasks, rounded up - the value
+    assign_arrival_departure_times() subtracts from each candidate departure time."""
+    return math.ceil(max(task.duration for task in service_tasks.values()) / len(service_tasks))
+
+
+def time_window_is_sufficient(config, estimated_servicing_time) -> bool:
+    """Whether the scenario's time window leaves enough gateway slots, after accounting for
+    servicing, to park and turn around every train (each train needs roughly 2.1 slots)."""
+    available_slots = (config["end_time"] - config["start_time"] - estimated_servicing_time) // config[
+        "min_gap_on_gateway"
+    ]
+    return available_slots >= config["number_of_trains"] * 2.1
+
+
+def generate_random_trains(random_generator, config, scenario_generator, service_tasks) -> bool:
+    """Attempt to generate random trains up to `max_generation_attempts` times, retrying whenever
+    an attempt raises GenerationAttemptFailed or produces a scenario check_matching() rejects.
+    Returns whether a matching scenario was produced within the attempt budget."""
+    max_attempts = config.get("max_generation_attempts", 100)
+    for attempt in range(max_attempts):
+        if attempt > 0:
+            logging.warning(
+                f"The generated incoming and outgoing trains do not match. Regenerating "
+                f"train compositions (attempt {attempt + 1} of {max_attempts})."
+            )
+            random_generator.reset()
+        try:
+            random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
+        except GenerationAttemptFailed as e:
+            logging.warning(f"Attempt {attempt + 1} of {max_attempts} could not be completed: {e}")
+            continue
+        if check_matching(scenario_generator, config["use_default_material"]):
+            return True
+    logging.error(
+        f"No scenario matching this configuration could be generated in {max_attempts} attempts. "
+        f"Rerun with --log-level WARNING reports why each attempt was rejected."
+    )
+    return False
 
 
 def create_trains(scenario_generator: ScenarioGenerator, config, services):
