@@ -301,7 +301,7 @@ class RandomGenerator:
 
     def train_length(self, train_units, type_lengths):
         """Total length in meters of a composition, from the lengths of its unit types."""
-        return sum(type_lengths.get(unit.type_display_name) or 0.0 for unit in train_units)
+        return sum(type_lengths[unit.type_display_name] for unit in train_units)
 
     def assign_standing_tracks(self, candidate_train_ids, compositions, number_standing, gateway_track_ids):
         """Assign in- or outstanding trains to parking tracks that are long enough to hold them.
