@@ -36,12 +36,6 @@ def check_matching(scenario_generator, use_default_material=True):
         logging.warning("Types of incoming train units do not match types of outgoing train unit requests.")
         return False
     for in_train, unit, _ in train_units:
-        # This primitive matching only checks that *some* feasible pairing of
-        # incoming units to outgoing requests exists, using arrival time +
-        # task duration as the earliest possible departure. A configured
-        # minimum yard time doesn't fit that model: trains can be delayed
-        # past it for other reasons, so enforcing it here would reject
-        # scenarios that are still schedulable, just not by this shortcut.
         matching_departures = [
             (req_unit, out_train.departure, typ)
             for out_train, req_unit, typ in train_unit_requests
@@ -105,7 +99,7 @@ def check_train_lengths(scenario_generator, use_default_material):
                 return False
         if length > avg_track_length:
             long_trains.append((train, length))
-    long_trains.sort(key=lambda x: x[1])
+    long_trains.sort(key=lambda x: x[1], reverse=True)
     for train, length in long_trains:
         longest_track = [
             (t, track_length)
@@ -114,7 +108,7 @@ def check_train_lengths(scenario_generator, use_default_material):
         ]
         if length > longest_track[0][1]:
             logging.warning(
-                f"Train {train.id} has length {length}, which exceeds the longest available track {longest_track[0]} of length {longest_track[1]}."
+                f"Train {train.id} has length {length}, which exceeds the longest available track {longest_track[0][0]} of length {longest_track[0][1]}."
             )
             return False
         else:

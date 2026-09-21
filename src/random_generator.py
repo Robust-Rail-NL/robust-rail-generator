@@ -8,6 +8,10 @@ from robust_rail_models.location import TrackPartType
 from scenario_generator import ScenarioGenerator
 
 
+class GenerationAttemptFailed(Exception):
+    """This particular draw could not be completed; another attempt may well succeed."""
+
+
 class RandomGenerator:
     def __init__(self, gen: ScenarioGenerator, config, location, gateways):
         """Initialize the random generator for a specific scenario generator."""
@@ -29,9 +33,7 @@ class RandomGenerator:
     def reset(self):
         """Reset the random generator to its initial state."""
         logging.info("Resetting the random generator to its initial state. Keeping the gateways the same.")
-        self.train_unit_types = []
         self.incoming_train_units = {}
-        self.train_units_subtypes = {}
         self.number_of_train_units = 0
         self.trains = []
         self.scenario_generator.scenario.in_ = []
@@ -100,6 +102,22 @@ class RandomGenerator:
                         logging.info(f"Found gateway track {gateway.name}")
         return gateways
 
+    def cap_composition_size(self, number_of_units, subtypes_in_composition):
+        """Allow a composition that holds a unit of 6 or more carriages 2 units instead of 3.
+
+        A 6-carriage unit is half again as long as a 4-carriage one, and more than two of them
+        in a single composition no longer fit the tracks a scenario has to park them on. The
+        longer types (ICR-7, ICNG-8, ICR-9) fit even worse, so the same limit applies to them.
+
+        `subtypes_in_composition` are the display names of the units the composition is made of,
+        so only a composition that really drew such a unit is shortened; one that drew shorter
+        units of the same super type keeps the size it was given.
+        """
+        carriages_per_subtype = {t.type_display_name: t.carriages for t in self.train_unit_types}
+        if any((carriages_per_subtype.get(sub) or 0) >= 6 for sub in subtypes_in_composition):
+            return min(number_of_units, 2)
+        return number_of_units
+
     def generate_train_compositions(self, config, scenario_generator, service_tasks):
         distribution_config = {
             "number_trains_in": config["number_of_trains"],
@@ -108,6 +126,7 @@ class RandomGenerator:
             "min_gap_on_gateway": config["min_gap_on_gateway"],
             "mixed_traffic": config["mixed_traffic"],
             "matching": config["matching"],
+            "average_servicing_time": 0,
         }
         number_train_units = 0
         if "train_unit_distribution" in config:
@@ -142,14 +161,25 @@ class RandomGenerator:
             ]
             random.shuffle(distribution_config["super_types_in_train"])
 
-            # Ensure that trains with subtypes of 6 carriages do not have more than 2 units
-            for i, t in enumerate(distribution_config["super_types_in_train"]):
-                super_type = list(self.train_units_subtypes.keys())[t]
-                if (
-                    f"{super_type}-6" in self.train_units_subtypes[super_type]
-                    and distribution_config["number_units_per_in_train"][i] > 2
-                ):
-                    distribution_config["number_units_per_in_train"][i] = 2
+            super_types = list(self.train_units_subtypes.keys())
+
+            # For each train, randomly sample the subtype for each unit from the supertype assigned to this train for the known number of units
+            drawn_subtypes_per_in_train = [
+                [
+                    random.choice(self.train_units_subtypes[super_types[t]])
+                    for _ in range(distribution_config["number_units_per_in_train"][j])
+                ]
+                for j, t in enumerate(distribution_config["super_types_in_train"])
+            ]
+            # Ensure that trains that drew a unit of 6 carriages do not have more than 2 units.
+            # The subtypes are drawn before the cap is applied so that a train of the same super
+            # type that drew only shorter units keeps every unit it was given.
+            distribution_config["subtypes_per_in_train"] = [
+                train[: self.cap_composition_size(len(train), train)] for train in drawn_subtypes_per_in_train
+            ]
+            distribution_config["number_units_per_in_train"] = [
+                len(train) for train in distribution_config["subtypes_per_in_train"]
+            ]
 
             # For each unit subtype we calculate the number of associated train units
             distribution_config["units_per_super_type"] = {
@@ -162,16 +192,6 @@ class RandomGenerator:
                 )
                 for t in range(different_types)
             }
-            super_types = list(self.train_units_subtypes.keys())
-
-            # For each train, randomly sample the subtype for each unit from the supertype assigned to this train for the known number of units
-            distribution_config["subtypes_per_in_train"] = [
-                [
-                    random.choice(self.train_units_subtypes[super_types[t]])
-                    for _ in range(distribution_config["number_units_per_in_train"][j])
-                ]
-                for j, t in enumerate(distribution_config["super_types_in_train"])
-            ]
             # Calculate the number of units per subtype
             distribution_config["number_subtype_units"] = {
                 sub: sum([1 for train in distribution_config["subtypes_per_in_train"] for u in train if u == sub])
@@ -198,6 +218,8 @@ class RandomGenerator:
                             num_units = random.choice(distribution_config["units_per_composition"])
                         else:
                             num_units = len(subtypes_per_super_type[sup_type])
+                        # Only the units that this train is about to take decide whether it is capped
+                        num_units = self.cap_composition_size(num_units, subtypes_per_super_type[sup_type][-num_units:])
                         new_train = []
                         for _ in range(num_units):
                             new_train.append(subtypes_per_super_type[sup_type].pop())
@@ -207,27 +229,14 @@ class RandomGenerator:
                 # Assume last in last out
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
                 distribution_config["subtypes_per_out_train"].reverse()
-        elif config["use_default_material"]:
-            # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange)
-            distribution_config.update(
-                {
-                    "unit_types_per_train": [
-                        (random.choice(self.train_unit_types), random.randrange(1, 4, 1))
-                        for _ in range(config["number_of_trains"])
-                    ]
-                }
-            )
-            number_train_units = sum([num for _, num in distribution_config["unit_types_per_train"]])
         else:
-            # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange)
-            distribution_config.update(
-                {
-                    "unit_types_per_train": [
-                        (random.choice(self.train_unit_types), random.randrange(1, 4, 1))
-                        for _ in range(config["number_of_trains"])
-                    ]
-                }
-            )
+            # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange), capped for 6-carriage types
+            unit_types_per_train = []
+            for _ in range(config["number_of_trains"]):
+                unit_type = random.choice(self.train_unit_types)
+                number_of_units = self.cap_composition_size(random.randrange(1, 4, 1), [unit_type.type_display_name])
+                unit_types_per_train.append((unit_type, number_of_units))
+            distribution_config.update({"unit_types_per_train": unit_types_per_train})
             number_train_units = sum([num for _, num in distribution_config["unit_types_per_train"]])
         self.generate_train_units(number_train_units, config["perform_servicing"], distribution_config, service_tasks)
         self.generate_trains(config, distribution_config)
@@ -290,48 +299,76 @@ class RandomGenerator:
         if self.number_of_train_units != number_train_units:
             logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
 
+    def train_length(self, train_units, type_lengths):
+        """Total length in meters of a composition, from the lengths of its unit types."""
+        return sum(type_lengths[unit.type_display_name] for unit in train_units)
+
+    def assign_standing_tracks(self, candidate_train_ids, compositions, number_standing, gateway_track_ids):
+        """Assign in- or outstanding trains to parking tracks that are long enough to hold them.
+
+        Both the candidates and the track each one gets are drawn at random, the latter from
+        whichever free tracks still fit the composition.
+
+        A composition that fits on no remaining track is not made standing at all; it stays an
+        ordinary arriving/departing train and another candidate is drawn in its place.
+        """
+        type_lengths = {t.type_display_name: t.length for t in self.scenario_generator.scenario.train_unit_types}
+        # Tracks with an unknown length are treated as fitting anything, so a location without
+        # length data behaves as before instead of ending up without any standing trains.
+        free_tracks = [
+            tr
+            for tr in self.scenario_generator.location.track_parts
+            if tr.parking_allowed and tr.id not in gateway_track_ids
+        ]
+        pool = list(candidate_train_ids)
+        random.shuffle(pool)
+        assignment = {}
+        while pool and len(assignment) < number_standing:
+            train_id = pool.pop()
+            length = self.train_length(compositions[train_id], type_lengths)
+            fitting_tracks = [tr for tr in free_tracks if tr.length is None or tr.length >= length]
+            if not fitting_tracks:
+                logging.info(
+                    f"Train {train_id} with length {length} does not fit on any remaining parking track, so it is not made standing."
+                )
+                continue
+            track = random.choice(fitting_tracks)
+            free_tracks.remove(track)
+            assignment[train_id] = track
+        if len(assignment) < number_standing:
+            logging.warning(
+                f"Only {len(assignment)} of the requested {number_standing} standing trains could be placed on a parking track that is long enough."
+            )
+        return assignment
+
     def generate_trains(self, config, distribution_config):
         distribution_in, distribution_out = self.distribute_train_units(distribution_config)
         arrival_times, departure_times = self.assign_arrival_departure_times(distribution_config)
+        id_offset = distribution_config["number_trains_in"]
         # Check for instanding and outstanding trains
-        instanding_train_ids = (
-            random.sample(
-                range(distribution_config["number_trains_in"]),
-                math.floor(distribution_config["number_trains_in"] * distribution_config.get("instanding_ratio")),
-            )
+        number_instanding = (
+            math.floor(distribution_config["number_trains_in"] * distribution_config["instanding_ratio"])
             if distribution_config and "instanding_ratio" in distribution_config
-            else []
+            else 0
         )
-        outstanding_train_ids = (
-            random.sample(
-                range(
-                    distribution_config["number_trains_in"],
-                    distribution_config["number_trains_in"] + distribution_config["number_trains_out"],
-                ),
-                math.floor(distribution_config["number_trains_out"] * distribution_config.get("outstanding_ratio")),
-            )
+        number_outstanding = (
+            math.floor(distribution_config["number_trains_out"] * distribution_config["outstanding_ratio"])
             if distribution_config and "outstanding_ratio" in distribution_config
-            else []
-        )
-        parking_tracks_instanding = random.sample(
-            [
-                tr
-                for tr in self.scenario_generator.location.track_parts
-                if tr.parking_allowed and tr.id not in self.gateways["arrival"]
-            ],
-            len(instanding_train_ids),
-        )
-        parking_tracks_outstanding = random.sample(
-            [
-                tr
-                for tr in self.scenario_generator.location.track_parts
-                if tr.parking_allowed and tr.id not in self.gateways["departure"]
-            ],
-            len(outstanding_train_ids),
+            else 0
         )
         standing_trains = {
-            "instanding": {id: parking_tracks_instanding[j] for j, id in enumerate(instanding_train_ids)},
-            "outstanding": {id: parking_tracks_outstanding[j] for j, id in enumerate(outstanding_train_ids)},
+            "instanding": self.assign_standing_tracks(
+                range(distribution_config["number_trains_in"]),
+                dict(enumerate(distribution_in)),
+                number_instanding,
+                {gateway.id for gateway, _ in self.gateways["arrival"]},
+            ),
+            "outstanding": self.assign_standing_tracks(
+                range(id_offset, id_offset + distribution_config["number_trains_out"]),
+                {i + id_offset: train_units for i, train_units in enumerate(distribution_out)},
+                number_outstanding,
+                {gateway.id for gateway, _ in self.gateways["departure"]},
+            ),
         }
         ### Create train objects
         for i, train_units in enumerate(distribution_in):
@@ -358,7 +395,6 @@ class RandomGenerator:
                 )
                 self.scenario_generator.add_incoming_train(train_in)
             self.trains.append(train_in)
-        id_offset = distribution_config["number_trains_in"]
         for i, train_units in enumerate(distribution_out):
             ### Outgoing train
             unmatched_train_units = [
@@ -390,20 +426,29 @@ class RandomGenerator:
                 self.scenario_generator.add_outgoing_train(train_out)
             self.trains.append(train_out)
 
+    def _draw_arrival_times(self, distribution_config, window_end, window_description):
+        """random.sample() over the arrival window, raising GenerationAttemptFailed instead of
+        ValueError when there are fewer slots than trains to place."""
+        arrival_window = range(
+            self.scenario_generator.scenario.start_time, window_end, distribution_config["min_gap_on_gateway"]
+        )
+        if len(arrival_window) < distribution_config["number_trains_in"]:
+            raise GenerationAttemptFailed(
+                f"Only {len(arrival_window)} arrival slots at least "
+                f"{distribution_config['min_gap_on_gateway']}s apart fit between 'start_time' "
+                f"{self.scenario_generator.scenario.start_time} and {window_end} ({window_description}), for "
+                f"{distribution_config['number_trains_in']} arriving trains."
+            )
+        return random.sample(arrival_window, distribution_config["number_trains_in"])
+
     def assign_arrival_departure_times(self, distribution_config):
         arrival_times = []
         departure_times = []
         # Mixed traffic allows trains to depart before all trains have arrived
         if distribution_config["mixed_traffic"]:
             # Arrive in 2/3 of total time - generate
-            arrival_times = random.sample(
-                range(
-                    self.scenario_generator.scenario.start_time,
-                    math.floor(self.scenario_generator.scenario.end_time * 2 / 3),
-                    distribution_config["min_gap_on_gateway"],
-                ),
-                distribution_config["number_trains_in"],
-            )
+            two_thirds = math.floor(self.scenario_generator.scenario.end_time * 2 / 3)
+            arrival_times = self._draw_arrival_times(distribution_config, two_thirds, "2/3 of 'end_time'")
             possible_departure_times = [
                 t
                 for t in range(
@@ -415,51 +460,44 @@ class RandomGenerator:
             ]
             for y in range(distribution_config["number_trains_out"]):
                 # Possible that there are more departing trains then arriving
-                try:
-                    if y >= len(arrival_times):
-                        departure_times.append(random.sample(possible_departure_times, 1)[0])
-                    else:
-                        # Make sure that the departure time is after the arrival time for at least one train
-                        departure_times.append(
-                            random.sample(
-                                [
-                                    x
-                                    for x in possible_departure_times
-                                    if x > arrival_times[y] + distribution_config["average_servicing_time"]
-                                ],
-                                1,
-                            )[0]
-                        )
-                    possible_departure_times.remove(departure_times[-1])
-                except Exception:
-                    logging.exception(
-                        f"Cannot sample departure time for train {y} from possible departure times after arrival time {arrival_times[y]} with min gap {distribution_config['min_gap_on_gateway']}. Possible departure times: {possible_departure_times}"
+                if y >= len(arrival_times):
+                    candidates = possible_departure_times
+                else:
+                    # Make sure that the departure time is after the arrival time for at least one train
+                    candidates = [
+                        x
+                        for x in possible_departure_times
+                        if x > arrival_times[y] + distribution_config["average_servicing_time"]
+                    ]
+                if not candidates:
+                    # Which slots are left depends on the arrival times drawn, so another draw may fit.
+                    raise GenerationAttemptFailed(
+                        f"No departure slot left for train {y} after "
+                        f"{arrival_times[y] if y < len(arrival_times) else 'its arrival'} plus "
+                        f"{distribution_config['average_servicing_time']}s of servicing, with "
+                        f"{len(possible_departure_times)} slots still free before 'end_time' "
+                        f"{self.scenario_generator.scenario.end_time}."
                     )
+                departure_times.append(random.sample(candidates, 1)[0])
+                possible_departure_times.remove(departure_times[-1])
         else:
             # Arrive in first half of total time
             halfway = math.floor(self.scenario_generator.scenario.end_time / 2)
-            try:
-                arrival_times = random.sample(
-                    range(
-                        self.scenario_generator.scenario.start_time, halfway, distribution_config["min_gap_on_gateway"]
-                    ),
-                    distribution_config["number_trains_in"],
-                )
-            except Exception:
-                logging.exception(
-                    f"Cannot sample {distribution_config['number_trains_in']} arrival times from range {self.scenario_generator.scenario.start_time} to {halfway} (end_time/2) with min gap {distribution_config['min_gap_on_gateway']}"
-                )
+            arrival_times = self._draw_arrival_times(distribution_config, halfway, "halfway to 'end_time'")
             # Depart in second half of total time
             start = max(halfway, max(arrival_times) + distribution_config["min_gap_on_gateway"])
-            try:
-                departure_times = random.sample(
-                    range(start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]),
-                    distribution_config["number_trains_out"],
+            departure_window = range(
+                start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]
+            )
+            if len(departure_window) < distribution_config["number_trains_out"]:
+                # `start` depends on the latest arrival drawn, so another draw may leave more room.
+                raise GenerationAttemptFailed(
+                    f"Only {len(departure_window)} departure slots at least "
+                    f"{distribution_config['min_gap_on_gateway']}s apart fit between {start} (the last arrival) "
+                    f"and 'end_time' {self.scenario_generator.scenario.end_time}, for "
+                    f"{distribution_config['number_trains_out']} departing trains."
                 )
-            except Exception:
-                logging.exception(
-                    f"Cannot sample {distribution_config['number_trains_out']} departure times from range {start} (end_time/2) to {self.scenario_generator.scenario.end_time} with min gap {distribution_config['min_gap_on_gateway']}"
-                )
+            departure_times = random.sample(departure_window, distribution_config["number_trains_out"])
         return arrival_times, departure_times
 
     def distribute_train_units(self, distribution_config):
@@ -507,38 +545,10 @@ class RandomGenerator:
                 for sub_type in sub_type_list:
                     out_trains[train_num].append(out_units[sub_type].pop())
         else:
-            # Without any prior knowledge, randomly distribute, though this is prone to vulnerabilities.
-            # Select number of trains per type
-            logging.info("Randomly sample a number of units per train and select a type for this train.")
-            for typ in in_units:
-                number_trains_of_type = random.randint(
-                    math.ceil(len(in_units[typ]) / 3),
-                    math.floor(distribution_config["number_trains_in"] / len(in_units)),
-                )
-                for _ in range(number_trains_of_type):
-                    in_trains.append([in_units[typ].pop()])
-
-            for unit_type in in_units:
-                trains_of_type = {i: t for i, t in enumerate(in_trains) if t[0].type_display_name == unit_type}
-                while in_units[unit_type]:
-                    idx = random.randint(0, len(trains_of_type) - 1)
-                    if len(trains_of_type[idx]) < 3:
-                        in_trains[idx].append(in_units[unit_type].pop())
-
-            # Do the same for outgoing trains
-            for typ in out_units:
-                number_trains_of_type = random.randint(
-                    math.ceil(len(out_units[typ]) / 3),
-                    math.floor(distribution_config["number_trains_out"] / len(out_units)),
-                )
-                for _ in range(number_trains_of_type):
-                    out_trains.append([out_units[typ].pop()])
-            for unit_type in out_units:
-                trains_of_type = {i: t for i, t in enumerate(out_trains) if t[0].type_display_name == unit_type}
-                while out_units[unit_type]:
-                    idx = random.randint(0, len(trains_of_type) - 1)
-                    if len(trains_of_type[idx]) < 3:
-                        out_trains[idx].append(out_units[unit_type].pop())
+            raise ValueError(
+                "No train composition plan to assign train units by: generate_train_compositions() must "
+                "set either 'unit_types_per_train' or 'subtypes_per_in_train' before the units are distributed."
+            )
         if sum([len(in_units[t]) for t in in_units]) != 0 or sum([len(out_units[t]) for t in out_units]) != 0:
             logging.error(
                 f"Not all train units were assigned to trains, {sum([len(in_units[t]) for t in in_units])} incoming and {sum([len(out_units[t]) for t in out_units])} outgoing units left"

@@ -77,6 +77,15 @@ def check_configuration_file(config, location_path):
                 "No 'units_per_composition' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false)."
             )
             return False, config
+        units_per_composition = config["train_unit_distribution"]["units_per_composition"]
+        if not units_per_composition:
+            logging.error("'units_per_composition' is empty, so no composition size can be sampled.")
+            return False, config
+        if any(not isinstance(u, int) or u < 1 for u in units_per_composition):
+            logging.error(
+                f"'units_per_composition' must contain positive whole numbers of units, got {units_per_composition}."
+            )
+            return False, config
         if "super_type_ratio" not in config["train_unit_distribution"]:
             logging.error(
                 "No 'super_type_ratio' defined while a 'train_unit_distribution' is provided and train units should be generated ('trains_given' is false)."

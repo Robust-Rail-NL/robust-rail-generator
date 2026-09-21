@@ -5,7 +5,7 @@ import sys
 from __init__ import DATA_DIR, REPO_DIR, VERSION
 from check_config import *
 from check_matching import *
-from random_generator import RandomGenerator
+from random_generator import GenerationAttemptFailed, RandomGenerator
 from scenario_generator import ScenarioGenerator
 
 parser = argparse.ArgumentParser()
@@ -159,7 +159,13 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
                 / len(config["train_unit_distribution"]["units_per_composition"])
             )
             estimated_servicing_time = sum([avg_duration for _ in range(estimated_number_servicing_units)])
-            config["train_unit_distribution"]["average_servicing_time"] = avg_duration
+        # Whichever branch built service_tasks above, this is the one place that turns it into
+        # the value assign_arrival_departure_times() subtracts from each candidate departure
+        # time, so no future servicing-tasks branch can add itself here and forget to set it.
+        if "train_unit_distribution" in config:
+            config["train_unit_distribution"]["average_servicing_time"] = math.ceil(
+                max(task.duration for task in service_tasks.values()) / len(service_tasks)
+            )
 
     # Check if the time window is sufficient for servicing and parking all trains
     if (config["end_time"] - config["start_time"] - estimated_servicing_time) // config["min_gap_on_gateway"] < config[
@@ -180,15 +186,29 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
             )
             sys.exit(1)
     else:
-        # Generate random trains if none are specified
-        random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
-        # Check matching of incoming and outgoing trains
-        matching_possible = check_matching(scenario_generator, config["use_default_material"])
-        while not matching_possible:
-            logging.warning("The generated incoming and outgoing trains do not match. Regenerating train compositions.")
-            random_generator.reset()
-            random_generator.generate_train_compositions(config, scenario_generator)
-            matching_possible = check_matching(scenario_generator, config["use_default_material"])
+        # Generate random trains if none are specified, retrying until the incoming and outgoing
+        # trains match with a bounded number of retries.
+        max_attempts = config.get("max_generation_attempts", 100)
+        for attempt in range(max_attempts):
+            if attempt:
+                logging.warning(
+                    f"The generated incoming and outgoing trains do not match. Regenerating "
+                    f"train compositions (attempt {attempt + 1} of {max_attempts})."
+                )
+                random_generator.reset()
+            try:
+                random_generator.generate_train_compositions(config, scenario_generator, service_tasks)
+            except GenerationAttemptFailed as e:
+                logging.warning(f"Attempt {attempt + 1} of {max_attempts} could not be completed: {e}")
+                continue
+            if check_matching(scenario_generator, config["use_default_material"]):
+                break
+        else:
+            logging.error(
+                f"No scenario matching this configuration could be generated in {max_attempts} attempts. "
+                f"Rerun with --log-level WARNING reports why each attempt was rejected."
+            )
+            sys.exit(1)
 
     if scenario_file is None:
         # If no name is given, generate it
