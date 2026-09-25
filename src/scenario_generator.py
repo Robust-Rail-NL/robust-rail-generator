@@ -198,7 +198,7 @@ class ScenarioGenerator:
             ValueError: If non of them defined
 
         Returns:
-            TaskType: Specifies the task type - PredefinedTaskType {Move, Split, Combine, Wait, Arrive, Exit, Walking, Break, NonService, BeginMove, EndMove}
+            TaskType: Specifies the task type - PredefinedTaskType {Move, Split, Combine, Wait, Arrive, Exit, Reverse, Break, NonService, BeginMove, EndMove}
         """
         return TaskType(predefined=predefined_task_type, other=other)
 
