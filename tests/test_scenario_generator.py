@@ -18,7 +18,7 @@ from pydantic import ValidationError
 from robust_rail_models.location import TaskType
 from robust_rail_models.scenario import IncomingTrainUnit, TaskSpec, TrainUnitType
 
-from scenario_generator import ScenarioGenerator
+from scenario_generator import ScenarioGenerator, cm_to_whole_metres
 
 
 def make_generator() -> ScenarioGenerator:
@@ -280,3 +280,20 @@ class TestSaveScenarioJsonValidatesStandingOrder:
         gen.save_scenario_json(str(path))
         written = json.loads(path.read_text())
         assert [t["standingIndex"] for t in written["inStanding"]] == [0, 1]
+
+
+class TestWholeMetreUnitLengths:
+    @pytest.mark.parametrize(
+        "length_cm, expected_m",
+        [(10856, 109), (10710, 107), (5950, 60), (6936, 69), (16206, 162), (10000, 100)],
+    )
+    def test_cm_to_whole_metres_rounds_half_up(self, length_cm, expected_m):
+        assert cm_to_whole_metres(length_cm) == expected_m
+
+    def test_default_train_unit_types_have_whole_metre_lengths(self):
+        gen = make_generator()
+        gen.add_default_train_unit_types()
+        lengths = [t.length for t in gen.scenario.train_unit_types]
+        assert lengths and all(length == int(length) for length in lengths)
+        virm4 = next(t for t in gen.scenario.train_unit_types if t.type_prefix == "VIRM" and t.carriages == 4)
+        assert virm4.length == 109

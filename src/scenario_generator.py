@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 from typing import List, Optional
 
@@ -18,6 +19,17 @@ from robust_rail_models.scenario import (
 )
 
 from __init__ import DATA_DIR
+
+
+def cm_to_whole_metres(length_cm: float) -> int:
+    """A train unit type's length, given in centimetres, as whole metres, rounded half up.
+
+    Whole metres rather than the exact value (e.g. 108.56 m for a VIRM-4): the solver
+    truncates lengths to whole metres while the evaluator keeps them exact, so fractional
+    lengths let the solver accept a track fill the evaluator then rejects as over length.
+    With whole-metre lengths both compare the same numbers.
+    """
+    return math.floor(length_cm / 100 + 0.5)
 
 
 class ScenarioGenerator:
@@ -275,7 +287,7 @@ class ScenarioGenerator:
                 self.create_train_unit_type(
                     type_prefix=unit_type["typePrefix"],
                     carriages=unit_type["carriages"],
-                    length=unit_type["length"] / 100,  # length in meters
+                    length=cm_to_whole_metres(unit_type["length"]),
                     combine_duration=unit_type["combineDuration"],
                     split_duration=unit_type["splitDuration"],
                     needs_loco=unit_type["needsLoco"],
@@ -298,7 +310,7 @@ class ScenarioGenerator:
                 self.create_train_unit_type(
                     type_prefix=unit_type["typePrefix"],
                     carriages=unit_type["carriages"],
-                    length=unit_type["length"] / 100,  # length in meters
+                    length=cm_to_whole_metres(unit_type["length"]),
                     combine_duration=unit_type["combineDuration"],
                     split_duration=unit_type["splitDuration"],
                     needs_loco=unit_type["needsLoco"],
