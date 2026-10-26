@@ -288,7 +288,7 @@
                         {
                             "type": {
                                 "predefined": null,
-                                "other": "schoonmaken"
+                                "other": "Reinigingsperron"
                             },
                             "duration": 900,
                             "requiredSkills": [
@@ -328,7 +328,7 @@
                         {
                             "type": {
                                 "predefined": null,
-                                "other": "schoonmaken"
+                                "other": "Reinigingsperron"
                             },
                             "duration": 900,
                             "requiredSkills": [
@@ -428,7 +428,7 @@
                         {
                             "type": {
                                 "predefined": null,
-                                "other": "schoonmaken"
+                                "other": "Reinigingsperron"
                             },
                             "duration": 900,
                             "requiredSkills": [
@@ -456,7 +456,7 @@
                         {
                             "type": {
                                 "predefined": null,
-                                "other": "schoonmaken"
+                                "other": "Reinigingsperron"
                             },
                             "duration": 900,
                             "requiredSkills": [
