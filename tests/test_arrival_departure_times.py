@@ -90,7 +90,7 @@ class TestMixedTrafficArrivalGuard:
 
 class FakeUnit:
     def __init__(self, *durations):
-        self.tasks = [SimpleNamespace(duration=d) for d in durations]
+        self.tasks = [SimpleNamespace(duration=d, type=SimpleNamespace(other="Wasmachine")) for d in durations]
 
 
 class TestNonMixedTrafficServicingMargin:
@@ -121,7 +121,7 @@ class TestNonMixedTrafficServicingMargin:
         # longest task total is 500, so every departure is at least 100 + 500 + 1000 after the last arrival
         assert min(departure_times) >= max(arrival_times) + 100 + 500 + 1000
 
-    def test_the_default_travel_allowance_applies_when_none_is_configured(self):
+    def test_the_fallback_travel_allowance_applies_when_the_location_has_no_such_facility(self):
         generator = make_random_generator(0, 10000)
         generator.incoming_train_units = {"T": [FakeUnit(900)]}
 
