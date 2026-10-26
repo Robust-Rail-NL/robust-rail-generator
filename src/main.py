@@ -142,15 +142,7 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
             )
         else:
             # Add default servicing tasks that match the location facilities.
-            default_service_tasks = json.load(open(os.path.join(DATA_DIR, "default_servicing_tasks.json"), "r"))
-            location_facilities = [f.type for f in scenario_generator.location.facilities]
-            for service, task_info in default_service_tasks.items():
-                if task_info["requiredFacility"] in location_facilities:
-                    task_type = scenario_generator.create_task_type(None, service)
-                    service_obj = scenario_generator.create_task_spec(
-                        task_type, int(task_info["duration"]), task_info["requiredSkills"]
-                    )
-                    service_tasks[service] = service_obj
+            service_tasks = build_default_service_tasks(scenario_generator)
             avg_duration = compute_average_servicing_time(service_tasks)
             estimated_number_servicing_units = math.ceil(
                 config["train_unit_distribution"]["servicing_ratio"]
@@ -203,6 +195,25 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
     # Write unified scenario file (HIP field names, consumed by both solver and evaluator)
     scenario_generator.save_scenario_json(output_filepath)
     print(f"Scenario file created: {output_filepath}")
+
+
+def build_default_service_tasks(scenario_generator) -> dict:
+    """The default servicing tasks whose facility the location has, by service name.
+
+    A task's type is its facility's type (requiredFacility), not the service name: tools match a
+    task to a facility by that type, as the custom_servicing_tasks branch already does.
+    """
+    with open(os.path.join(DATA_DIR, "default_servicing_tasks.json"), "r") as f:
+        default_service_tasks = json.load(f)
+    location_facilities = [f.type for f in scenario_generator.location.facilities]
+    service_tasks = {}
+    for service, task_info in default_service_tasks.items():
+        if task_info["requiredFacility"] in location_facilities:
+            task_type = scenario_generator.create_task_type(None, task_info["requiredFacility"])
+            service_tasks[service] = scenario_generator.create_task_spec(
+                task_type, int(task_info["duration"]), task_info["requiredSkills"]
+            )
+    return service_tasks
 
 
 def compute_average_servicing_time(service_tasks) -> int:

@@ -5,8 +5,11 @@ computed for every servicing-tasks path - shipped without regression tests (issu
 tests exercise the retry control flow and the two small pure calculations extracted out of it,
 without touching the file-loading parts of create_scenario_from_config()."""
 
+from types import SimpleNamespace
+
 import main
 from random_generator import GenerationAttemptFailed
+from scenario_generator import ScenarioGenerator
 
 
 class FakeServiceTask:
@@ -123,3 +126,25 @@ class TestGenerateRandomTrains:
         main.generate_random_trains(random_generator, config, "scenario_generator", service_tasks)
 
         assert all(call[2] is service_tasks for call in random_generator.generate_calls)
+
+
+class TestBuildDefaultServiceTasks:
+    def make_generator(self, facility_types):
+        generator = ScenarioGenerator(start=0, end=1000)
+        generator.location = SimpleNamespace(facilities=[SimpleNamespace(type=t) for t in facility_types])
+        return generator
+
+    def test_task_type_is_the_facility_type_not_the_service_name(self):
+        # Tools match a task to a facility by the task's type, so "wassen" must come out as
+        # "Wasmachine"; the service name only keys the dictionary.
+        service_tasks = main.build_default_service_tasks(self.make_generator(["Wasmachine", "Monteur"]))
+
+        assert {name: task.type.other for name, task in service_tasks.items()} == {
+            "wassen": "Wasmachine",
+            "reparatie": "Monteur",
+        }
+
+    def test_services_without_a_facility_at_the_location_are_left_out(self):
+        service_tasks = main.build_default_service_tasks(self.make_generator(["Reinigingsperron"]))
+
+        assert list(service_tasks) == ["schoonmaken"]
