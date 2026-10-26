@@ -5,7 +5,7 @@ import random
 
 from robust_rail_models.location import Location, TrackPartType
 
-from __init__ import DATA_DIR
+from __init__ import DATA_DIR, DEFAULT_SERVICING_TRAVEL_ALLOWANCE
 
 
 def _type_display_names(train_unit_type_entries):
@@ -109,6 +109,8 @@ def check_configuration_file(config, location_path):
                 config["train_unit_distribution"]["servicing_ratio"] = 0.5
             if "tasks_per_train_unit" not in config["train_unit_distribution"]:
                 config["train_unit_distribution"]["tasks_per_train_unit"] = 1
+            if "servicing_travel_allowance" not in config["train_unit_distribution"]:
+                config["train_unit_distribution"]["servicing_travel_allowance"] = DEFAULT_SERVICING_TRAVEL_ALLOWANCE
         config["train_unit_distribution"]["average_servicing_time"] = 0
     if not config["trains_given"]:
         if "mixed_traffic" in config:

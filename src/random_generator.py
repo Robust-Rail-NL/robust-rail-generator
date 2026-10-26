@@ -5,6 +5,7 @@ from copy import deepcopy
 
 from robust_rail_models.location import TrackPartType
 
+from __init__ import DEFAULT_SERVICING_TRAVEL_ALLOWANCE
 from scenario_generator import ScenarioGenerator
 
 
@@ -441,6 +442,21 @@ class RandomGenerator:
             )
         return random.sample(arrival_window, distribution_config["number_trains_in"])
 
+    def servicing_margin(self, distribution_config) -> int:
+        """Seconds a serviced unit needs between arriving and leaving: its longest total task
+        time plus the travel allowance. 0 when no unit has servicing tasks."""
+        longest = max(
+            (
+                sum(task.duration for task in unit.tasks or [])
+                for units in self.incoming_train_units.values()
+                for unit in units
+            ),
+            default=0,
+        )
+        if longest == 0:
+            return 0
+        return longest + distribution_config.get("servicing_travel_allowance", DEFAULT_SERVICING_TRAVEL_ALLOWANCE)
+
     def assign_arrival_departure_times(self, distribution_config):
         arrival_times = []
         departure_times = []
@@ -485,7 +501,12 @@ class RandomGenerator:
             halfway = math.floor(self.scenario_generator.scenario.end_time / 2)
             arrival_times = self._draw_arrival_times(distribution_config, halfway, "halfway to 'end_time'")
             # Depart in second half of total time
-            start = max(halfway, max(arrival_times) + distribution_config["min_gap_on_gateway"])
+            # A unit arriving with the last train must still be serviced before any train can
+            # depart with it, whichever way the matching pairs units and departures.
+            start = max(
+                halfway,
+                max(arrival_times) + distribution_config["min_gap_on_gateway"] + self.servicing_margin(distribution_config),
+            )
             departure_window = range(
                 start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]
             )

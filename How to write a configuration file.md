@@ -39,6 +39,7 @@ The configuration file is a JSON file with the following parameters defined in t
   - `outstanding_ratio` (float): number between 0 and 1, where 1 means all trains stay parked in the yard and 0 means all trains depart from the yard
   - `servicing_ratio` (float): number between 0 and 1, where 1 means all train units must be serviced, and 0 means no train units have to be serviced. Requires `perform_servicing` to be `true`. The servicing task types can be found in `data/default_servicing_tasks.json` which are cross-references with the facilities defined in the location.
   - `tasks_per_train_unit` (int): maximum number of servicing tasks assigned to a train unit that requires servicing (always 1, but cna be more).
+  - `servicing_travel_allowance` (int) (optional): seconds a serviced unit is assumed to need for driving to its facility and back, on top of the service itself. With `mixed_traffic` false, departures are drawn no earlier than the last arrival plus `min_gap_on_gateway` plus the longest task total of any unit plus this allowance. Set to 1800 if not specified.
 - `custom_train_units` (list): if `trains_given` is true, this is a list of train unit objects with the following parameters:
   - `id` (int): unique train unit id
   - `type` (string): type of the train unit, should be compatible with the default options if `use_default_material` is true (otherwise trains must also be generated randomly)
