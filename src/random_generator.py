@@ -5,7 +5,9 @@ from copy import deepcopy
 
 from robust_rail_models.location import TrackPartType
 
+from __init__ import DEFAULT_SERVICING_TRAVEL_ALLOWANCE
 from scenario_generator import ScenarioGenerator
+from travel_time import DEFAULT_SWITCH_COEFFICIENT, DEFAULT_TRACK_COEFFICIENT, servicing_travel_time
 
 
 class GenerationAttemptFailed(Exception):
@@ -24,6 +26,8 @@ class RandomGenerator:
         self.number_of_train_units = 0
         self.trains = []
         self.gateways = gateways
+        self.location = location
+        self._travel_time_per_facility = {}
         possible_gateways = self.get_gateway_tracks(config, location)
         if len(self.gateways["arrival"]) == 0:
             self.gateways["arrival"] = possible_gateways
@@ -441,6 +445,62 @@ class RandomGenerator:
             )
         return random.sample(arrival_window, distribution_config["number_trains_in"])
 
+    def servicing_margin(self, distribution_config) -> int:
+        """Seconds a serviced unit needs between arriving and leaving: its longest total task
+        time plus the travel to its facility and out again. 0 when no unit has servicing tasks."""
+        units = [unit for units in self.incoming_train_units.values() for unit in units]
+        longest = max((sum(task.duration for task in unit.tasks or []) for unit in units), default=0)
+        if longest == 0:
+            return 0
+        if "servicing_travel_allowance" in distribution_config:
+            return longest + distribution_config["servicing_travel_allowance"]
+        facility_types = {task.type.other for unit in units for task in unit.tasks or []}
+        return longest + max(self.travel_time_to_facility(f) for f in facility_types)
+
+    def travel_time_to_facility(self, facility_type) -> int:
+        """Seconds to drive from a gateway to the facility of this type and out to a gateway,
+        computed from the location's tracks and movement coefficients (see travel_time.py).
+        Falls back to DEFAULT_SERVICING_TRAVEL_ALLOWANCE when there is no such facility or route."""
+        if facility_type not in self._travel_time_per_facility:
+            facility_tracks = [
+                track_id
+                for facility in self.location.facilities
+                if facility.type == facility_type
+                for track_id in facility.related_track_part_ids
+            ]
+            travel_time = (
+                servicing_travel_time(
+                    self.location.track_parts,
+                    facility_tracks,
+                    self.gateways["arrival"],
+                    self.gateways["departure"],
+                    self._reversal_duration(),
+                    self.location.movement_track_coefficient or DEFAULT_TRACK_COEFFICIENT,
+                    self.location.movement_switch_coefficient or DEFAULT_SWITCH_COEFFICIENT,
+                )
+                if facility_tracks
+                else None
+            )
+            if travel_time is None:
+                logging.warning(
+                    f"No route from the gateways to a '{facility_type}' facility and back; "
+                    f"assuming {DEFAULT_SERVICING_TRAVEL_ALLOWANCE}s of travel."
+                )
+                travel_time = DEFAULT_SERVICING_TRAVEL_ALLOWANCE
+            self._travel_time_per_facility[facility_type] = travel_time
+        return self._travel_time_per_facility[facility_type]
+
+    def _reversal_duration(self) -> int:
+        """The longest reversal of any unit type in the scenario: backNormTime + carriages * backAdditionTime."""
+        return max(
+            (
+                (t.back_norm_time or 0) + (t.carriages or 0) * (t.back_addition_time or 0)
+                for t in self.train_unit_types
+                if t.type_display_name in self.incoming_train_units
+            ),
+            default=0,
+        )
+
     def assign_arrival_departure_times(self, distribution_config):
         arrival_times = []
         departure_times = []
@@ -485,7 +545,14 @@ class RandomGenerator:
             halfway = math.floor(self.scenario_generator.scenario.end_time / 2)
             arrival_times = self._draw_arrival_times(distribution_config, halfway, "halfway to 'end_time'")
             # Depart in second half of total time
-            start = max(halfway, max(arrival_times) + distribution_config["min_gap_on_gateway"])
+            # A unit arriving with the last train must still be serviced before any train can
+            # depart with it, whichever way the matching pairs units and departures.
+            start = max(
+                halfway,
+                max(arrival_times)
+                + distribution_config["min_gap_on_gateway"]
+                + self.servicing_margin(distribution_config),
+            )
             departure_window = range(
                 start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]
             )
