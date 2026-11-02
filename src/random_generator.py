@@ -468,15 +468,19 @@ class RandomGenerator:
                 if facility.type == facility_type
                 for track_id in facility.related_track_part_ids
             ]
-            travel_time = servicing_travel_time(
-                self.location.track_parts,
-                facility_tracks,
-                self.gateways["arrival"],
-                self.gateways["departure"],
-                self._reversal_duration(),
-                self.location.movement_track_coefficient or DEFAULT_TRACK_COEFFICIENT,
-                self.location.movement_switch_coefficient or DEFAULT_SWITCH_COEFFICIENT,
-            ) if facility_tracks else None
+            travel_time = (
+                servicing_travel_time(
+                    self.location.track_parts,
+                    facility_tracks,
+                    self.gateways["arrival"],
+                    self.gateways["departure"],
+                    self._reversal_duration(),
+                    self.location.movement_track_coefficient or DEFAULT_TRACK_COEFFICIENT,
+                    self.location.movement_switch_coefficient or DEFAULT_SWITCH_COEFFICIENT,
+                )
+                if facility_tracks
+                else None
+            )
             if travel_time is None:
                 logging.warning(
                     f"No route from the gateways to a '{facility_type}' facility and back; "
@@ -545,7 +549,9 @@ class RandomGenerator:
             # depart with it, whichever way the matching pairs units and departures.
             start = max(
                 halfway,
-                max(arrival_times) + distribution_config["min_gap_on_gateway"] + self.servicing_margin(distribution_config),
+                max(arrival_times)
+                + distribution_config["min_gap_on_gateway"]
+                + self.servicing_margin(distribution_config),
             )
             departure_window = range(
                 start, self.scenario_generator.scenario.end_time, distribution_config["min_gap_on_gateway"]

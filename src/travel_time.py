@@ -79,8 +79,13 @@ def servicing_travel_time(
         start_heading = B if bumper.id in gateway.a_side else A
         start_cost = _crossing_cost(gateway, track_coefficient, switch_coefficient)
         distance = _shortest(
-            by_id, facility_tracks, (gateway.id, start_heading, 0), start_cost, reversal_duration,
-            track_coefficient, switch_coefficient,
+            by_id,
+            facility_tracks,
+            (gateway.id, start_heading, 0),
+            start_cost,
+            reversal_duration,
+            track_coefficient,
+            switch_coefficient,
         )
         for goal_track, goal_heading in goals.items():
             cost = distance.get((goal_track, goal_heading, 1))

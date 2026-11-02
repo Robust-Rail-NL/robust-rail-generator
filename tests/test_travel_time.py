@@ -10,8 +10,14 @@ from travel_time import servicing_travel_time
 
 def track(id, type, length, a_side=(), b_side=(), saw=False):
     return TrackPart.model_validate(
-        {"id": id, "type": type, "aSide": list(a_side), "bSide": list(b_side), "length": length,
-         "sawMovementAllowed": saw}
+        {
+            "id": id,
+            "type": type,
+            "aSide": list(a_side),
+            "bSide": list(b_side),
+            "length": length,
+            "sawMovementAllowed": saw,
+        }
     )
 
 
