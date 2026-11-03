@@ -96,3 +96,10 @@ the default driver's isolated network namespace can fail to resolve private/LAN 
 creates one named `robust-rail-builder` if it doesn't already exist. This builder name is shared with
 sibling Robust-Rail-NL projects (e.g. `robust-rail-evaluator`, `robust-rail-solver`) that need the same
 setup.
+
+## The `edge` image
+
+`ghcr.io/robust-rail-nl/generator:edge` is a floating tag for running a change that has not been
+reviewed yet, published with `./docker-push-edge.sh` from the `edge` branch. It is versioned
+`<release>-edge+<date>.<sha>` and never gets `:latest`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+branch flow and when to use it.
