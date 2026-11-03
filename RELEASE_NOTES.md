@@ -1,5 +1,75 @@
 # Release notes
 
+## 2.3.0 — 2026-11-03
+
+Generated scenarios now use wire-format `schemaVersion` 2, and scenarios that contain servicing
+tasks are now actually solvable: the default servicing tasks match the location's facilities, and
+departures leave enough time for servicing.
+
+### Scenarios now use `schemaVersion` 2 (`#22`)
+
+The `robust-rail-general` dependency moves from `v0.1.1` to `v0.2.0`, whose
+`EXPECTED_SCHEMA_VERSION` is 2. Generated scenario JSON now declares `schemaVersion: 2`, and the
+checked-in example fixtures in `data/` were bumped to match. The schema changes themselves are
+documented in `robust-rail-general`'s `SCHEMA_CHANGELOG.md`. Consumers of the generated files need a
+version of the evaluator/solver that reads schema 2.
+
+Internal docs and a docstring that still used the old `PredefinedTaskType` name (`Walking`/`Setback`)
+now say `Reverse`, matching the renamed enum member. No functional change.
+
+### Default servicing tasks are typed by facility (`#23`)
+
+With `perform_servicing` enabled and no `custom_servicing_tasks`, the generated task type was the
+key of `default_servicing_tasks.json` (for example `wassen`), but the location's facilities are
+typed by `requiredFacility` (for example `Wasmachine`). The planner and the solver match a task to
+a facility by that type, so every generated scenario with a default servicing task failed in both.
+The task type is now taken from `requiredFacility`, as the `custom_servicing_tasks` path already
+did. The example scenario in `data/` was regenerated.
+
+### Departures leave time for servicing (`#25`)
+
+With `mixed_traffic: false`, the departure window started at the last arrival plus
+`min_gap_on_gateway`, regardless of the servicing the units needed. A unit that arrived with the
+last train could be due out only `min_gap_on_gateway` after arriving (480 s in the poster
+configuration), which is less than a single 900 s task, let alone the driving to the facility and
+back. No plan can meet such a departure, however long the search runs.
+
+The window now starts at the last arrival, plus `min_gap_on_gateway`, plus a servicing margin: the
+longest total task time of any unit, plus a travel allowance.
+
+- The travel allowance is computed from the location: the shortest route gateway, facility,
+  gateway over the track graph, priced with the movement model that the evaluator and the solver
+  use (`movementTrackCoefficient`, `movementSwitchCoefficient`, a turn-around as one more track
+  crossing plus the unit type's reversal duration, and only on tracks that allow saw movement). The
+  longest trip over the possible gateways, for the facility types the units need, counts. For
+  Kleine Binckhorst this reproduces the 510 s the solver took for its first move to the cleaning
+  platform. It ignores waiting for other trains, so it is a lower bound for a unit alone in the
+  yard.
+- `servicing_travel_allowance` in `train_unit_distribution` is a new, optional override (seconds).
+  `check_config` no longer fills it in. If the location has no route to a needed facility, the
+  generator falls back to 1800 s and logs a warning.
+- Without servicing tasks nothing changes.
+
+### Other
+
+- `docker-push.sh` now logs out of ghcr.io when it exits.
+
+### Why 2.3.0, not a patch
+
+- Generated scenarios now carry `schemaVersion: 2`, and the package now depends on
+  `robust-rail-general` `v0.2.0`.
+- For configs with servicing tasks, departure times (and so the scenario for a given seed) differ
+  from `2.2.0`, and generation can now fail for a time window that used to pass the
+  sufficiency check. Configs without servicing tasks still generate the same scenarios for the same
+  seed.
+- The configuration file format is only extended (one new optional key), not changed.
+
+### Verified via
+
+- Full pytest suite: 66 tests, up from 55 at `2.2.0`.
+- `ruff format --check`/`ruff check` clean.
+- CI green on `main` at the merge of `#25`.
+
 ## 2.2.0 — 2026-09-21
 
 The headline change is that in/outstanding trains are now allocated to parking tracks that
