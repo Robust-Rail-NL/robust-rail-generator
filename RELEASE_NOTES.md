@@ -1,5 +1,82 @@
 # Release notes
 
+## 2.2.0 — 2026-09-21
+
+The headline change is that in/outstanding trains are now allocated to parking tracks that
+actually fit them; a cluster of bug fixes in random train generation, found while reviewing that
+change, came along with it, plus internal test coverage for previously-untested generation control
+flow.
+
+### In/outstanding trains are now allocated to tracks that fit them (`#19`)
+
+`assign_standing_tracks` used to be a plain `random.sample()` of parkable tracks paired against a
+`random.sample()` of candidate trains, with no comparison between a composition's length and the
+length of the track it landed on. Since in/outstanding trains are declared to sit on one specific
+track as a single composition (unlike arriving/departing trains, which can't be split across
+tracks either, but at least pass through a gateway first), this could generate a scenario asking to
+park a 324m train on a 222m track — simply invalid. Tracks and candidates are now drawn together:
+each candidate is checked against the tracks still free, and a composition that fits nowhere is
+demoted back to an ordinary arriving/departing train instead of being forced onto a track too short
+for it.
+
+Alongside this: `units_per_composition` is now validated to be a non-empty list of positive whole
+numbers, and any composition that ends up holding a unit of 6 or more carriages is capped at 2
+units regardless of that setting, because longer combinations don't fit the tracks either
+(compositions that only drew shorter units keep the size they were asked for).
+
+### Bug fixes in random train generation, found during review
+
+- `reset()` no longer clears `train_units_subtypes`. It's populated once from the loaded material
+  before generation starts and isn't re-derived per attempt unless a `train_unit_types` sublist is
+  configured, so clearing it meant a retry crashed with a `ZeroDivisionError` instead of
+  regenerating — directly undermining the bounded-retry fix below.
+- The generation retry loop is now bounded (`max_generation_attempts`, default 100) instead of
+  looping forever on a config that can never produce a matching scenario, and it now actually
+  catches `GenerationAttemptFailed` — a new internal exception meaning "this particular draw
+  couldn't be completed, another attempt may well succeed" — instead of logging and continuing with
+  a scenario that was never regenerated.
+- Both the mixed-traffic and non-mixed-traffic arrival draws now raise `GenerationAttemptFailed`
+  when there aren't enough gateway slots for the requested number of trains, instead of letting a
+  raw `ValueError` crash the whole run.
+- `average_servicing_time` is now computed for the custom-servicing-tasks path too, not just the
+  default one. It previously stayed at 0 on that path, letting departure times be drawn without
+  accounting for real servicing duration.
+- `check_train_lengths`'s greedy track assignment now tries the longest train first instead of
+  shortest-first. Pairing the longest train with the longest available track is the assignment that
+  succeeds whenever any assignment of these trains to these tracks does; the old ascending order
+  could pair the longest track with a train that didn't need it and then reject a scenario that
+  actually fit.
+- A train unit type missing from the length lookup now raises a clear error immediately instead of
+  silently being treated as 0m long.
+
+### Internal: test coverage for `main.py`'s generation control flow (`#21`, closes `#20`)
+
+`create_scenario_from_config()` had no test coverage at all before this — it reads its config and
+location from disk paths, so nothing in the suite built a fixture for it, and several of the bugs
+above shipped without regression tests as a direct result. The bounded retry loop,
+`average_servicing_time` calculation, and time-window-sufficiency check are now split into small,
+independently-testable functions (`generate_random_trains`, `compute_average_servicing_time`,
+`time_window_is_sufficient`), each with dedicated tests, and `create_trains()` (the
+`trains_given: true` path) got test coverage for the first time as well. No behavior changed here —
+this is coverage for logic that already existed.
+
+### Why 2.2.0, not a patch
+
+Generated output for the same seed and config is no longer guaranteed to match `2.1.0`: the
+standing-track allocation rewrite and the retry/arrival-draw fixes both change how many random
+draws happen and in what order, which changes the resulting scenario even for configs that don't
+touch in/outstanding trains at all. The configuration file schema, CLI, and public functions are
+unchanged — but the same-input-same-output guarantee the `2.1.0` notes could make doesn't hold here,
+so this isn't a drop-in patch release.
+
+### Verified via
+
+- Full pytest suite: 55 tests, up from 17 at `2.1.0`.
+- `scripts/regenerate_examples.py` re-run and its output confirmed fresh against what's checked
+  into `data/`.
+- `ruff format`/`ruff check` clean.
+- CI green on both `#19` and `#21`.
+
 ## 2.1.0 — 2026-09-02
 
 Two independent pieces of cleanup landed together: moving the interchange
