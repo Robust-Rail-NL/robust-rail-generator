@@ -7,6 +7,10 @@ repos:
     -   id: debug-statements
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
+    # Direct commits to edge are refused (see CONTRIBUTING.md); it only
+    # advances via `git merge --no-ff`.
+    -   id: no-commit-to-branch
+        args: [--branch, edge]
 
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.16.3
