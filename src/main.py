@@ -144,6 +144,8 @@ def create_scenario_from_config(config_file, path=None, scenario_file=None, loca
             # Add default servicing tasks that match the location facilities.
             service_tasks = build_default_service_tasks(scenario_generator)
             avg_duration = compute_average_servicing_time(service_tasks)
+            # servicing_ratio counts compositions with servicing_per_composition, units otherwise;
+            # either way this estimate keeps the same (generous) per-unit form.
             estimated_number_servicing_units = math.ceil(
                 config["train_unit_distribution"]["servicing_ratio"]
                 * config["number_of_trains"]

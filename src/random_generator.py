@@ -268,7 +268,10 @@ class RandomGenerator:
         random.shuffle(self.train_unit_types)
         type_by_display_name = {t.type_display_name: t for t in self.train_unit_types}
         number_of_serviced_units = 0
-        if servicing:
+        self.service_tasks = service_tasks
+        # With servicing_per_composition the tasks are assigned per arriving composition in
+        # generate_trains(), once the units are distributed, so no unit gets any here.
+        if servicing and not distribution_config.get("servicing_per_composition", False):
             number_of_serviced_units = math.floor(distribution_config["servicing_ratio"] * number_train_units)
         for i in range(number_train_units):
             if not distribution_config:
@@ -302,6 +305,24 @@ class RandomGenerator:
             self.number_of_train_units += 1
         if self.number_of_train_units != number_train_units:
             logging.error(f"Expected {number_train_units} train units and {self.number_of_train_units} were created")
+
+    def assign_tasks_per_composition(self, distribution_in, distribution_config):
+        """Give every unit of a serviced arriving composition the same servicing tasks.
+
+        floor(servicing_ratio * number of arriving compositions) randomly chosen compositions are
+        serviced; the task list is drawn once per composition and copied to each of its units.
+        Tasks are also set on the matching units in self.incoming_train_units, which
+        servicing_margin() reads (distribute_train_units() hands out deep copies of those).
+        """
+        number_serviced = math.floor(distribution_config["servicing_ratio"] * len(distribution_in))
+        originals = {unit.id: unit for units in self.incoming_train_units.values() for unit in units}
+        for composition in random.sample(distribution_in, number_serviced):
+            tasks = random.choices(
+                list(self.service_tasks.values()), k=random.randint(1, distribution_config["tasks_per_train_unit"])
+            )
+            for unit in composition:
+                unit.tasks = list(tasks)
+                originals[unit.id].tasks = list(tasks)
 
     def train_length(self, train_units, type_lengths):
         """Total length in meters of a composition, from the lengths of its unit types."""
@@ -347,6 +368,8 @@ class RandomGenerator:
 
     def generate_trains(self, config, distribution_config):
         distribution_in, distribution_out = self.distribute_train_units(distribution_config)
+        if distribution_config.get("servicing_per_composition", False):
+            self.assign_tasks_per_composition(distribution_in, distribution_config)
         arrival_times, departure_times = self.assign_arrival_departure_times(distribution_config)
         id_offset = distribution_config["number_trains_in"]
         # Check for instanding and outstanding trains

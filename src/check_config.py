@@ -109,6 +109,15 @@ def check_configuration_file(config, location_path):
                 config["train_unit_distribution"]["servicing_ratio"] = 0.5
             if "tasks_per_train_unit" not in config["train_unit_distribution"]:
                 config["train_unit_distribution"]["tasks_per_train_unit"] = 1
+        if "servicing_per_composition" in config["train_unit_distribution"]:
+            if not isinstance(config["train_unit_distribution"]["servicing_per_composition"], bool):
+                logging.error("'servicing_per_composition' should be a boolean (true/false).")
+                return False, config
+            if config["train_unit_distribution"]["servicing_per_composition"] and not config["perform_servicing"]:
+                logging.warning("'servicing_per_composition' has no effect without 'perform_servicing', ignoring it.")
+                config["train_unit_distribution"]["servicing_per_composition"] = False
+        else:
+            config["train_unit_distribution"]["servicing_per_composition"] = False
         config["train_unit_distribution"]["average_servicing_time"] = 0
     if not config["trains_given"]:
         if "mixed_traffic" in config:
