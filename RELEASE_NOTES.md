@@ -1,5 +1,14 @@
 # Release notes
 
+## Unreleased
+
+### `servicing_per_composition` option
+
+New optional boolean in `train_unit_distribution` (default `false`, so existing configs generate the
+same scenarios as before). When `true`, `servicing_ratio` is the fraction of arriving compositions
+that are serviced, and all units of a serviced composition get the same servicing tasks, instead of
+each unit drawing its own. Requires `perform_servicing`.
+
 ## 2.3.0 — 2026-11-03
 
 Generated scenarios now use wire-format `schemaVersion` 2, and scenarios that contain servicing
