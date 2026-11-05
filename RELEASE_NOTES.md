@@ -1,5 +1,19 @@
 # Release notes
 
+## Unreleased
+
+### `reject_infeasible` option and feasibility check
+
+New optional boolean in `train_unit_distribution` (default `false`, so existing configs generate the
+same scenarios as before). When `true`, a drawn scenario that violates a necessary servicing bound
+(facility demand over capacity does not fit between the first arrival and the last departure; for
+one incoming train, its own servicing time does not fit in its stay) is redrawn, within
+`max_generation_attempts`. This only removes provably infeasible scenarios; passing the check does
+not guarantee a solution.
+
+`scripts/check_feasibility.py LOCATION SCENARIOS...` applies the same check to existing scenario
+files and counts violations per number of incoming trains.
+
 ## 2.4.0 — 2026-11-04
 
 ### `servicing_per_composition` option

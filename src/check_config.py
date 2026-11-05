@@ -118,6 +118,12 @@ def check_configuration_file(config, location_path):
                 config["train_unit_distribution"]["servicing_per_composition"] = False
         else:
             config["train_unit_distribution"]["servicing_per_composition"] = False
+        if "reject_infeasible" in config["train_unit_distribution"]:
+            if not isinstance(config["train_unit_distribution"]["reject_infeasible"], bool):
+                logging.error("'reject_infeasible' should be a boolean (true/false).")
+                return False, config
+        else:
+            config["train_unit_distribution"]["reject_infeasible"] = False
         config["train_unit_distribution"]["average_servicing_time"] = 0
     if not config["trains_given"]:
         if "mixed_traffic" in config:
