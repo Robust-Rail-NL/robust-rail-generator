@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 2.5.0 — 2026-11-06
 
 ### `reject_infeasible` option and feasibility check
 
