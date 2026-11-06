@@ -5,6 +5,7 @@ import sys
 from __init__ import DATA_DIR, REPO_DIR, VERSION
 from check_config import *
 from check_matching import *
+from feasibility import check_servicing_bounds
 from random_generator import GenerationAttemptFailed, RandomGenerator
 from scenario_generator import ScenarioGenerator
 
@@ -235,13 +236,14 @@ def time_window_is_sufficient(config, estimated_servicing_time) -> bool:
 
 def generate_random_trains(random_generator, config, scenario_generator, service_tasks) -> bool:
     """Attempt to generate random trains up to `max_generation_attempts` times, retrying whenever
-    an attempt raises GenerationAttemptFailed or produces a scenario check_matching() rejects.
+    an attempt raises GenerationAttemptFailed or produces a scenario check_matching() rejects, or,
+    with `reject_infeasible` on, one that violates a necessary servicing bound (see feasibility.py).
     Returns whether a matching scenario was produced within the attempt budget."""
     max_attempts = config.get("max_generation_attempts", 100)
     for attempt in range(max_attempts):
         if attempt > 0:
             logging.warning(
-                f"The generated incoming and outgoing trains do not match. Regenerating "
+                f"The previous attempt was rejected. Regenerating "
                 f"train compositions (attempt {attempt + 1} of {max_attempts})."
             )
             random_generator.reset()
@@ -250,8 +252,19 @@ def generate_random_trains(random_generator, config, scenario_generator, service
         except GenerationAttemptFailed as e:
             logging.warning(f"Attempt {attempt + 1} of {max_attempts} could not be completed: {e}")
             continue
-        if check_matching(scenario_generator, config["use_default_material"]):
-            return True
+        if not check_matching(scenario_generator, config["use_default_material"]):
+            continue
+        if config.get("train_unit_distribution", {}).get("reject_infeasible", False):
+            violations = check_servicing_bounds(
+                scenario_generator.scenario.to_dict(), scenario_generator.location.model_dump(by_alias=True)
+            )
+            if violations:
+                logging.warning(
+                    f"Attempt {attempt + 1} of {max_attempts} drew a scenario that cannot be solved: "
+                    + " ".join(v.description for v in violations)
+                )
+                continue
+        return True
     logging.error(
         f"No scenario matching this configuration could be generated in {max_attempts} attempts. "
         f"Rerun with --log-level WARNING reports why each attempt was rejected."
