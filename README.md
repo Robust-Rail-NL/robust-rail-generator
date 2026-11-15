@@ -84,6 +84,10 @@ this field via a build-arg, so nothing else needs editing by hand.
 ```
 This builds a multi-arch (`linux/amd64`, `linux/arm64`) image and pushes it to
 `ghcr.io/robust-rail-nl/generator`, tagged with the current version and `:latest`.
+The script refuses to run unless the working tree is clean and `HEAD` is the commit tagged
+`v<version>` (created by `bump-version.sh`) with that tag pushed to `origin`. Pass `-f` to skip these
+checks.
+
 Multi-arch matters here even though this is a Python image: pydantic v2 bundles `pydantic-core`, a
 compiled Rust extension, so the installed wheel — and therefore the image — is architecture-specific.
 
