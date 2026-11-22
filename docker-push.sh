@@ -43,6 +43,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# BEGIN SHARED BLOCK: release-flags (identical in every repo's push scripts; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 FORCE=0
 while getopts f opt; do
     case $opt in
@@ -50,6 +51,7 @@ while getopts f opt; do
         *) echo "Usage: $0 [-f]" >&2; exit 2 ;;
     esac
 done
+# END SHARED BLOCK: release-flags
 
 IMAGE="ghcr.io/robust-rail-nl/generator"
 CACHE_REF="$IMAGE:buildcache"
@@ -58,6 +60,7 @@ BUILDER_NAME="robust-rail-builder"
 VERSION=$(sed -n 's:^version = "\(.*\)"$:\1:p' pyproject.toml)
 [[ -n "$VERSION" ]] || { echo "Could not read version from pyproject.toml" >&2; exit 1; }
 
+# BEGIN SHARED BLOCK: release-guards (identical in every repo's push scripts; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 # A release image is permanent, and :$VERSION / :latest is what consumers
 # pull, so only publish a commit that bump-version.sh has tagged v$VERSION
 # and whose tag is on origin (which also means the commit itself is pushed).
@@ -89,7 +92,9 @@ else
         exit 1
     fi
 fi
+# END SHARED BLOCK: release-guards
 
+# BEGIN SHARED BLOCK: ghcr-login (identical in every repo's push scripts; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 docker login ghcr.io
 # Only the push needs auth; ghcr.io/robust-rail-nl is public for reads. Log
 # out again once this script exits (success or failure) rather than leaving
@@ -97,15 +102,18 @@ docker login ghcr.io
 # docker pull against ghcr.io (e.g. run_experiment.py's) ends up decrypting
 # it for no reason.
 trap 'docker logout ghcr.io' EXIT
+# END SHARED BLOCK: ghcr-login
 
 TAGS=(-t "$IMAGE:$VERSION")
 if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     TAGS+=(-t "$IMAGE:latest")
 fi
 
+# BEGIN SHARED BLOCK: buildx-builder (identical in every repo's push scripts; edit all copies — checked by robust-rail-general/scripts/check_push_script_sync.py)
 if ! docker buildx inspect "$BUILDER_NAME" >/dev/null 2>&1; then
     docker buildx create --name "$BUILDER_NAME" --driver docker-container --driver-opt network=host
 fi
+# END SHARED BLOCK: buildx-builder
 
 docker buildx build \
     --builder "$BUILDER_NAME" \
