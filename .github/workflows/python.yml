@@ -2,7 +2,7 @@ name: Python
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "edge" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
