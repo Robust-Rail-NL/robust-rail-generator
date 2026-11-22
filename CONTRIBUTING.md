@@ -55,9 +55,12 @@ The generator image is published under two channels:
 
 Currently manual only — run [`docker-push-edge.sh`](docker-push-edge.sh)
 yourself from the `edge` branch (it checks and refuses to run from anywhere
-else, or with uncommitted changes). There is no CI automation building or
-pushing `edge` on every push to the branch. This is a deliberate choice, not
-an oversight: wiring that up means a new category of CI workflow (deploy,
+else). Push `edge` to origin first: the script also refuses unless local `edge`
+is identical to `origin/edge`, so `:edge` only ever contains pushed commits. It
+also refuses to run with a dirty working tree (uncommitted or untracked files),
+since the docker build uses the working tree, not the commit. There is no CI
+automation building or pushing `edge` on every push to the branch. This is a
+deliberate choice, not an oversight: wiring that up means a new category of CI workflow (deploy,
 not just build/test) and storing GHCR push credentials as Actions secrets —
 a real increase in attack surface for a channel that exists to move fast,
 not to be hardened.
