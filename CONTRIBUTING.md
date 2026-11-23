@@ -5,12 +5,13 @@
 Formatting and linting run through [`pre-commit`](https://pre-commit.com/);
 see the README for the one-time `uv run pre-commit install`. The same
 configuration ([`.pre-commit-config.yaml`](.pre-commit-config.yaml)) also
-refuses a direct commit to `edge` (see the branch flow below). A plain
-`git merge --no-ff` into `edge` that merges cleanly doesn't run the
-`pre-commit` hook at all, so it is unaffected. If a merge conflicts, the
-commit that concludes it does run the hook and is refused; finish it with
-`SKIP=no-commit-to-branch git commit`. Like any hook, `--no-verify` skips
-it — it is a backstop, not a guarantee.
+refuses a direct commit to `edge` (see the branch flow below) through a
+local hook, [`.githooks/edge-commit-guard.sh`](.githooks/edge-commit-guard.sh).
+That hook still lets a `git merge --no-ff` finish, including a conflicted one
+concluded with `git commit`, since git sets `MERGE_HEAD` for that commit. The
+guard is shared with the sibling repos, whose copies
+`robust-rail-general/scripts/check_push_script_sync.py` checks for drift.
+Like any hook, `--no-verify` skips it — it is a backstop, not a guarantee.
 
 ## Image channels: `stable` and `edge`
 
