@@ -207,10 +207,23 @@ class RandomGenerator:
             ]
             number_train_units = len(distribution_config["unit_types"])
 
+            # For each outgoing train, the incoming train that each of its units was taken from (by
+            # index). Used to pick the gateway end an outgoing train's order has to be judged against.
             if distribution_config["matching"] == 0:
                 # Same arrival and distribution compositions
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
+                distribution_config["out_train_sources"] = [
+                    [i] * len(train) for i, train in enumerate(distribution_config["subtypes_per_in_train"])
+                ]
             elif distribution_config["matching"] == 1:
+                unit_sources = [
+                    i for i, train in enumerate(distribution_config["subtypes_per_in_train"]) for _ in train
+                ]
+                sources_per_super_type = {
+                    t: [src for sub, src in zip(distribution_config["unit_types"], unit_sources) if t in sub]
+                    for t in super_types
+                }
+                distribution_config["out_train_sources"] = []
                 # Redistribute the incoming train units over the outgoing trains
                 subtypes_per_super_type = {
                     t: [sub for sub in distribution_config["unit_types"] if t in sub] for t in super_types
@@ -225,14 +238,21 @@ class RandomGenerator:
                         # Only the units that this train is about to take decide whether it is capped
                         num_units = self.cap_composition_size(num_units, subtypes_per_super_type[sup_type][-num_units:])
                         new_train = []
+                        new_sources = []
                         for _ in range(num_units):
                             new_train.append(subtypes_per_super_type[sup_type].pop())
+                            new_sources.append(sources_per_super_type[sup_type].pop())
                         distribution_config["subtypes_per_out_train"].append(new_train)
+                        distribution_config["out_train_sources"].append(new_sources)
                 distribution_config["number_trains_out"] = len(distribution_config["subtypes_per_out_train"])
             elif distribution_config["matching"] == 2:
                 # Assume last in last out
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
                 distribution_config["subtypes_per_out_train"].reverse()
+                last = len(distribution_config["subtypes_per_in_train"]) - 1
+                distribution_config["out_train_sources"] = [
+                    [last - i] * len(train) for i, train in enumerate(distribution_config["subtypes_per_out_train"])
+                ]
         else:
             # For each train to be generated, randomly sample its type and give it a random number of units between 1 and 3 (upper limit not included in randrange), capped for 6-carriage types
             unit_types_per_train = []
@@ -398,6 +418,7 @@ class RandomGenerator:
             ),
         }
         ### Create train objects
+        arrival_ends = {}  # incoming train index -> end of the yard its gateway is on
         for i, train_units in enumerate(distribution_in):
             ### Incoming train
             if i in standing_trains["instanding"]:
@@ -413,6 +434,7 @@ class RandomGenerator:
                 self.scenario_generator.add_in_standing_train(train_in)
             else:
                 gateway, side = random.choice(self.gateways["arrival"])
+                arrival_ends[i] = self.gateway_end(gateway, side)
                 train_in = self.scenario_generator.create_incoming_train(
                     id=i,
                     time=arrival_times[i],
@@ -443,6 +465,11 @@ class RandomGenerator:
                 self.scenario_generator.add_out_standing_train(train_out)
             else:
                 gateway, side = random.choice(self.gateways["departure"])
+                if self.should_reverse_units(
+                    self.gateway_end(gateway, side),
+                    [arrival_ends.get(src) for src in distribution_config["out_train_sources"][i]],
+                ):
+                    unmatched_train_units.reverse()
                 train_out = self.scenario_generator.create_train_request(
                     id=i + id_offset,
                     time=departure_times[i],
@@ -452,6 +479,48 @@ class RandomGenerator:
                 )
                 self.scenario_generator.add_outgoing_train(train_out)
             self.trains.append(train_out)
+
+    @staticmethod
+    def gateway_end(gateway, bumper):
+        """The end of the yard a gateway track is on: the track parts on its side away from the bumper.
+
+        Two gateways with the same end are, in this heuristic, entered and left on the same side of
+        the yard (e.g. SimpleService tracks 2 and 3 both hang off switch 20). It does not analyse
+        whether a train could actually drive through the yard between two gateways.
+        """
+        if bumper.id in gateway.a_side:
+            end = gateway.b_side
+        elif bumper.id in gateway.b_side:
+            end = gateway.a_side
+        else:
+            end = []
+        if len(end) == 0:
+            raise ValueError(
+                f"Cannot tell which end of the yard gateway track {gateway.id} is on (bumper {bumper.id}, "
+                f"a side {list(gateway.a_side)}, b side {list(gateway.b_side)}): the generator needs a track "
+                "part on the gateway's side away from the bumper to order the units of departing trains. "
+                "This location probably needs support added in RandomGenerator.gateway_end()."
+            )
+        return tuple(end)
+
+    @staticmethod
+    def should_reverse_units(departure_end, source_arrival_ends):
+        """Whether a departing train that leaves at `departure_end` should list its units in the
+        reverse of the order they arrived in.
+
+        Arriving and leaving at the same end means a train can only drive in and out again, which
+        reverses its units for free; keeping the order would force the units to be shunted apart
+        and reassembled. `source_arrival_ends` has the arrival gateway end of the incoming train of
+        each unit (None for instanding trains, which have no gateway). The end shared by most
+        units decides; a tie goes to the end of the first unit that has one. With no gateway
+        arrival among the sources there is nothing to judge against and the order is kept.
+        """
+        ends = [end for end in source_arrival_ends if end is not None]
+        if len(ends) == 0:
+            return False
+        counts = {end: ends.count(end) for end in ends}  # insertion order: first unit's end first
+        majority_end = max(counts, key=lambda end: counts[end])
+        return departure_end == majority_end
 
     def _draw_arrival_times(self, distribution_config, window_end, window_description):
         """random.sample() over the arrival window, raising GenerationAttemptFailed instead of
@@ -614,11 +683,19 @@ class RandomGenerator:
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
                     in_trains[i].append(in_units[t.type_display_name].pop())
-            # Matching: 0 same order, 1: random order, 2: reverse order
+            # Matching: 0 same order, 1: random order, 2: reverse order. `order` records which
+            # incoming train each outgoing train is built from.
+            order = list(range(len(distribution_config["unit_types_per_train"])))
             if distribution_config["matching"] == 1:
-                random.shuffle(distribution_config["unit_types_per_train"])
+                random.shuffle(order)
             elif distribution_config["matching"] == 2:
-                distribution_config["unit_types_per_train"].reverse()
+                order.reverse()
+            distribution_config["unit_types_per_train"] = [
+                distribution_config["unit_types_per_train"][k] for k in order
+            ]
+            distribution_config["out_train_sources"] = [
+                [k] * num for k, (_, num) in zip(order, distribution_config["unit_types_per_train"])
+            ]
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
                     out_trains[i].append(out_units[t.type_display_name].pop())
