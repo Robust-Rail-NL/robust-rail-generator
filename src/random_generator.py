@@ -6,6 +6,7 @@ from copy import deepcopy
 from robust_rail_models.location import TrackPartType
 
 from __init__ import DEFAULT_SERVICING_TRAVEL_ALLOWANCE
+from matching_mode import FIFO, LIFO, RANDOM, matching_name
 from scenario_generator import ScenarioGenerator
 from travel_time import DEFAULT_SWITCH_COEFFICIENT, DEFAULT_TRACK_COEFFICIENT, servicing_travel_time
 
@@ -129,7 +130,7 @@ class RandomGenerator:
             "min_time_in_yard": config["min_time_in_yard"],
             "min_gap_on_gateway": config["min_gap_on_gateway"],
             "mixed_traffic": config["mixed_traffic"],
-            "matching": config["matching"],
+            "matching": matching_name(config["matching"]),
             "average_servicing_time": 0,
         }
         number_train_units = 0
@@ -150,6 +151,8 @@ class RandomGenerator:
                 }
             # If a distribution of train units over the trains was given, use this for the train creation
             distribution_config.update(config["train_unit_distribution"])
+            # The distribution may carry its own `matching`, which then wins over the top-level one.
+            distribution_config["matching"] = matching_name(distribution_config["matching"])
             # Decide the number of units per train
             distribution_config["number_units_per_in_train"] = [
                 random.choice(distribution_config["units_per_composition"]) for _ in range(config["number_of_trains"])
@@ -209,13 +212,13 @@ class RandomGenerator:
 
             # For each outgoing train, the incoming train that each of its units was taken from (by
             # index). Used to pick the gateway end an outgoing train's order has to be judged against.
-            if distribution_config["matching"] == 0:
+            if distribution_config["matching"] == FIFO:
                 # Same arrival and distribution compositions
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
                 distribution_config["out_train_sources"] = [
                     [i] * len(train) for i, train in enumerate(distribution_config["subtypes_per_in_train"])
                 ]
-            elif distribution_config["matching"] == 1:
+            elif distribution_config["matching"] == RANDOM:
                 unit_sources = [
                     i for i, train in enumerate(distribution_config["subtypes_per_in_train"]) for _ in train
                 ]
@@ -245,7 +248,7 @@ class RandomGenerator:
                         distribution_config["subtypes_per_out_train"].append(new_train)
                         distribution_config["out_train_sources"].append(new_sources)
                 distribution_config["number_trains_out"] = len(distribution_config["subtypes_per_out_train"])
-            elif distribution_config["matching"] == 2:
+            elif distribution_config["matching"] == LIFO:
                 # Last in, first out: the trains leave in the reverse of their arrival order
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
                 distribution_config["subtypes_per_out_train"].reverse()
@@ -687,9 +690,9 @@ class RandomGenerator:
             # 0 the order of the arrivals (FIFO), 1 a random order, 2 the reverse of it (LIFO).
             # `order` records which incoming train each outgoing train is built from.
             order = list(range(len(distribution_config["unit_types_per_train"])))
-            if distribution_config["matching"] == 1:
+            if distribution_config["matching"] == RANDOM:
                 random.shuffle(order)
-            elif distribution_config["matching"] == 2:
+            elif distribution_config["matching"] == LIFO:
                 order.reverse()
             distribution_config["unit_types_per_train"] = [
                 distribution_config["unit_types_per_train"][k] for k in order

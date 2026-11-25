@@ -77,7 +77,7 @@ def make_generator(arrival_gateways: list[int], departure_gateways: list[int], s
     return generator
 
 
-def generate(generator: RandomGenerator, matching: int, trains: int = 6):
+def generate(generator: RandomGenerator, matching: int | str, trains: int = 6):
     """Run the full train generation; return the type names of every arriving and departing train,
     keyed by train id."""
     config = {
@@ -121,6 +121,12 @@ class TestSingleEndedYard:
         for train_id, types in arriving.items():
             # matching 2 pairs arriving train i with departing train n - 1 - i
             assert departing[n + (n - 1 - train_id)] == types[::-1]
+
+    @pytest.mark.parametrize("name, legacy", [("FIFO", 0), ("LIFO", 2)])
+    def test_a_matching_name_generates_what_its_legacy_integer_does(self, name, legacy):
+        assert generate(make_generator([2, 3], [2, 3]), matching=name) == generate(
+            make_generator([2, 3], [2, 3]), matching=legacy
+        )
 
     @pytest.mark.parametrize("matching", [0, 1, 2])
     def test_reversal_changes_only_the_order_within_a_departing_train(self, matching, monkeypatch):

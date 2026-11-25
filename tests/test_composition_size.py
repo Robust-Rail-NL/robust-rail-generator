@@ -1,7 +1,7 @@
 """No composition may hold a unit of 6 or more carriages and more than two units, because that
 is longer than the tracks a scenario has to park it on. That rule used to be applied at one spot
 only, to 6-carriage units only: the number of units drawn for each *arriving* train in the
-`train_unit_distribution` path. The departing trains that `matching: 1` builds by redistributing
+`train_unit_distribution` path. The departing trains that `matching: "random"` builds by redistributing
 those same units, and the 1-3 units drawn per train when no `train_unit_distribution` is given at
 all, both went uncapped, so a scenario could still ask for a 3 x VIRM-6 composition. These tests
 pin the rule on every path that decides a composition's size, and pin that it cuts nothing else:

@@ -6,6 +6,7 @@ import random
 from robust_rail_models.location import Location, TrackPartType
 
 from __init__ import DATA_DIR
+from matching_mode import normalize_matching_setting
 
 
 def _type_display_names(train_unit_type_entries):
@@ -132,12 +133,8 @@ def check_configuration_file(config, location_path):
                 return False, config
         else:
             config["mixed_traffic"] = True
-        if "matching" in config:
-            if not isinstance(config["matching"], int) or config["matching"] not in [0, 1, 2]:
-                logging.error("'matching' should be a value (0, 1, 2).")
-                return False, config
-        else:
-            config["matching"] = 1
+        if not normalize_matching_setting(config):
+            return False, config
     if "min_time_in_yard" in config:
         if not isinstance(config["min_time_in_yard"], int) or config["min_time_in_yard"] < 0:
             logging.error("'min_time_in_yard' should be a non-negative integer.")
