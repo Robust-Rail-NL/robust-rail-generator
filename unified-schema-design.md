@@ -8,14 +8,25 @@ schema is frozen and implemented across all five Robust-Rail-NL repos, shipped
 as part of the 2.0.0 release (see `../robust-rail-general/docs/roadmap-2.0.0.md`
 for the release record). Kept as a record of *why* the schema looks the way it
 does — most "Decision" entries below are still accurate descriptions of the
-shipped models. A handful of "Open question" entries were never closed out
+shipped models, as of 2.0.0. A handful of "Open question" entries were never closed out
 before the freeze; those are called out as such rather than removed, since the
 underlying ambiguity in the code is real (see each for the corresponding TODO,
 if any). None of them blocks 2.0.0.
 
+**This document is not the current reference.** It describes the schema as
+designed for 2.0.0 and is not updated since. The source of truth is now in
+`robust-rail-general`: the models (`robust_rail_models`, with the field
+descriptions), the exported `schema/*.json`, and `SCHEMA_CHANGELOG.md` for
+every change after 2.0.0 (`schemaVersion` 2, `Reverse`, the unit order from
+general#50). Where this text and those disagree, they win. In particular,
+the models no longer live in the generator (they moved on 2026-09-02,
+general#9 and generator#17), so statements below about the generator owning
+the models or the export are out of date.
+
 ## Guiding principles
 
-1. **Pydantic is the source of truth.** Models live in the generator (Python).
+1. **Pydantic is the source of truth.** Models live in the generator (Python). *(Since 2026-09-02 they live in
+   `robust-rail-general`; see the note at the top.)*
    JSON Schema is exported from these models and is the artifact the solver and
    evaluator consume / validate against.
 2. **One unified model, not per-consumer variants.** Fields only some consumers

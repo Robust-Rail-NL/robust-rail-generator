@@ -3,8 +3,8 @@
 **Status: historical.** This refactor is complete — protobuf is fully removed
 and the generator runs on the Pydantic models in `models/`. Kept as a record
 of the original refactor plan; the "Key model notes" section below has been
-updated to match the current schema (see `unified-schema-design.md` and
-`robust-rail-general`'s `SCHEMA_CHANGELOG.md` for what changed since).
+updated to match the current schema (see `robust-rail-general`'s `SCHEMA_CHANGELOG.md` for what
+changed since; `unified-schema-design.md` is the 2.0.0-era design record).
 
 ## What this work is
 
