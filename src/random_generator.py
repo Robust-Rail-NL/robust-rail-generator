@@ -246,7 +246,7 @@ class RandomGenerator:
                         distribution_config["out_train_sources"].append(new_sources)
                 distribution_config["number_trains_out"] = len(distribution_config["subtypes_per_out_train"])
             elif distribution_config["matching"] == 2:
-                # Assume last in last out
+                # Last in, first out: the trains leave in the reverse of their arrival order
                 distribution_config["subtypes_per_out_train"] = deepcopy(distribution_config["subtypes_per_in_train"])
                 distribution_config["subtypes_per_out_train"].reverse()
                 last = len(distribution_config["subtypes_per_in_train"]) - 1
@@ -683,8 +683,9 @@ class RandomGenerator:
             for i, (t, num) in enumerate(distribution_config["unit_types_per_train"]):
                 for _ in range(num):
                     in_trains[i].append(in_units[t.type_display_name].pop())
-            # Matching: 0 same order, 1: random order, 2: reverse order. `order` records which
-            # incoming train each outgoing train is built from.
+            # Matching decides the order of the outgoing trains, not of the units within a train:
+            # 0 the order of the arrivals (FIFO), 1 a random order, 2 the reverse of it (LIFO).
+            # `order` records which incoming train each outgoing train is built from.
             order = list(range(len(distribution_config["unit_types_per_train"])))
             if distribution_config["matching"] == 1:
                 random.shuffle(order)
